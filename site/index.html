@@ -107,7 +107,7 @@ header{transition:transform .25s}header.hd{transform:translateY(-100%)}
 .ov.show{opacity:1;pointer-events:auto}
 .drawer{position:fixed;top:0;right:0;bottom:0;width:min(720px,100%);background:var(--card);z-index:41;transform:translateX(100%);transition:transform .3s cubic-bezier(.16,1,.3,1);overflow-y:auto}
 .drawer.show{transform:none}.drawer{overscroll-behavior:contain}
-.dh{position:sticky;top:0;background:var(--card);border-bottom:1px solid var(--bd);display:flex;gap:8px;padding:12px 20px;align-items:center}
+.dh{position:sticky;top:0;background:var(--card);border-bottom:1px solid var(--bd);display:flex;gap:8px;padding:calc(12px + env(safe-area-inset-top)) max(20px,env(safe-area-inset-right)) 12px max(20px,env(safe-area-inset-left));align-items:center}
 .dh .grow{margin-right:auto}
 .art{padding:28px 28px 56px}
 .art h2{font:600 32px/1.15 Newsreader,Georgia,serif;margin:12px 0}
@@ -199,7 +199,7 @@ html{overscroll-behavior-y:contain}.more{grid-column:1/-1;text-align:center}
 .bm{padding:8px;margin:-8px -8px -8px 0}
 .hero{flex-direction:column}.hero .ph{aspect-ratio:16/9;min-height:0;flex:none}.hero .cb{padding:16px}.hero h3{font-size:25px}
 
-.dh{padding:10px 16px}
+.dh{padding:calc(10px + env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) 10px max(16px,env(safe-area-inset-left))}
 .art{padding:18px 16px calc(40px + env(safe-area-inset-bottom))}.art h2{font-size:26px}.body{font-size:calc(17px*var(--fs,1))}
 .art .btn{width:100%;justify-content:center}
 .modal{place-items:end center;padding:0}
@@ -626,7 +626,7 @@ function timed(fn,ms=10000){const c=new AbortController();const id=setTimeout(()
 
 const wk=()=>(ls.get('nz_wk','')||'').trim();
 // Proxy propio: /p/<host>/... lo atiende _worker.js (Cloudflare Pages)
-const VER='2026-10-20-0.1';
+const VER='2026-10-20-0.2';
 if(!ls.get('nz_fu',0))ls.set('nz_fu',Date.now());
 const NR=new Set(); // (en desuso con _worker.js: el proxy cubre cualquier sitio)
 const ownOn=()=>1;
