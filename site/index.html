@@ -487,8 +487,8 @@ const DEFAULTS=[
  {id:"genbeta",name:"Genbeta",cat:"Tecnología",on:true,url:"https://www.genbeta.com/feedburner.xml"},
  {id:"marca",name:"Marca",cat:"Deportes",on:true,url:"https://e00-xlk-ue-marca.uecdn.es/rss/googlenews/portada.xml"},
  {id:"20minutos",name:"20minutos",cat:"Actualidad",on:true,url:"https://www.20minutos.es/rss"},
- {id:"diariodemallorca",name:"Diario de Mallorca",cat:"Local",on:true,url:"https://www.diariodemallorca.es/rss/"},
- {id:"ultimahora",name:"Última Hora",cat:"Local",on:true,url:"https://rss.app/feeds/nQA5e9HEDONcPAjH.xml"},
+ {id:"diariodemallorca",name:"Diario de Mallorca",cat:"Local",on:true,url:"https://news.google.com/rss/search?q=site:diariodemallorca.es+when:3d&hl=es&gl=ES&ceid=ES:es"},
+ {id:"ultimahora",name:"Última Hora",cat:"Local",on:true,url:"https://www.ultimahora.es/feed.rss"},
  {id:"abcespana",name:"ABC España",cat:"Actualidad",on:true,url:"https://www.abc.es/rss/2.0/espana/"},
  {id:"lavanguardia",name:"La Vanguardia",cat:"Actualidad",on:true,url:"https://www.lavanguardia.com/rss/home.xml"},
  {id:"eldiarioes",name:"elDiario.es",cat:"Actualidad",on:true,url:"https://www.eldiario.es/rss/"},
@@ -499,7 +499,6 @@ const DEFAULTS=[
  {id:"arabalears",name:"Ara Balears",cat:"Local",on:true,url:"https://www.arabalears.cat/rss/"},
  {id:"mallorcazeitung",name:"Mallorca Zeitung",cat:"Local",on:true,url:"https://www.mallorcazeitung.es/rss/"},
  {id:"microsiervos",name:"Microsiervos",cat:"Curiosidades y Ciencia",on:true,url:"https://www.microsiervos.com/index.xml"},
- {id:"muyinteresante",name:"Muy Interesante",cat:"Curiosidades y Ciencia",on:true,url:"https://www.muyinteresante.es/rss"},
  {id:"naukas",name:"Naukas",cat:"Curiosidades y Ciencia",on:true,url:"https://feeds.feedburner.com/naukas"},
  {id:"hipertextual",name:"Hipertextual",cat:"Curiosidades y Ciencia",on:true,url:"https://hipertextual.com/feed/"},
  {id:"historiasdelahistoria",name:"Historias de la Historia",cat:"Curiosidades y Ciencia",on:true,url:"https://historiasdelahistoria.com/feed"},
@@ -507,7 +506,6 @@ const DEFAULTS=[
  {id:"geografiainfinita",name:"Geografía Infinita",cat:"Curiosidades y Ciencia",on:true,url:"https://www.geografiainfinita.com/feed/"},
  {id:"applesfera",name:"Applesfera",cat:"Tecnología",on:true,url:"https://www.applesfera.com/feedburner.xml"},
  {id:"adslzone",name:"AdslZone",cat:"Tecnología",on:true,url:"https://www.adslzone.net/feed/"},
- {id:"gizmodoenespanol",name:"Gizmodo en Español",cat:"Tecnología",on:true,url:"https://es.gizmodo.com/feed"},
  {id:"muycomputer",name:"MuyComputer",cat:"Tecnología",on:true,url:"https://www.muycomputer.com/feed/"},
  {id:"rinconingenieril",name:"Rincón Ingenieril",cat:"Domótica",on:true,url:"https://www.rinconingenieril.es/feed/"},
  {id:"raspberrypinews",name:"Raspberry Pi News",cat:"Domótica",on:true,url:"https://www.raspberrypi.com/news/feed/"},
@@ -531,9 +529,8 @@ const DEFAULTS=[
  {id:"espinof",name:"Espinof",cat:"Cine y Series",on:true,url:"https://www.espinof.com/feedburner.xml"},
  {id:"fotogramas",name:"Fotogramas",cat:"Cine y Series",on:true,url:"https://www.fotogramas.es/rss/all.xml/"},
  {id:"sensacine",name:"Sensacine",cat:"Cine y Series",on:true,url:"https://www.sensacine.com/rss/noticias.xml"},
- {id:"fueradeseries",name:"Fuera de Series",cat:"Cine y Series",on:true,url:"https://fueradeseries.com/feed"},
  {id:"motorpasion",name:"Motorpasión",cat:"Motor",on:true,url:"https://www.motorpasion.com/index.xml"},
- {id:"autobildespana",name:"AutoBild España",cat:"Motor",on:true,url:"https://www.autobild.es/rss"},
+ {id:"autobildespana",name:"AutoBild España",cat:"Motor",on:true,url:"https://www.autobild.es/rss/"},
  {id:"expansion",name:"Expansión",cat:"Economía",on:true,url:"https://e00-expansion.uecdn.es/rss/portada.xml"},
  {id:"mundodeportivo",name:"Mundo Deportivo",cat:"Deportes",on:true,url:"https://www.mundodeportivo.com/rss/home.xml"},
  {id:"cochesnetnoticias",name:"Coches.net Noticias",cat:"Motor",on:true,url:"https://www.coches.net/noticias/rss/"},
@@ -546,7 +543,12 @@ const DEFAULTS=[
  {id:"elblogsalmon",name:"El Blog Salmón",cat:"Economía",on:true,url:"https://www.elblogsalmon.com/feedburner.xml"},
  {id:"labrujulaverde",name:"La Brújula Verde",cat:"Curiosidades y Ciencia",on:true,url:"https://www.labrujulaverde.com/feed"},
  {id:"eloutput",name:"El Output",cat:"Tecnología",on:true,url:"https://eloutput.com/feed/"},
- {id:"motor16",name:"Motor16",cat:"Motor",on:true,url:"https://www.motor16.com/feed/"}
+ {id:"motor16",name:"Motor16",cat:"Motor",on:true,url:"https://www.motor16.com/feed/"},
+ {id:"newtral",name:"Newtral",cat:"General",on:true,url:"https://www.newtral.es/feed/"},
+ {id:"hiphopglobal",name:"Hiphop.global",cat:"Música",on:true,url:"https://hiphoprap.global/feed/"},
+ {id:"mondosonoro",name:"Mondosonoro",cat:"Música",on:true,url:"https://mondosonoro.com/feed"},
+ {id:"iamrap",name:"Iam rap",cat:"Música",on:true,url:"https://iamrap.es/rss"},
+ {id:"cronicabalear",name:"Crónica balear",cat:"Local",on:true,url:"https://www.cronicabalear.es/sitemap-news.xml"}
 ];
 // Proxies CORS: se consultan a la vez y gana el primero que devuelva un RSS válido
 const $=s=>document.querySelector(s);
@@ -638,7 +640,7 @@ function timed(fn,ms=10000){const c=new AbortController();const id=setTimeout(()
 
 const wk=()=>(ls.get('nz_wk','')||'').trim();
 // Proxy propio: /p/<host>/... lo atiende _worker.js (Cloudflare Pages)
-const VER='2026-10-20-1.3';
+const VER='2026-10-20-2';
 if(!ls.get('nz_fu',0))ls.set('nz_fu',Date.now());
 const NR=new Set(); // (en desuso con _worker.js: el proxy cubre cualquier sitio)
 const ownOn=()=>1;
