@@ -182,8 +182,8 @@ html{overscroll-behavior-y:contain}.more{grid-column:1/-1;text-align:center}
 .toast.show{transform:translate(-50%,0)}
 @media(max-width:760px){
 .wrap{padding:0 16px}
-.bar{height:auto;min-height:60px;flex-wrap:wrap;gap:8px;padding:9px 0}
-.logo .lw{font-size:22px}
+.bar{height:auto;min-height:64px;flex-wrap:wrap;gap:8px;padding:10px 0}
+.logo .lw{font-size:26px}.lp{width:46px;height:25px}
 .sb{display:grid}.search{display:none;order:9;flex:1 0 100%;width:100%}.search.open{display:block}
 .search input{padding:11px 12px 11px 36px;font-size:16px}
 .ib{width:42px;height:42px}
@@ -626,7 +626,7 @@ function timed(fn,ms=10000){const c=new AbortController();const id=setTimeout(()
 
 const wk=()=>(ls.get('nz_wk','')||'').trim();
 // Proxy propio: /p/<host>/... lo atiende _worker.js (Cloudflare Pages)
-const VER='2026-10-20-0.2';
+const VER='2026-10-20-0.3';
 if(!ls.get('nz_fu',0))ls.set('nz_fu',Date.now());
 const NR=new Set(); // (en desuso con _worker.js: el proxy cubre cualquier sitio)
 const ownOn=()=>1;
