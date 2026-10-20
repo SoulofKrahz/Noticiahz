@@ -611,6 +611,8 @@ function parse(xml,src){
  if(d.querySelector('parsererror')){const x2=xml.replace(/&([a-zA-Z][a-zA-Z0-9]*);/g,(m,n)=>XE[n]!==undefined?'&#'+XE[n]+';':m);d=new DOMParser().parseFromString(x2,'text/xml')}
  if(d.querySelector('parsererror'))throw pe('XML no válido');
  const nodes=[...d.querySelectorAll('item,entry')];
+ if(!nodes.length&&d.documentElement&&d.documentElement.localName==='sitemapindex')throw pe('Índice de sitemaps');
+ if(!nodes.length&&d.documentElement&&d.documentElement.localName==='urlset')return parseSitemap(d,src);
  if(!nodes.length)throw pe('Sin artículos');
  const t=(n,...tags)=>{for(const g of tags){const e=n.getElementsByTagName(g)[0];if(e&&e.textContent.trim())return e.textContent.trim()}return''};
  return nodes.slice(0,300).map(n=>{
@@ -618,15 +620,21 @@ function parse(xml,src){
   const l=[...n.getElementsByTagName('link')].find(x=>!x.getAttribute('rel')||x.getAttribute('rel')==='alternate');
   const link=((l&&(l.getAttribute('href')||l.textContent))||t(n,'guid')).trim();
   const g1=x=>n.getElementsByTagName(x)[0],ok=x=>x&&(/thumbnail/i.test(x.tagName)||/image|\.(jpe?g|png|webp|gif)/i.test((x.getAttribute('type')||'')+' '+(x.getAttribute('medium')||'')+' '+(x.getAttribute('url')||''))),m=[g1('media:content'),g1('media:thumbnail'),g1('enclosure')].find(ok);
-  return mk(src,t(n,'title'),link,t(n,'pubDate','published','updated','dc:date'),html,m&&m.getAttribute('url'));
+  let ti=t(n,'title');if(/^https?:\/\/news\.google\.com\//.test(link))ti=ti.replace(/\s+-\s+[^-]{2,60}$/,'');
+  return mk(src,ti,link,t(n,'pubDate','published','updated','dc:date'),/^https?:\/\/news\.google\.com\//.test(link)?'':html,m&&m.getAttribute('url'));
  });
 }
+// Sitemap de noticias (el que los periódicos publican para Google): titular, fecha e imagen de cada noticia
+function parseSitemap(d,src){const L=(n,k)=>{const e=n.getElementsByTagNameNS('*',k)[0];return e?e.textContent.trim():''};
+ const out=[...d.getElementsByTagNameNS('*','url')].map(n=>{const im=n.getElementsByTagNameNS('*','image')[0];return{t:L(n,'title'),l:L(n,'loc'),d:L(n,'publication_date')||L(n,'lastmod'),i:im?L(im,'loc'):''}}).filter(x=>x.t&&/^https?:/.test(x.l));
+ if(!out.length)throw pe('Sitemap sin titulares');
+ return out.sort((a,b)=>(+new Date(b.d)||0)-(+new Date(a.d)||0)).slice(0,150).map(x=>mk(src,x.t,x.l,x.d,'',x.i))}
 async function pool(items,n,fn){let i=0;await Promise.all(Array.from({length:Math.min(n,items.length)},async()=>{while(i<items.length)await fn(items[i++])}))}
 function timed(fn,ms=10000){const c=new AbortController();const id=setTimeout(()=>c.abort(),ms);return fn(c.signal).finally(()=>clearTimeout(id))}
 
 const wk=()=>(ls.get('nz_wk','')||'').trim();
 // Proxy propio: /p/<host>/... lo atiende _worker.js (Cloudflare Pages)
-const VER='2026-10-20-0.3';
+const VER='2026-10-20-1';
 if(!ls.get('nz_fu',0))ls.set('nz_fu',Date.now());
 const NR=new Set(); // (en desuso con _worker.js: el proxy cubre cualquier sitio)
 const ownOn=()=>1;
@@ -647,13 +655,30 @@ function viaProxies(url,src){
  })}
 // Comprueba una fuente; si la URL es una web (no un feed), intenta detectar el feed en rutas habituales
 async function check(src){
- const items=await getFeed(src);if(items)return{items,url:src.url};
+ const items=await getFeed(src);if(items)return{items,url:src.url,via:'feed'};
  let u;try{u=new URL(src.url)}catch{return null}
- const c=['/feed','/rss','/feed.xml','/rss.xml','/index.xml','/feeds/posts/default'].map(x=>u.origin+x).filter(x=>x!==src.url);
- try{return await Promise.any(c.map(async x=>({items:await viaProxies(x,src),url:x})))}catch{}
- const dv=(await discover(u)).filter(x=>x!==src.url).slice(0,4);
- try{return await Promise.any(dv.map(async x=>({items:await viaProxies(x,src),url:x})))}catch{return null}
+ const any=async(list,via)=>{list=[...new Set(list)].filter(x=>x&&x!==src.url);if(!list.length)return null;const rs=await Promise.allSettled(list.map(async x=>({items:await viaProxies(x,src),url:x,via})));const ok=rs.find(x=>x.status==='fulfilled'&&x.value.items.length);return ok?ok.value:null};
+ const o=u.origin;let r;
+ // 1) Rutas habituales de feed (WordPress, Blogger, Ghost, Substack, periódicos…)
+ if(r=await any(['/feed','/rss','/feed/','/rss/','/feed.xml','/rss.xml','/index.xml','/atom.xml','/feeds/posts/default','/?feed=rss2','/feed/rss','/rss/portada.xml','/rss/home.xml'].map(x=>o+x),'feed'))return r;
+ // 2) Feeds enlazados en la página o en la portada (<link rel=alternate> y enlaces que parecen feeds)
+ if(r=await any((await discover(u,true)).slice(0,8),'feed'))return r;
+ // 3) Sitemap de noticias
+ if(r=await sitemapFeed(u,src))return r;
+ // 4) Último recurso: Google News de esa web (titular, fecha y enlace)
+ const h=u.hostname.replace(/^www\./,'');
+ if(r=await any([`https://news.google.com/rss/search?q=site:${h}+when:3d&hl=es&gl=ES&ceid=ES:es`],'google'))return r;
+ return null;
 }
+async function fetchTxt(x,ms=8000){return timed(async sg=>{const r=await fetch(PX[0].f(x),{signal:sg});if(!r.ok)throw Error('HTTP '+r.status);return(await r.text()).slice(0,6e6)},ms)}
+async function sitemapFeed(u,src){const o=u.origin,isNews=x=>/news|noticia|ultim|actualidad/i.test(x);let c=[];
+ try{(await fetchTxt(o+'/robots.txt',6000)).split(/\r?\n/).forEach(l=>{const m=l.match(/^\s*sitemap:\s*(\S+)/i);if(m)c.push(m[1].trim())})}catch(e){}
+ c=[...c.filter(isNews),...['/sitemap_news.xml','/news-sitemap.xml','/sitemap-news.xml','/news_sitemap.xml','/sitemaps/news.xml','/sitemap/news.xml'].map(x=>o+x),...c.filter(x=>!isNews(x))].filter((x,i,a)=>/^https?:/.test(x)&&a.indexOf(x)===i).slice(0,8);
+ const tryOne=async x=>{const t=await fetchTxt(x);const d=new DOMParser().parseFromString(t,'text/xml');if(d.querySelector('parsererror'))throw Error('xml');
+  if(d.documentElement.localName==='sitemapindex'){const kids=[...d.getElementsByTagNameNS('*','loc')].map(e=>e.textContent.trim());const pick=[...kids.filter(isNews),...kids.slice(-2),...kids.slice(0,2)].filter((x,i,a)=>a.indexOf(x)===i).slice(0,4);
+   for(const k of pick){try{const items=parse(await fetchTxt(k),src);if(items.length)return{items,url:k,via:'sitemap'}}catch(e){}}throw Error('index sin titulares')}
+  const items=parse(t,src);if(!items.length)throw Error('vacío');return{items,url:x,via:'sitemap'}};
+ for(const x of c){try{return await tryOne(x)}catch(e){}}return null}
 // Solo por el proxy propio (sin respaldo): el servidor devuelve una redirección que el navegador no puede seguir
 // Decodifica el feed con la codificación que declara (cabecera HTTP o <?xml encoding=…?>): Vandal y otros usan ISO-8859-1
 const W1252={0x20AC:0x80,0x201A:0x82,0x0192:0x83,0x201E:0x84,0x2026:0x85,0x2020:0x86,0x2021:0x87,0x02C6:0x88,0x2030:0x89,0x0160:0x8A,0x2039:0x8B,0x0152:0x8C,0x017D:0x8E,0x2018:0x91,0x2019:0x92,0x201C:0x93,0x201D:0x94,0x2022:0x95,0x2013:0x96,0x2014:0x97,0x02DC:0x98,0x2122:0x99,0x0161:0x9A,0x203A:0x9B,0x0153:0x9C,0x017E:0x9E,0x0178:0x9F};
@@ -671,9 +696,14 @@ async function readXml(r){const buf=await r.arrayBuffer(),head=new TextDecoder('
  return t.replace(/^\uFEFF/,'')}
 async function viaOwn(url,src){const p=PX[0];if(!p.can(url))throw Error('sin regla');return timed(async sg=>{const r=await fetch(p.f(url),{signal:sg});if(!r.ok)throw Error('HTTP '+r.status);return parse(await readXml(r),src)},8000)}
 // Autocorrección: si una fuente falla, prueba rutas de feed habituales en su mismo sitio (máx. 1 intento al día por fuente)
-async function discover(u){try{const r=await timed(sg=>fetch(PX[0].f(u.origin+'/'),{signal:sg}),8000);if(!r.ok)return[];
- const d=new DOMParser().parseFromString((await r.text()).slice(0,400000),'text/html');
- return[...d.querySelectorAll('link[rel~=alternate][type*=xml]')].map(l=>{try{return new URL(l.getAttribute('href'),u.origin).href.replace(/^http:/,'https:')}catch(e){return''}}).filter(h=>/^https:/.test(h)&&!/comment|comentario/i.test(h))}catch(e){return[]}}
+async function discover(u,deep){const pages=[u.origin+'/'];if(deep&&u.pathname.length>1)pages.unshift(u.href);const out=[],base=u.hostname.replace(/^www\./,'');
+ for(const pg of pages){try{const r=await timed(sg=>fetch(PX[0].f(pg),{signal:sg}),8000);if(!r.ok)continue;
+  const d=new DOMParser().parseFromString((await r.text()).slice(0,400000),'text/html'),abs=h=>{try{return new URL(h,pg).href.replace(/^http:/,'https:')}catch(e){return''}};
+  d.querySelectorAll('link[rel~=alternate][type*=xml],link[rel~=alternate][type*=rss],link[rel~=alternate][type*=atom]').forEach(l=>out.push(abs(l.getAttribute('href'))));
+  if(deep){const P=/portada|home|inicio|ultim|principal|general|todas|todo/i;const a=[...d.querySelectorAll('a[href]')].map(x=>({h:abs(x.getAttribute('href')),t:(x.textContent||'')+' '+(x.getAttribute('title')||'')})).filter(o=>{try{const k=new URL(o.h);return k.hostname.replace(/^www\./,'').endsWith(base)&&/(\/rss|\/feed|atom|\.xml)(\/|\?|$|\.)/i.test(k.pathname+k.search)}catch(e){return false}});
+   a.sort((x,y)=>(P.test(y.t+y.h)?1:0)-(P.test(x.t+x.h)?1:0)||x.h.length-y.h.length);out.push(...a.slice(0,10).map(o=>o.h))}
+ }catch(e){}}
+ return[...new Set(out)].filter(h=>/^https:/.test(h)&&!/comment|comentario/i.test(h))}
 async function heal(x){const hh=ls.get('nz_hh3',{});if(Date.now()-(hh[x.id]||0)<864e5)return null;hh[x.id]=Date.now();ls.set('nz_hh3',hh);
  let u;try{u=new URL(x.url)}catch{return null}if(!PX[0].can(x.url))return null;
  const disc=await discover(u);
@@ -979,9 +1009,9 @@ $('#aa').onclick=async()=>{
  const b=$('#aa'),lbl=b.textContent;b.disabled=true;b.textContent='Comprobando…';$('#ak').hidden=true;S.pend=null;fm('Comprobando que el feed carga noticias…');
  const r=await check(f);
  b.disabled=false;b.textContent=lbl;
- if(!r){S.pend=f;$('#ak').hidden=false;return fm('No se ha podido cargar ninguna noticia de esta dirección. Comprueba que sea un feed RSS o Atom (suele acabar en /feed, /rss o .xml). Si estás seguro de que es correcta, puedes guardarla igualmente.','err')}
+ if(!r){S.pend=f;$('#ak').hidden=false;return fm('No se ha podido cargar ninguna noticia de esta dirección. He probado el feed, la página, el sitemap de noticias y Google News sin éxito. Si estás seguro de que la dirección es correcta, puedes guardarla igualmente.','err')}
  const found=r.url!==f.url;f.url=r.url;commit(f);
- toast(found?`Feed detectado automáticamente (${r.items.length} noticias)`:`${r.items.length} noticias encontradas`);
+ toast(r.via==='google'?`Añadida vía Google News (${r.items.length} noticias, sin imagen ni resumen)`:r.via==='sitemap'?`Añadida vía sitemap de noticias (${r.items.length} noticias)`:found?`Feed detectado automáticamente (${r.items.length} noticias)`:`${r.items.length} noticias encontradas`);
 };
 $('#ak').onclick=()=>{if(S.pend)commit(S.pend)};
 $('#ac2').onclick=resetForm;
