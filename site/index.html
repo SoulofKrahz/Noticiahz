@@ -644,7 +644,7 @@ function timed(fn,ms=10000){const c=new AbortController();const id=setTimeout(()
 
 const wk=()=>(ls.get('nz_wk','')||'').trim();
 // Proxy propio: /p/<host>/... lo atiende _worker.js (Cloudflare Pages)
-const VER='2026-10-20-5.2';
+const VER='2026-10-20-5.3';
 if(!ls.get('nz_fu',0))ls.set('nz_fu',Date.now());
 const NR=new Set(); // (en desuso con _worker.js: el proxy cubre cualquier sitio)
 const ownOn=()=>1;
@@ -1007,7 +1007,7 @@ $('#dr').addEventListener('touchend',e=>{const t=e.changedTouches[0],dx=t.client
 // Aviso de versión nueva: compara VER con version.txt (lo genera la publicación); archivo estático, no gasta cuota
 {let last=0;const chk=()=>{if(document.hidden||Date.now()-last<6e5)return;last=Date.now();fetch('version.txt?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.text():'').then(v=>{v=(v||'').trim();if(/^\d{4}-\d\d-\d\d-[\d.]+$/.test(v)&&v!==VER){$('#vnb').hidden=false;$('#vnb span').textContent=`Hay una versión nueva de la app (${v}).`}}).catch(()=>{})};
  setTimeout(chk,4000);document.addEventListener('visibilitychange',chk);setInterval(chk,18e5);$('#vng').onclick=()=>location.reload()}
-{const hd=$('header'),tw=$('#tabs'),R=document.documentElement.style,setH=()=>{R.setProperty('--hh',hd.offsetHeight+'px');R.setProperty('--th',tw.offsetHeight+'px')};setH();try{const o=new ResizeObserver(setH);o.observe(hd);o.observe(tw)}catch(e){addEventListener('resize',setH)}}
+{const hd=$('header'),tw=$('#tabs'),R=document.documentElement.style,setH=()=>{R.setProperty('--hh',hd.offsetHeight+'px');R.setProperty('--th',tw.offsetHeight+'px')};setH();try{const o=new ResizeObserver(setH);o.observe(hd,{box:'border-box'});o.observe(tw,{box:'border-box'})}catch(e){}addEventListener('resize',setH);document.addEventListener('visibilitychange',setH);addEventListener('load',setH);setTimeout(setH,500);setTimeout(setH,2000)}
 addEventListener('scroll',()=>{const y=scrollY;$('#up').classList.toggle('show',y>700);document.body.classList.toggle('hdn',$('header').classList.toggle('hd',y>ly&&y>120&&mob()&&!$('.search').classList.contains('open')));if(Math.abs(y-ly)>4)S.up=y<ly;badge();ly=y},{passive:true});
 $('#sl').addEventListener('change',e=>{if(e.target.dataset.t!==undefined){S.src[e.target.dataset.t].on=e.target.checked;saveSrc()}});
 $('#sl').addEventListener('click',e=>{
