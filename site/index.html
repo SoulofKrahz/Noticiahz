@@ -438,7 +438,7 @@ main .card .ph{border-radius:0;background:var(--tint);aspect-ratio:16/9}.card .p
           <input id="azz" placeholder="Zonas concretas (opcional): Zamora, Sanabria" aria-label="Filtrar por zonas" autocomplete="off" style="width:100%;margin-top:8px;padding:11px 12px;border:1px solid var(--bd);border-radius:10px;background:var(--bg);font-size:16px">
           <div class="gc" style="margin-top:8px"><div class="row"><div><b>Incluir avisos amarillos</b><small style="white-space:normal">Aparecen mezclados con las noticias. Son frecuentes.</small></div><label class="sw"><input type="checkbox" data-pf="ay" aria-label="Incluir avisos amarillos"><span></span></label></div></div></section>
       </div>
-      <div id="pB" hidden><section class="set"><h3>Copia de seguridad</h3><p>Incluye fuentes (activas, favoritas y orden), categorías, ajustes y color, guardadas, leídas, descartadas, vistas, palabras silenciadas, temas y fuentes silenciadas. No incluye las noticias descargadas: se vuelven a bajar.</p><div class="lrs"><button class="lr" id="bx"><svg class="i"><use href="#dl"/></svg><div><b>Copia de seguridad completa</b><small id="bkt"></small></div></button><label class="lr"><svg class="i"><use href="#ul"/></svg><div><b>Restaurar copia de seguridad</b><small>Combina el archivo con tus datos actuales</small></div><input type="file" id="bi" accept=".json,application/json" hidden></label></div></section><section class="set"><h3>Fuentes (OPML)</h3><p>Para pasar tu lista de fuentes a otra app, o traerla.</p><div class="lrs"><button class="lr" id="ox"><svg class="i"><use href="#dl"/></svg><div><b>Exportar fuentes</b><small>Archivo OPML para usar en otra app</small></div></button><label class="lr"><svg class="i"><use href="#ul"/></svg><div><b>Importar fuentes</b><small>Desde un archivo OPML</small></div><input type="file" id="oi" accept=".opml,.xml" hidden></label><button class="lr" id="rs"><svg class="i"><use href="#r"/></svg><div><b>Restaurar fuentes por defecto</b><small>Vuelve a la lista inicial</small></div></button></div></section><section class="set"><h3>Limpieza</h3><p>Estas acciones no se pueden deshacer.</p><div class="lrs"><button class="lr" id="cr"><svg class="i"><use href="#ck"/></svg><div><b>Borrar historial de leídas</b><small>Todas vuelven a aparecer como no leídas</small></div></button><button class="lr" id="csn"><svg class="i"><use href="#ck"/></svg><div><b>Borrar historial de vistas</b><small></small></div></button><button class="lr" id="cd"><svg class="i"><use href="#r"/></svg><div><b>Restaurar noticias descartadas</b><small>0 descartadas</small></div></button><button class="lr dg" id="cf"><svg class="i"><use href="#t"/></svg><div><b>Vaciar guardadas</b><small>Elimina todas las noticias guardadas</small></div></button>
+      <div id="pB" hidden><section class="set"><h3>Copia de seguridad</h3><p>Incluye fuentes (activas, favoritas y orden), categorías, ajustes y color, guardadas, leídas, descartadas, vistas, palabras silenciadas, temas, fuentes silenciadas y lo aprendido de tus lecturas. No incluye las noticias descargadas: se vuelven a bajar.</p><div class="lrs"><button class="lr" id="bx"><svg class="i"><use href="#dl"/></svg><div><b>Copia de seguridad completa</b><small id="bkt"></small></div></button><label class="lr"><svg class="i"><use href="#ul"/></svg><div><b>Restaurar copia de seguridad</b><small>Combina el archivo con tus datos actuales</small></div><input type="file" id="bi" accept=".json,application/json" hidden></label></div></section><section class="set"><h3>Fuentes (OPML)</h3><p>Para pasar tu lista de fuentes a otra app, o traerla.</p><div class="lrs"><button class="lr" id="ox"><svg class="i"><use href="#dl"/></svg><div><b>Exportar fuentes</b><small>Archivo OPML para usar en otra app</small></div></button><label class="lr"><svg class="i"><use href="#ul"/></svg><div><b>Importar fuentes</b><small>Desde un archivo OPML</small></div><input type="file" id="oi" accept=".opml,.xml" hidden></label><button class="lr" id="rs"><svg class="i"><use href="#r"/></svg><div><b>Restaurar fuentes por defecto</b><small>Vuelve a la lista inicial</small></div></button></div></section><section class="set"><h3>Limpieza</h3><p>Estas acciones no se pueden deshacer.</p><div class="lrs"><button class="lr" id="cr"><svg class="i"><use href="#ck"/></svg><div><b>Borrar historial de leídas</b><small>Todas vuelven a aparecer como no leídas</small></div></button><button class="lr" id="csn"><svg class="i"><use href="#ck"/></svg><div><b>Borrar historial de vistas</b><small></small></div></button><button class="lr" id="cd"><svg class="i"><use href="#r"/></svg><div><b>Restaurar noticias descartadas</b><small>0 descartadas</small></div></button><button class="lr dg" id="cf"><svg class="i"><use href="#t"/></svg><div><b>Vaciar guardadas</b><small>Elimina todas las noticias guardadas</small></div></button>
             <button class="lr dg" id="rst"><svg class="i"><use href="#t"/></svg><div><b>Restablecer la app</b><small>Borra todo y vuelve al estado de la primera visita</small></div></button></div></section></div>
       <div id="pV" hidden>
         <section class="set" id="ins" hidden><h3>Instalar la app</h3><p>Ábrela como una app más: a pantalla completa y desde el icono.</p><div class="lrs"><button class="lr" id="insb"><svg class="i"><use href="#dl"/></svg><div><b>Instalar Noticiahz</b><small>Se añade a tu pantalla de inicio</small></div></button></div></section>
@@ -617,7 +617,7 @@ function timed(fn,ms=10000){const c=new AbortController();const id=setTimeout(()
 
 const wk=()=>(ls.get('nz_wk','')||'').trim();
 // Proxy propio: /p/<host>/... lo atiende _worker.js (Cloudflare Pages)
-const VER='2026-10-20-cr';
+const VER='2026-10-20-cs';
 if(!ls.get('nz_fu',0))ls.set('nz_fu',Date.now());
 const NR=new Set(); // (en desuso con _worker.js: el proxy cubre cualquier sitio)
 const ownOn=()=>1;
@@ -749,7 +749,7 @@ function mix(list){const c={},now=Date.now();
   out.push(r.splice(i,1)[0])}
  return out}
 const saveRd=()=>{if(!S.ready)return;if(S.last&&S.news.length){const k=new Set(S.news.map(a=>a.id));Object.keys(S.fav).forEach(i=>k.add(i));S.rd.forEach(i=>k.has(i)||S.rd.delete(i))}bigSet('nz_rd',[...S.rd])};
-const markRead=a=>{S.rd.add(a.id);saveRd()};
+const markRead=a=>{if(!S.rd.has(a.id))lrAdd(a.src,'p',1);S.rd.add(a.id);saveRd()};
 function tabs(){
  mapCats();const cats=['Todas',...S.cats.filter(c=>S.src.some(x=>x.on&&x.cat===c)),'Guardadas'];
  if(!cats.includes(S.cat))S.cat='Todas';
@@ -831,7 +831,7 @@ function hide(){if(!isOpen())return;try{speechSynthesis.cancel()}catch(e){}$('#d
 function closeAll(){if(!$('#am').hidden){amClose();return}if(!$('#fp').hidden){fpClose();return}if(history.state&&history.state.r)history.back();else hide()}
 function lockOpen(f){S.lf=document.activeElement;history.pushState({r:1},'');document.body.classList.add('lock');if(f)$(f).focus({preventScroll:true})}
 addEventListener('popstate',hide);
-function fav(a){if(S.fav[a.id]){delete S.fav[a.id];toast('Quitada de guardadas')}else{S.fav[a.id]={...a,_t:undefined,also:undefined};toast('Noticia guardada')}bigSet('nz_fav',S.fav)}
+function fav(a){if(S.fav[a.id]){delete S.fav[a.id];lrAdd(a.src,'p',-2);toast('Quitada de guardadas')}else{S.fav[a.id]={...a,_t:undefined,also:undefined};lrAdd(a.src,'p',2);toast('Noticia guardada')}bigSet('nz_fav',S.fav)}
 
 const host=u=>{try{return new URL(u).host}catch{return u}};
 const smatch=x=>{const q=(S.sq||'').toLowerCase().trim();return !q||(x.name+' '+host(x.url)+' '+x.cat).toLowerCase().includes(q)};
@@ -1063,10 +1063,10 @@ $('#shn').onclick=()=>{const s=SH;shClose();if(!s)return;$('#st').click();
 const saveDis=()=>{if(!S.ready)return;const cut=Date.now()-130*864e5;S.dis.forEach((t,i)=>Math.abs(t)<cut&&S.dis.delete(i));bigSet('nz_dis',[...S.dis])};
 function dismiss(a){if(!a)return;const t=a._t instanceof Set?a._t:(a._t=norm(a.title)),ids=[a.id],now=Date.now();
  S.news.forEach(o=>{if(o.id!==a.id&&o.src!==a.src&&!S.dis.has(o.id)&&Math.abs(o.date-a.date)<1728e5&&similar(t,o._t instanceof Set?o._t:(o._t=norm(o.title))))ids.push(o.id)});
- ids.forEach((i,j)=>S.dis.set(i,j?-now:now));saveDis();showUndo(ids)}
+ ids.forEach((i,j)=>S.dis.set(i,j?-now:now));saveDis();showUndo(ids);lrAdd(a.src,'n',1);$('#undo')._src=a.src}
 let ut;function showUndo(ids){const u=$('#undo');u.querySelector('span').textContent=ids.length>1?`Descartada (+${ids.length-1} igual${ids.length>2?'es':''} en otras fuentes)`:'Noticia descartada';u._ids=ids;u._fn=null;u.hidden=false;clearTimeout(ut);ut=setTimeout(()=>u.hidden=true,6000)}
-function undoFn(txt,fn){const u=$('#undo');u.querySelector('span').textContent=txt;u._ids=null;u._fn=fn;u.hidden=false;clearTimeout(ut);ut=setTimeout(()=>u.hidden=true,6000)}
-$('#undo button').onclick=()=>{const u=$('#undo');if(u._fn){const f=u._fn;u._fn=null;u.hidden=true;f();return}(u._ids||[]).forEach(i=>S.dis.delete(i));saveDis();u.hidden=true;render()};
+function undoFn(txt,fn){const u=$('#undo');u._src=null;u.querySelector('span').textContent=txt;u._ids=null;u._fn=fn;u.hidden=false;clearTimeout(ut);ut=setTimeout(()=>u.hidden=true,6000)}
+$('#undo button').onclick=()=>{const u=$('#undo');if(u._src){lrAdd(u._src,'n',-1);u._src=null}if(u._fn){const f=u._fn;u._fn=null;u.hidden=true;f();return}(u._ids||[]).forEach(i=>S.dis.delete(i));saveDis();u.hidden=true;render()};
 const cdTxt=()=>{$('#cd small').textContent=`${S.dis.size} ${S.dis.size===1?'descartada':'descartadas'}`};
 $('#cd').onclick=()=>{const n=S.dis.size;S.dis.clear();saveDis();render();cdTxt();toast(n?'Noticias restauradas':'No hay descartadas')};
 const cntTxt=()=>{const n=S.V.length;$('#cnt').textContent=S.cat==='Guardadas'?`${n} guardadas`:`${n} ${n===1?'noticia':'noticias'}`+(S.nw?` · ${S.nw} ${S.nw===1?'nueva':'nuevas'}`:'')};
@@ -1169,12 +1169,13 @@ function bkClean(j){if(!j||j.app!=='noticiahz'||!j.data||typeof j.data!=='object
  const p=d.pf&&typeof d.pf==='object'?d.pf:{},pf={};
  if(['auto','light','dark'].includes(p.th))pf.th=p.th;if(Number.isFinite(p.ah)&&p.ah>=0&&p.ah<=360)pf.ah=p.ah;if(Number.isFinite(p.as)&&p.as>=0&&p.as<=1)pf.as=p.as;if(Number.isFinite(p.fs)&&p.fs>=.8&&p.fs<=1.3)pf.fs=p.fs;if([0,30,60].includes(p.rf))pf.rf=p.rf;if(Number.isInteger(p.dp)&&p.dp>=1&&p.dp<=3)pf.dp=p.dp;
  ['dr','np','sw','mws','ay','sn','ls'].forEach(k=>{if(typeof p[k]==='boolean')pf[k]=p[k]});if(isS(p.az,3)&&(p.az===''||AZ.some(a=>String(a[1])===p.az)))pf.az=p.az;if(isS(p.azz,100))pf.azz=p.azz;
- const dt=new Date(j.exported);return{date:isNaN(dt)?'fecha desconocida':dt.toLocaleDateString('es-ES'),src,cats,fav,rd,dis,mw,tp,sm,seen,ui,pf,wk:isU(d.wk)?d.wk:''}}
+ const dt=new Date(j.exported);const lr={};if(d.lr&&typeof d.lr==='object'&&!Array.isArray(d.lr))Object.entries(d.lr).slice(0,3000).forEach(([k,v])=>{if(isS(k,120)&&!bad.includes(k)&&v&&Number.isFinite(v.p)&&Number.isFinite(v.n))lr[k]={p:Math.max(0,Math.min(1e6,Math.round(v.p))),n:Math.max(0,Math.min(1e6,Math.round(v.n)))}});
+ return{date:isNaN(dt)?'fecha desconocida':dt.toLocaleDateString('es-ES'),src,cats,fav,rd,dis,mw,tp,sm,seen,ui,pf,lr,wk:isU(d.wk)?d.wk:''}}
 function bkBanner(){const now=Date.now(),lb=ls.get('nz_lb',0),ref=lb||ls.get('nz_fu',0),due=!!ref&&now-ref>30*864e5&&(ls.get('nz_bz',0)||0)<now&&$('#azb').hidden&&$('#ib').hidden;$('#bkb').hidden=!due;if(due)$('#bkm').textContent=lb?`Hace ${Math.floor((now-lb)/864e5)} días que no haces una copia de seguridad.`:'Todavía no has hecho ninguna copia de seguridad.'}
 $('#bkg').onclick=()=>{$('#bkb').hidden=true;$('#bx').click()};
 $('#bkz').onclick=()=>{ls.set('nz_bz',Date.now()+14*864e5);$('#bkb').hidden=true};
 const bkTxt=()=>{const t=ls.get('nz_lb',0);$('#bkt').textContent=`${Object.keys(S.fav).length} guardadas · ${S.rd.size} leídas · ${S.dis.size} descartadas · `+(t?'última copia '+ago(t).toLowerCase():'sin copias todavía')};
-$('#bx').onclick=()=>{const j={app:'noticiahz',v:1,exported:new Date().toISOString(),data:{src:S.src,cats:S.cats,pf:S.pf,mw:MW.list,tp:TP.list,sm:SM.m,seen:[...S.seen],ui:{cat:S.cat,sf:S.sf,so:S.so,pe:S.pe,un:S.un,fo:!!S.fo},wk:ls.get('nz_wk',''),fav:Object.values(S.fav).map(a=>({...a,_t:undefined,also:undefined,nw:undefined})),rd:[...S.rd],dis:[...S.dis]}};
+$('#bx').onclick=()=>{const j={app:'noticiahz',v:1,exported:new Date().toISOString(),data:{src:S.src,cats:S.cats,pf:S.pf,mw:MW.list,tp:TP.list,sm:SM.m,seen:[...S.seen],ui:{cat:S.cat,sf:S.sf,so:S.so,pe:S.pe,un:S.un,fo:!!S.fo},wk:ls.get('nz_wk',''),fav:Object.values(S.fav).map(a=>({...a,_t:undefined,also:undefined,nw:undefined})),rd:[...S.rd],dis:[...S.dis],lr:S.lr||{}}};
  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(j)],{type:'application/json'}));a.download=`noticiahz-copia-${new Date().toISOString().slice(0,10)}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),4e3);ls.set('nz_lb',Date.now());bkTxt();toast('Copia de seguridad descargada')};
 async function bkApply(r){
  const bm=new Map(r.src.map(x=>[x.url,x])),have=new Set(S.src.map(x=>x.url));let ns=0,nf=0,nm=0,nu=0;
@@ -1189,6 +1190,7 @@ async function bkApply(r){
  Object.entries(r.sm).forEach(([k,v])=>{const o=SM.m[k];if(!o||v===1||(o!==1&&v>o))SM.m[k]=v});ls.set('nz_sm',SM.m);Object.assign(S.pf,r.pf);if(r.wk)ls.set('nz_wk',r.wk);ls.set('nz_pf',S.pf);ls.set('nz_mw',MW.list);mwBuild();
  await Promise.all([bigSet('nz_fav',S.fav),bigSet('nz_rd',[...S.rd]),bigSet('nz_dis',[...S.dis])]);
  saveSrc(1);applyFs();applyPf();applyAccent();setTheme(S.pf.th==='dark'||S.pf.th==='light'?S.pf.th:(sysDark()?'dark':'light'));sched();segs();syncPf();syncAz();mwUi();tpUi();bkTxt();
+ {const L=r.lr||{};if(Object.keys(L).length){S.lr=S.lr||{};Object.entries(L).forEach(([k,v])=>{const o=S.lr[k]||{p:0,n:0};S.lr[k]={p:Math.max(o.p,v.p),n:Math.max(o.n,v.n)}});ls.set('nz_lr',S.lr)}snapUp()}
  saveUI();S.ft={};render();toast(`Restaurado: ${ns} fuentes añadidas, ${nu} actualizadas, ${nf} guardadas, ${nm} palabras o temas nuevos`);if(ns)load()}
 $('#bi').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;if(f.size>3e7)return toast('Archivo demasiado grande');
  let j;try{j=JSON.parse(await f.text())}catch(x){return toast('El archivo no es una copia válida')}
@@ -1203,10 +1205,14 @@ $('#tpi').addEventListener('keydown',e=>{if(e.key==='Enter')$('#tpa').click()});
 $('#tpl').addEventListener('click',e=>{const b=e.target.closest('[data-tp]');if(!b)return;TP.list=TP.list.filter(x=>x!==b.dataset.tp);tpSave()});
 $('#fo').onchange=e=>{if(e.target.checked&&!TP.list.length){e.target.checked=false;return toast('Primero añade temas en Ajustes → Opciones')}S.fo=e.target.checked;render()};
 // Vistas y aprendizaje: la mezcla usa una instantánea que solo se renueva al mezclar o actualizar, para que la lista no cambie mientras lees
+// Aprender de tus lecturas: contadores por fuente guardados aparte (nz_lr), así no se pierden cuando las noticias caducan y viajan en la copia de seguridad
+S.lr=ls.get('nz_lr',null);
+const lrAdd=(src,k,d)=>{if(!src||!S.lr)return;const o=S.lr[src]=S.lr[src]||{p:0,n:0};o[k]=Math.max(0,o[k]+d);ls.set('nz_lr',S.lr)};
 function snapUp(){const m=new Map(S.news.map(a=>[a.id,a.src])),c={},add=(id,k)=>{const x=m.get(id);if(x)(c[x]=c[x]||{p:0,n:0})[k]++};
  S.rd.forEach(i=>add(i,'p'));Object.keys(S.fav).forEach(i=>{add(i,'p');add(i,'p')});S.dis.forEach((t,i)=>{if(t>0)add(i,'n')});
- const sw=new Map();Object.entries(c).forEach(([x,v])=>sw.set(x,1+.5*((v.p-v.n)/(v.p+v.n+5))));
- S.snap={rd:new Set(S.rd),seen:new Set(S.seen.keys()),sw:S.pf.ls?sw:new Map(),st:c}}
+ if(!S.lr&&S.ready&&S.news.length){S.lr=c;ls.set('nz_lr',S.lr)}
+ const st=S.lr||c,sw=new Map();Object.entries(st).forEach(([x,v])=>sw.set(x,1+.5*((v.p-v.n)/(v.p+v.n+5))));
+ S.snap={rd:new Set(S.rd),seen:new Set(S.seen.keys()),sw:S.pf.ls?sw:new Map(),st}}
 function reseed(){S.seed=Math.random();snapUp()}
 const lsUi=()=>{const rows=Object.entries(S.snap.st||{}).filter(([x,v])=>v.p+v.n>=3).map(([x,v])=>({x,v,f:1+.5*((v.p-v.n)/(v.p+v.n+5))})).sort((a,b)=>b.f-a.f);
  const L=r=>`${esc(r.x)} ×${r.f.toFixed(2).replace('.',',')} · ${r.v.p} positivas, ${r.v.n} descartadas`,up=rows.filter(r=>r.f>1.02).slice(0,4),dn=rows.filter(r=>r.f<.98).slice(-4).reverse();
