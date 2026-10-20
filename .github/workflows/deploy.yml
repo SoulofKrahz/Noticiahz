@@ -1,0 +1,25 @@
+# Publica la carpeta site/ en Cloudflare Pages cada vez que hay cambios en main.
+# Necesita dos secretos en GitHub (Settings → Secrets and variables → Actions):
+#   CLOUDFLARE_API_TOKEN  (token con permiso Account → Cloudflare Pages → Edit)
+#   CLOUDFLARE_ACCOUNT_ID (ID de tu cuenta de Cloudflare)
+# y una variable (pestaña Variables): CF_PROJECT = nombre del proyecto de Pages.
+name: Publicar en Cloudflare Pages
+on:
+  push:
+    branches: [main]
+    paths: ['site/**', '.github/workflows/deploy.yml']
+  workflow_dispatch:
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      deployments: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy site --project-name=${{ vars.CF_PROJECT }} --branch=main --commit-dirty=true
