@@ -1,16 +1,33 @@
-# Publica la carpeta site/ en Cloudflare Pages cada vez que hay cambios en main.
-# Necesita dos secretos en GitHub (Settings → Secrets and variables → Actions):
+# Prueba la app y, si todo va bien, publica la carpeta site/ en Cloudflare Pages (rama main).
+# Secretos en GitHub (Settings → Secrets and variables → Actions):
 #   CLOUDFLARE_API_TOKEN  (token con permiso Account → Cloudflare Pages → Edit)
 #   CLOUDFLARE_ACCOUNT_ID (ID de tu cuenta de Cloudflare)
-# y una variable (pestaña Variables): CF_PROJECT = nombre del proyecto de Pages.
+# Variable (pestaña Variables): CF_PROJECT = nombre del proyecto de Pages.
 name: Publicar en Cloudflare Pages
 on:
   push:
     branches: [main]
-    paths: ['site/**', '.github/workflows/deploy.yml']
+    paths: ['site/**', 'tests/**', '.github/workflows/deploy.yml']
   workflow_dispatch:
 jobs:
+  test:
+    name: Prueba de humo
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Instalar Playwright y Chromium
+        run: npm i --no-save --no-audit --no-fund playwright@1.55.0 && npx playwright install --with-deps chromium
+      - name: Probar la app (móvil y PC)
+        run: node tests/smoke.cjs
   deploy:
+    name: Publicar
+    needs: test
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
