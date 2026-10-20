@@ -640,7 +640,7 @@ function timed(fn,ms=10000){const c=new AbortController();const id=setTimeout(()
 
 const wk=()=>(ls.get('nz_wk','')||'').trim();
 // Proxy propio: /p/<host>/... lo atiende _worker.js (Cloudflare Pages)
-const VER='2026-10-20-2';
+const VER='2026-10-20-3';
 if(!ls.get('nz_fu',0))ls.set('nz_fu',Date.now());
 const NR=new Set(); // (en desuso con _worker.js: el proxy cubre cualquier sitio)
 const ownOn=()=>1;
@@ -734,10 +734,10 @@ const spinAll=on=>{['#rf','#b-rf'].forEach(q=>$(q).classList.toggle('spin',on));
 const rlp={set textContent(v){document.querySelectorAll('.rft').forEach(e=>e.textContent=v)}};
 async function load(){
  if(S.loading||!S.ready||S.ob)return;S.loading=true;spinAll(true);
- const on=S.src.filter(s=>s.on);
+ const sc=S.man&&S.rsc;S.rsc=null;const on=S.src.filter(s=>s.on&&(!sc||((sc.cat==='Todas'||sc.cat==='Guardadas'||s.cat===sc.cat)&&(sc.sf==='Todas'||s.name===sc.sf))));
  if(!S.news.length)render(true);
  const man=S.man;S.man=false;S.nf={};const nw={};S.news.forEach(a=>{if(!(a.date<=nw[a.src]))nw[a.src]=a.date});const gap=x=>{if(man)return 3e5;const a=Date.now()-(nw[x.name]||0);return a<108e5?3e5:a<864e5?12e5:a<2592e5?36e5:108e5},todo=on.filter(x=>!(S.bo&&S.bo[x.id]>Date.now())&&!(S.ft[x.id]&&Date.now()-S.ft[x.id]<gap(x)&&S.hl[x.id]>0)),res=[],rl=rlp;let done=0;S.fb=0;
- if(todo.length)log(`Actualizando ${todo.length} de ${on.length} fuentes… (v${VER})`);
+ if(todo.length)log(`Actualizando ${todo.length} de ${on.length} fuentes${sc&&sc.sf!=='Todas'?' ('+sc.sf+')':sc&&sc.cat!=='Todas'&&sc.cat!=='Guardadas'?' ('+sc.cat+')':''}… (v${VER})`);
  await pool(todo,10,async x=>{
   let a=await getFeed(x);
   if(a&&!S.lm[x.id]&&a.length>=8&&S.pf.dp>1&&S.dp[x.id]!==99){
@@ -850,7 +850,7 @@ function render(skel){
  const key=[S.cat,S.sf,S.so,S.pe,S.un,S.q].join('|');if(key!==S.key){S.key=key;S.lim=40}
  S.V=list;
  S.lvI=(S.so==='new'&&!sv&&S.lv)?list.findIndex(a=>!a.alert&&a.date<S.lv):-1;if(S.lvI<1)S.lvI=-1;
- $('#cnt').textContent=S.cat==='Guardadas'?`${list.length} guardadas`:`${list.length} ${list.length===1?'noticia':'noticias'}`+(S.nw&&S.cat!=='Guardadas'?` · ${S.nw} ${S.nw===1?'nueva':'nuevas'}`:'');
+ S.nwV=S.cat==='Guardadas'?0:list.filter(a=>a.nw).length;$('#cnt').textContent=S.cat==='Guardadas'?`${list.length} guardadas`:`${list.length} ${list.length===1?'noticia':'noticias'}`+(S.nwV?` · ${S.nwV} ${S.nwV===1?'nueva':'nuevas'}`:'');badge();
  if(!list.length&&S.cat!=='Guardadas'&&!S.src.some(x=>x.on)){g.innerHTML='<div class="empty"><h3>No tienes fuentes activas</h3><p>Activa alguna fuente para ver noticias.</p><button class="btn" id="opn">Abrir fuentes</button></div>';return}
  if(!list.length){
   g.innerHTML=`<div class="empty"><h3>${S.cat==='Guardadas'?'Aún no has guardado nada':S.news.length?'Sin resultados':'No hemos podido cargar noticias'}</h3><p>${S.cat==='Guardadas'?'Pulsa el marcador de cualquier noticia para guardarla.':S.news.length?'Prueba con otra búsqueda o categoría.':'Comprueba tu conexión o consulta el registro para ver qué falló.'}</p>${S.news.length||S.cat==='Guardadas'?(hasF?'<button class="btn" id="clr">Quitar filtros</button>':''):'<button class="btn" id="retry">Reintentar</button>'}</div>`;return}
@@ -941,7 +941,7 @@ $('#grid').addEventListener('click',e=>{
 $('#grid').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.dataset.k)open(S.V[e.target.dataset.k]);if((e.key==='Delete'||e.key==='Backspace')&&e.target.dataset.k&&S.cat!=='Guardadas'){e.preventDefault();const c=e.target,a=S.V[c.dataset.k];swipeOut(c,-1,()=>dismiss(a))}});
 $('#tabs').addEventListener('click',e=>{const b=e.target.closest('[data-c]');if(b){const ch=S.cat!==b.dataset.c;S.cat=b.dataset.c;render();if(ch&&scrollY>0){const sr=$('#srcs'),t=(sr.hidden?$('#grid'):sr).getBoundingClientRect().top;if(t<0||t>innerHeight)scrollTo({top:0})}}});
 let qt;$('#q').addEventListener('input',e=>{S.q=e.target.value;clearTimeout(qt);qt=setTimeout(render,160)});
-const refresh=()=>{reseed();S.alT=0;S.man=true;load()};
+const refresh=()=>{reseed();S.alT=0;S.man=true;S.rsc={cat:S.cat,sf:S.sf};load()};
 $('#rf').onclick=refresh;
 $('#sb').onclick=()=>{const o=$('.search').classList.toggle('open');$('#sb').classList.toggle('on',o);if(o)$('#q').focus()};
 const sysDark=()=>matchMedia('(prefers-color-scheme: dark)').matches;
@@ -1065,7 +1065,7 @@ $('#oi').onchange=async e=>{const f=e.target.files[0];if(!f)return;const d=new D
 const T0=document.title;
 function saveUI(){if(window.__rs)return;ls.set('nz_ui',{cat:S.cat,sf:S.sf,so:S.so,pe:S.pe,un:S.un,fo:!!S.fo})}
 addEventListener('pagehide',saveUI);document.addEventListener('visibilitychange',()=>{if(document.hidden){saveUI();saveRd()}});
-function badge(){const n=S.nw||0,b=$('#nw');const show=!!(n&&scrollY>=200&&S.up&&S.nwPending);if(show&&b.hidden){clearTimeout(S.nwT);S.nwT=setTimeout(()=>{S.nwPending=0;badge()},4500)}b.hidden=!show;b.querySelector('span').textContent=`${n} ${n===1?'noticia nueva':'noticias nuevas'}`;document.title=(n?`(${n}) `:'')+T0}
+function badge(){const n=(S.nwV!==undefined?S.nwV:S.nw)||0,b=$('#nw');const show=!!(n&&scrollY>=200&&S.up&&S.nwPending);if(show&&b.hidden){clearTimeout(S.nwT);S.nwT=setTimeout(()=>{S.nwPending=0;badge()},4500)}b.hidden=!show;b.querySelector('span').textContent=`${n} ${n===1?'noticia nueva':'noticias nuevas'}`;document.title=(n?`(${n}) `:'')+T0}
 $('#nw').onclick=()=>{S.news.forEach(a=>a.nw=0);S.nw=0;S.nwPending=0;badge();render();scrollTo({top:0,behavior:'smooth'})};
 const net=()=>{$('#of').hidden=navigator.onLine};
 addEventListener('online',()=>{net();load()});addEventListener('offline',net);net();
@@ -1123,7 +1123,7 @@ function undoFn(txt,fn){const u=$('#undo');u._src=null;u.querySelector('span').t
 $('#undo button').onclick=()=>{const u=$('#undo');if(u._src){lrAdd(u._src,'n',-1);u._src=null}if(u._fn){const f=u._fn;u._fn=null;u.hidden=true;f();return}(u._ids||[]).forEach(i=>S.dis.delete(i));saveDis();u.hidden=true;render()};
 const cdTxt=()=>{$('#cd small').textContent=`${S.dis.size} ${S.dis.size===1?'descartada':'descartadas'}`};
 $('#cd').onclick=()=>{const n=S.dis.size;S.dis.clear();saveDis();render();cdTxt();toast(n?'Noticias restauradas':'No hay descartadas')};
-const cntTxt=()=>{const n=S.V.length;$('#cnt').textContent=S.cat==='Guardadas'?`${n} guardadas`:`${n} ${n===1?'noticia':'noticias'}`+(S.nw?` · ${S.nw} ${S.nw===1?'nueva':'nuevas'}`:'')};
+const cntTxt=()=>{const n=S.V.length;S.nwV=S.cat==='Guardadas'?0:S.V.filter(a=>a.nw).length;$('#cnt').textContent=S.cat==='Guardadas'?`${n} guardadas`:`${n} ${n===1?'noticia':'noticias'}`+(S.nwV?` · ${S.nwV} ${S.nwV===1?'nueva':'nuevas'}`:'');badge()};
 const favCnt=()=>{const n=Object.keys(S.fav).length,t=document.querySelector('.tab[data-c="Guardadas"]');if(t)t.innerHTML='Guardadas'+(n?` <small class="cnt">${n}</small>`:'')};
 // La tarjeta se quita y las demás fluyen a su nuevo sitio (técnica FLIP)
 function flowOut(c,hero){const g=$('#grid'),cs=[...g.querySelectorAll('.card')].filter(x=>x!==c),f=new Map(cs.map(x=>[x,x.getBoundingClientRect()]));
