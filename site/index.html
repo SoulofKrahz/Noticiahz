@@ -370,6 +370,7 @@ main .card .ph{border-radius:0;background:var(--tint);aspect-ratio:16/9}.card .p
     <div class="fl"><span id="upd"></span><button id="lg">Ver registro</button></div>
   </div>
   <div class="af" id="af" hidden></div>
+  <div class="azb" id="vnb" hidden><span style="flex:1 1 200px">Hay una versión nueva de la app.</span><span style="display:flex;gap:2px;margin-left:auto"><button id="vng" style="color:var(--em)">Actualizar ahora</button></span></div>
   <div class="azb" id="ib" hidden><span id="im" style="flex:1 1 200px">Instala la app: acceso desde el icono y a pantalla completa.</span><span style="display:flex;gap:2px;margin-left:auto"><button id="ig" style="color:var(--em)">Instalar</button><button id="iz">Ahora no</button></span></div>
   <div class="azb" id="bkb" hidden><span id="bkm" style="flex:1 1 200px"></span><span style="display:flex;gap:2px;margin-left:auto"><button id="bkg" style="color:var(--em)">Hacer copia</button><button id="bkz">Más tarde</button></span></div>
   <div class="azb" id="azb" hidden><span>¿Avisos meteorológicos oficiales (AEMET) de tu zona?</span><select id="azs0" aria-label="Comunidad autónoma"></select><button id="azn">No, gracias</button></div>
@@ -643,7 +644,7 @@ function timed(fn,ms=10000){const c=new AbortController();const id=setTimeout(()
 
 const wk=()=>(ls.get('nz_wk','')||'').trim();
 // Proxy propio: /p/<host>/... lo atiende _worker.js (Cloudflare Pages)
-const VER='2026-10-20-4.1';
+const VER='2026-10-20-5';
 if(!ls.get('nz_fu',0))ls.set('nz_fu',Date.now());
 const NR=new Set(); // (en desuso con _worker.js: el proxy cubre cualquier sitio)
 const ownOn=()=>1;
@@ -1003,6 +1004,9 @@ $('#dp').onclick=()=>go(-1);$('#dn').onclick=()=>go(1);$('#up').onclick=()=>scro
 let tx=0,ty=0,ly=0;
 $('#dr').addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY},{passive:true});
 $('#dr').addEventListener('touchend',e=>{const t=e.changedTouches[0],dx=t.clientX-tx,dy=t.clientY-ty;if(Math.abs(dx)>90&&Math.abs(dy)<45)go(dx<0?1:-1)},{passive:true});
+// Aviso de versión nueva: compara VER con version.txt (lo genera la publicación); archivo estático, no gasta cuota
+{let last=0;const chk=()=>{if(document.hidden||Date.now()-last<6e5)return;last=Date.now();fetch('version.txt?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.text():'').then(v=>{v=(v||'').trim();if(/^\d{4}-\d\d-\d\d-[\d.]+$/.test(v)&&v!==VER){$('#vnb').hidden=false;$('#vnb span').textContent=`Hay una versión nueva de la app (${v}).`}}).catch(()=>{})};
+ setTimeout(chk,4000);document.addEventListener('visibilitychange',chk);setInterval(chk,18e5);$('#vng').onclick=()=>location.reload()}
 {const hd=$('header'),setH=()=>document.documentElement.style.setProperty('--hh',hd.offsetHeight+'px');setH();try{new ResizeObserver(setH).observe(hd)}catch(e){addEventListener('resize',setH)}}
 addEventListener('scroll',()=>{const y=scrollY;$('#up').classList.toggle('show',y>700);document.body.classList.toggle('hdn',$('header').classList.toggle('hd',y>ly&&y>120&&mob()&&!$('.search').classList.contains('open')));if(Math.abs(y-ly)>4)S.up=y<ly;badge();ly=y},{passive:true});
 $('#sl').addEventListener('change',e=>{if(e.target.dataset.t!==undefined){S.src[e.target.dataset.t].on=e.target.checked;saveSrc()}});

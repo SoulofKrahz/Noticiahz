@@ -18,6 +18,8 @@ jobs:
       deployments: write
     steps:
       - uses: actions/checkout@v5
+      - name: Generar version.txt (para el aviso de versión nueva)
+        run: grep -o "const VER='[^']*'" site/index.html | cut -d"'" -f2 > site/version.txt && cat site/version.txt
       - uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
