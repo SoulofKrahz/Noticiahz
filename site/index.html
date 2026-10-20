@@ -552,6 +552,15 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const MW={list:ls.get('nz_mw',[]),re:[],cache:new WeakMap()};
 const n2=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
 const mwBuild=()=>{MW.re=MW.list.map(w=>{const t=n2(w).trim().replace(/[.+?^${}()|[\]\\]/g,'\\$&').replace(/\*/g,'[a-z0-9]*').replace(/\s+/g,'\\s+');return t?new RegExp('(^|[^a-z0-9])'+t+'([^a-z0-9]|$)'):null}).filter(Boolean);MW.cache=new WeakMap()};
+// Búsqueda por palabras: sin tildes ni mayúsculas, todas las palabras deben aparecer, palabras cortas (≤3 letras) completas,
+// las largas también valen como comienzo de palabra (elecc → elecciones). "frase exacta", -palabra excluye, palabra* fuerza el prefijo.
+const SYN={ia:['ia','ai','inteligencia artificial'],ai:['ia','ai','inteligencia artificial']};
+let SRQ=['',null];
+function srch(raw){if(SRQ[0]===raw)return SRQ[1];const B='(^|[^a-z0-9])',E='(?=[^a-z0-9]|$)',esc=t=>t.replace(/[.+?^${}()|[\]\\]/g,'\\$&');
+ const part=(t,ph)=>{const star=/\*$/.test(t);t=t.replace(/\*+$/,'');if(!t)return null;const whole=ph||(!star&&t.length<=3);return B+esc(t).replace(/\s+/g,'\\s+')+(whole?E:'')};
+ const pos=[],neg=[];String(raw).replace(/(-?)"([^"]+)"|(-?)(\S+)/g,(_,n1,ph,n2_,w)=>{const neg_=n1==='-'||n2_==='-'&&w&&w.length>0;const t=n2(ph||w).trim();if(!t||t==='-')return;
+  const alts=(!ph&&SYN[t.replace(/\*$/,'')])?SYN[t.replace(/\*$/,'')].map(x=>part(x,x.includes(' '))):[part(t,!!ph)];const r=alts.filter(Boolean);if(!r.length)return;const re=new RegExp('(?:'+r.join('|')+')');(neg_?neg:pos).push(re)});
+ const m=(pos.length||neg.length)?{ok:h=>pos.every(r=>r.test(h))&&!neg.some(r=>r.test(h))}:null;SRQ=[raw,m];return m}
 const isMuted=a=>{if(!MW.re.length)return false;let c=MW.cache.get(a);if(c===undefined){const h=n2(a.title+(S.pf.mws?' '+a.snip:''));c=MW.re.some(r=>r.test(h));MW.cache.set(a,c)}return c};
 mwBuild();
 // Temas a destacar: misma coincidencia que las palabras silenciadas (palabra completa, sin tildes, "*" final = variantes)
@@ -617,7 +626,7 @@ function timed(fn,ms=10000){const c=new AbortController();const id=setTimeout(()
 
 const wk=()=>(ls.get('nz_wk','')||'').trim();
 // Proxy propio: /p/<host>/... lo atiende _worker.js (Cloudflare Pages)
-const VER='2026-10-20-cs';
+const VER='2026-10-20-0';
 if(!ls.get('nz_fu',0))ls.set('nz_fu',Date.now());
 const NR=new Set(); // (en desuso con _worker.js: el proxy cubre cualquier sitio)
 const ownOn=()=>1;
@@ -801,7 +810,7 @@ function render(skel){
  $('#af').hidden=!af.length;$('#af').innerHTML=af.map(([k,t])=>`<button class="ac" data-k="${k}">${esc(t)}<svg class="i"><use href="#x"/></svg></button>`).join('')+(af.length>1?'<button class="ac cl" data-k="all">Limpiar todo</button>':'');
  const hasF=af.length||S.sf!=='Todas';
  const deep=!sv&&S.src.some(x=>x.on&&S.dp[x.id]!==99&&!S.lm[x.id]&&(S.cat==='Todas'||x.cat===S.cat)&&(S.sf==='Todas'||x.name===S.sf));
- if(q)list=list.filter(a=>(a.title+' '+a.snip+' '+a.src).toLowerCase().includes(q));
+ if(q){const m=srch(S.q);if(m){list=list.filter(a=>m.ok(n2(a.title+' '+a.snip+' '+a.src)));const t=[],r=[];list.forEach(a=>(m.ok(n2(a.title))?t:r).push(a));list=t.concat(r)}}
  const key=[S.cat,S.sf,S.so,S.pe,S.un,S.q].join('|');if(key!==S.key){S.key=key;S.lim=40}
  S.V=list;
  S.lvI=(S.so==='new'&&!sv&&S.lv)?list.findIndex(a=>!a.alert&&a.date<S.lv):-1;if(S.lvI<1)S.lvI=-1;
