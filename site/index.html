@@ -83,6 +83,7 @@ button.chip{border:0;cursor:pointer;font-family:inherit}button.chip:hover{backgr
 .card:active{transform:scale(.99)}.ib:disabled{opacity:.35;pointer-events:none}
 .top{position:fixed;right:16px;bottom:calc(20px + env(safe-area-inset-bottom));z-index:15;background:var(--em)!important;color:var(--onem)!important;border-color:var(--em)!important;box-shadow:0 6px 20px -6px #0006;opacity:0;pointer-events:none;transition:opacity .2s}.top.show{opacity:1;pointer-events:auto}
 header{transition:transform .25s}header.hd{transform:translateY(-100%)}
+@media(max-width:760px){#tabs-w{position:sticky;top:var(--hh,64px);z-index:19;background:var(--bg);transition:top .25s;margin:0 -16px;padding:0 16px}body.hdn #tabs-w{top:-70px}}
 .card:hover{border-color:var(--em2);box-shadow:0 10px 30px -18px var(--em2)}
 .ph{aspect-ratio:16/9;background:var(--tint);overflow:hidden;display:grid;place-items:center;color:var(--em);font:italic 600 40px Newsreader,serif}
 .ph{position:relative}.ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
@@ -642,7 +643,7 @@ function timed(fn,ms=10000){const c=new AbortController();const id=setTimeout(()
 
 const wk=()=>(ls.get('nz_wk','')||'').trim();
 // Proxy propio: /p/<host>/... lo atiende _worker.js (Cloudflare Pages)
-const VER='2026-10-20-4';
+const VER='2026-10-20-4.1';
 if(!ls.get('nz_fu',0))ls.set('nz_fu',Date.now());
 const NR=new Set(); // (en desuso con _worker.js: el proxy cubre cualquier sitio)
 const ownOn=()=>1;
@@ -1002,6 +1003,7 @@ $('#dp').onclick=()=>go(-1);$('#dn').onclick=()=>go(1);$('#up').onclick=()=>scro
 let tx=0,ty=0,ly=0;
 $('#dr').addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY},{passive:true});
 $('#dr').addEventListener('touchend',e=>{const t=e.changedTouches[0],dx=t.clientX-tx,dy=t.clientY-ty;if(Math.abs(dx)>90&&Math.abs(dy)<45)go(dx<0?1:-1)},{passive:true});
+{const hd=$('header'),setH=()=>document.documentElement.style.setProperty('--hh',hd.offsetHeight+'px');setH();try{new ResizeObserver(setH).observe(hd)}catch(e){addEventListener('resize',setH)}}
 addEventListener('scroll',()=>{const y=scrollY;$('#up').classList.toggle('show',y>700);document.body.classList.toggle('hdn',$('header').classList.toggle('hd',y>ly&&y>120&&mob()&&!$('.search').classList.contains('open')));if(Math.abs(y-ly)>4)S.up=y<ly;badge();ly=y},{passive:true});
 $('#sl').addEventListener('change',e=>{if(e.target.dataset.t!==undefined){S.src[e.target.dataset.t].on=e.target.checked;saveSrc()}});
 $('#sl').addEventListener('click',e=>{
