@@ -80,6 +80,18 @@ async function run(browser, label, viewport, mobile) {
   ok(dup[0] === dup[1], `restaurar la misma copia no duplica (${dup[0]} → ${dup[1]})`);
   await p.keyboard.press('Escape'); await p.waitForTimeout(250);
 
+  // 7b) Diálogos propios: cancelar no cambia nada, aceptar sí
+  await p.evaluate(() => { document.querySelector('#st').click(); document.querySelector('#t1').click() }); await p.waitForTimeout(200);
+  const on0 = await p.evaluate(() => S.src.filter(x => x.on).length);
+  await p.evaluate(() => document.querySelector('#gof').click()); await p.waitForTimeout(250);
+  ok(await p.evaluate(() => !!document.querySelector('.askd')), 'aparece el diálogo propio al desactivar todas');
+  await p.evaluate(() => document.querySelector('.askd [data-a="0"]').click()); await p.waitForTimeout(150);
+  ok(await p.evaluate(n => !document.querySelector('.askd') && S.src.filter(x => x.on).length === n, on0), 'Cancelar no desactiva nada');
+  await p.evaluate(() => document.querySelector('#gof').click()); await p.waitForTimeout(250);
+  await p.keyboard.press('Escape'); await p.waitForTimeout(150);
+  ok(await p.evaluate(n => !document.querySelector('.askd') && S.src.filter(x => x.on).length === n && document.querySelector('#md').classList.contains('show'), on0), 'Esc cierra el diálogo sin cerrar Ajustes');
+  await p.keyboard.press('Escape'); await p.waitForTimeout(250);
+
   // 8) Actualizar solo la categoría visible
   await idle();
   const sc = await p.evaluate(async c => { S.cat = c; render(); const hit = new Set(), of = window.fetch; window.fetch = (u, o) => { const m = String(u).match(/\/p\/([^/]+)/); if (m) hit.add(m[1]); return of(u, o) }; refresh(); await new Promise(r => setTimeout(r, 300)); while (S.loading) await new Promise(r => setTimeout(r, 100)); window.fetch = of; S.cat = 'Todas'; render(); return [hit.size, S.src.filter(x => x.on && x.cat === c).length] }, cats[1]);

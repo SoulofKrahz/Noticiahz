@@ -131,6 +131,9 @@ header{transition:transform .25s}header.hd{transform:translateY(-100%)}
 .add{display:grid;grid-template-columns:1fr 1fr;gap:8px;background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:16px;margin-bottom:16px}
 .add input,.add select{min-width:0;padding:9px 12px;border:1px solid var(--bd);border-radius:10px;background:var(--bg)}
 .add .w{grid-column:1/-1}
+#askov{z-index:70}.askd{position:fixed;z-index:71;left:50%;top:50%;transform:translate(-50%,-50%);width:min(420px,calc(100vw - 32px));max-height:calc(100dvh - 48px);overflow-y:auto;background:var(--card);border:1px solid var(--bd);border-radius:18px;padding:20px;box-shadow:0 24px 60px -20px #0009;animation:popin .16s ease-out}
+.askd h3{font:600 19px/1.25 Newsreader,serif;margin:0 0 8px}.askd p{white-space:pre-line;color:var(--mu);font-size:14.5px;line-height:1.5;margin:0 0 18px}.askb{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}.askb .btn{margin:0;min-width:110px;justify-content:center}
+.btn.dg{background:#c0392b;border-color:#c0392b;color:#fff}
 .add.pop{position:fixed;z-index:56;left:50%;top:50%;transform:translate(-50%,-50%);width:min(520px,calc(100vw - 32px));max-height:calc(100dvh - 48px);overflow-y:auto;margin:0;box-shadow:0 24px 60px -20px #0009;animation:popin .18s ease-out}
 #frov{z-index:55}
 @keyframes popin{from{opacity:0;transform:translate(-50%,-46%)}}
@@ -566,6 +569,8 @@ const mwBuild=()=>{MW.re=MW.list.map(w=>{const t=n2(w).trim().replace(/[.+?^${}(
 // las largas también valen como comienzo de palabra (elecc → elecciones). Opcional: "frase exacta" entre comillas.
 const SYN={ia:['ia','ai','inteligencia artificial'],ai:['ia','ai','inteligencia artificial']};
 let SRQ=['',null];
+// Texto de búsqueda ya normalizado por noticia (se calcula una vez, no en cada letra)
+const HAY=new WeakMap(),hay=(a,t)=>{let h=HAY.get(a);if(!h){h=[n2(a.title+' '+a.snip+' '+a.src),n2(a.title)];HAY.set(a,h)}return t?h[1]:h[0]};
 function srch(raw){if(SRQ[0]===raw)return SRQ[1];const B='(^|[^a-z0-9])',E='(?=[^a-z0-9]|$)',esc=t=>t.replace(/[.+?^${}()|[\]\\*]/g,'\\$&');
  const part=(t,whole)=>B+esc(t).replace(/\s+/g,'\\s+')+(whole?E:'');
  const pos=[];String(raw).replace(/"([^"]+)"|(\S+)/g,(_,ph,w)=>{const t=n2(ph||w).replace(/^[^a-z0-9]+|[^a-z0-9]+$/g,'').trim();if(!t)return;
@@ -642,25 +647,22 @@ function parseSitemap(d,src){const L=(n,k)=>{const e=n.getElementsByTagNameNS('*
 async function pool(items,n,fn){let i=0;await Promise.all(Array.from({length:Math.min(n,items.length)},async()=>{while(i<items.length)await fn(items[i++])}))}
 function timed(fn,ms=10000){const c=new AbortController();const id=setTimeout(()=>c.abort(),ms);return fn(c.signal).finally(()=>clearTimeout(id))}
 
-const wk=()=>(ls.get('nz_wk','')||'').trim();
 // Proxy propio: /p/<host>/... lo atiende _worker.js (Cloudflare Pages)
-const VER='2026-10-20-5.3';
+const VER='2026-10-21-0';
 if(!ls.get('nz_fu',0))ls.set('nz_fu',Date.now());
-const NR=new Set(); // (en desuso con _worker.js: el proxy cubre cualquier sitio)
-const ownOn=()=>1;
-const PX=[{f:u=>{const w=ls.get('nz_wk','');if(w)return w+'?url='+encodeURIComponent(u);const x=new URL(u);return '/p/'+x.host+x.pathname+x.search},can:u=>{if(ls.get('nz_wk',''))return 1;try{return !NR.has(new URL(u).host)}catch{return 0}},own:1,n:'propio',ok:3,bad:0,until:0}];
+const PX=[{f:u=>{const x=new URL(u);return '/p/'+x.host+x.pathname+x.search},can:u=>/^https?:\/\//i.test(u),own:1,n:'propio',ok:0,bad:0,until:0}];
 const addParam=(u,k,v)=>u+(u.includes('?')?'&':'?')+k+'='+v;
 const pe=m=>{const e=Error(m);e.name='ParseError';return e};
 // Descarga a través del proxy propio (/p/… en _worker.js). Sin servicios públicos de terceros.
 function viaProxies(url,src){
- const t=Date.now(),order=PX.filter(p=>p.until<=t&&(!p.own||ownOn())&&(!p.can||p.can(url))).sort((a,b)=>(b.ok-b.bad)-(a.ok-a.bad));
+ const t=Date.now(),order=PX.filter(p=>p.until<=t&&(!p.can||p.can(url))).sort((a,b)=>(b.ok-b.bad)-(a.ok-a.bad));
  if(!order.length)return Promise.reject(Error('sin proxies disponibles'));
  return new Promise((res,rej)=>{
   let i=0,fails=0,done=false,tm;
   const next=()=>{if(done||i>=order.length)return;const p=order[i++];clearTimeout(tm);if(i<order.length)tm=setTimeout(next,3000);
    timed(async sg=>{const r=await fetch(p.f(url),{signal:sg});if(!r.ok){const e=Error('HTTP '+r.status);e.st=r.status;throw e}return parse(await readXml(r),src)},8000)
-   .then(v=>{p.ok++;p.trips=0;if(!done){done=true;clearTimeout(tm);res(v)}})
-   .catch(e=>{p.last=e.message;if(e.st)(p.hs=p.hs||{})[e.st]=(p.hs[e.st]||0)+1;if(p.own)try{const h=new URL(url).host,o=((S.nf=S.nf||{})[h]=S.nf[h]||{n:0});o.n++;o.s=e.st||e.message}catch(x){}if(!p.own&&e.name!=='ParseError'&&!(e.st>=400&&e.st<500&&e.st!==429)){p.bad++;if(p.bad>=4&&p.bad>p.ok*2&&p.until<=Date.now()){p.trips=(p.trips||0)+1;p.until=Date.now()+Math.min(36e5,3e4*2**p.trips)}}if(++fails>=order.length&&!done){done=true;clearTimeout(tm);rej(e)}else next()})};
+   .then(v=>{p.ok++;if(!done){done=true;clearTimeout(tm);res(v)}})
+   .catch(e=>{p.last=e.message;if(e.st)(p.hs=p.hs||{})[e.st]=(p.hs[e.st]||0)+1;if(p.own)try{const h=new URL(url).host,o=((S.nf=S.nf||{})[h]=S.nf[h]||{n:0});o.n++;o.s=e.st||e.message}catch(x){}if(e.name!=='ParseError')p.bad++;if(++fails>=order.length&&!done){done=true;clearTimeout(tm);rej(e)}else next()})};
   next();
  })}
 // Comprueba una fuente; si la URL es una web (no un feed), intenta detectar el feed en rutas habituales
@@ -722,16 +724,9 @@ async function heal(x){const hh=ls.get('nz_hh3',{});if(Date.now()-(hh[x.id]||0)<
   paths=[alt,'/feedburner.xml','/feed','/feed/','/rss','/rss/','/rss.xml','/index.xml','/atom.xml','/feed.xml','/?feed=rss2','/feeds/posts/default?alt=rss'].filter(Boolean).map(q=>u.origin+q),
   c=[...new Set([...disc,...paths])].filter(y=>y!==x.url);
  try{return await Promise.any(c.map(async y=>({url:y,items:await viaOwn(y,x)})))}catch{return null}}
-async function viaRj(src){
- const j=await timed(async sg=>(await fetch('https://api.rss2json.com/v1/api.json?rss_url='+encodeURIComponent(src.url),{signal:sg})).json());
- if(j.status!=='ok'||!j.items?.length)throw Error(j.message||'sin datos');
- return j.items.map(i=>mk(src,i.title,i.link,i.pubDate,i.content||i.description,i.thumbnail||i.enclosure?.link));
-}
-// Los proxies devuelven el feed completo; rss2json (solo último recurso) lo limita a 10 noticias
+// Todas las descargas pasan por el proxy propio; ningún servicio de terceros ve qué lees
 async function getFeed(src){
- try{const r=await viaProxies(src.url,src);delete S.lm[src.id];return r}catch(e){}
- try{const r=await viaRj(src);S.lm[src.id]=1;S.fb++;return r}catch(e){}
- return null;
+ try{return await viaProxies(src.url,src)}catch(e){return null}
 }
 
 const spinAll=on=>{['#rf','#b-rf'].forEach(q=>$(q).classList.toggle('spin',on));document.body.classList.toggle('ld',on)};
@@ -740,26 +735,22 @@ async function load(){
  if(S.loading||!S.ready||S.ob)return;S.loading=true;spinAll(true);
  const sc=S.man&&S.rsc;S.rsc=null;const on=S.src.filter(s=>s.on&&(!sc||((sc.cat==='Todas'||sc.cat==='Guardadas'||s.cat===sc.cat)&&(sc.sf==='Todas'||s.name===sc.sf))));
  if(!S.news.length)render(true);
- const man=S.man;S.man=false;S.nf={};const nw={};S.news.forEach(a=>{if(!(a.date<=nw[a.src]))nw[a.src]=a.date});const gap=x=>{if(man)return 3e5;const a=Date.now()-(nw[x.name]||0);return a<108e5?3e5:a<864e5?12e5:a<2592e5?36e5:108e5},todo=on.filter(x=>!(S.bo&&S.bo[x.id]>Date.now())&&!(S.ft[x.id]&&Date.now()-S.ft[x.id]<gap(x)&&S.hl[x.id]>0)),res=[],rl=rlp;let done=0;S.fb=0;
+ const man=S.man;S.man=false;S.nf={};const nw={};S.news.forEach(a=>{if(!(a.date<=nw[a.src]))nw[a.src]=a.date});const gap=x=>{if(man)return 3e5;const a=Date.now()-(nw[x.name]||0);return a<108e5?3e5:a<864e5?12e5:a<2592e5?36e5:108e5},todo=on.filter(x=>!(S.bo&&S.bo[x.id]>Date.now())&&!(S.ft[x.id]&&Date.now()-S.ft[x.id]<gap(x)&&S.hl[x.id]>0)),res=[],rl=rlp;let done=0;
  if(todo.length)log(`Actualizando ${todo.length} de ${on.length} fuentes${sc&&sc.sf!=='Todas'?' ('+sc.sf+')':sc&&sc.cat!=='Todas'&&sc.cat!=='Guardadas'?' ('+sc.cat+')':''}… (v${VER})`);
  await pool(todo,10,async x=>{
   let a=await getFeed(x);
-  if(a&&!S.lm[x.id]&&a.length>=8&&S.pf.dp>1&&S.dp[x.id]!==99){
+  if(a&&a.length>=8&&S.pf.dp>1&&S.dp[x.id]!==99){
    const known=new Set(a.map(i=>i.id));
    for(let pg=(S.dp[x.id]||1)+1;pg<=S.pf.dp;pg++){const m=await viaProxies(addParam(x.url,'paged',pg),x).catch(()=>null),nw=(m||[]).filter(i=>i.link&&!known.has(i.id));if(!nw.length){S.dp[x.id]=99;break}nw.forEach(i=>known.add(i.id));a=a.concat(nw);S.dp[x.id]=pg}
   }
   S.hl[x.id]=a?a.length:0;if(a)S.ft[x.id]=Date.now();else log(`${x.name}: sin respuesta`,'err');{const f=S.nf&&S.nf[host(x.url)];if(f&&(f.s===402||f.s===429))(S.bo=S.bo||{})[x.id]=Date.now()+216e5}res.push(a||[]);rl.textContent=`${++done}/${todo.length}`});
  rl.textContent='Actualizar';ls.set('nz_dp',S.dp);
  const det=x=>{const f=S.nf&&S.nf[host(x.url)];return f&&(f.s==='Failed to fetch'||f.s===403||f.s===404)};
- const lowq=todo.filter(x=>S.lm[x.id]&&PX[0].can(x.url)&&!det(x));
- if(lowq.length){log(`Reintentando ${lowq.length} fuentes por proxy…`);await new Promise(r=>setTimeout(r,2500));
-  await pool(lowq,4,async x=>{const a=await viaProxies(x.url,x).catch(()=>null);if(a){delete S.lm[x.id];S.hl[x.id]=a.length;S.ft[x.id]=Date.now();res.push(a)}});
-  S.fb=todo.filter(x=>S.lm[x.id]).length}
- const sick=todo.filter(x=>S.lm[x.id]||S.hl[x.id]===0);
- if(sick.length){await pool(sick,3,async x=>{const h=await heal(x);if(h&&!S.src.some(o=>o!==x&&o.url===h.url)){log(`${x.name}: feed corregido → ${h.url}`,'ok');x.url=h.url;delete S.lm[x.id];S.hl[x.id]=h.items.length;S.ft[x.id]=Date.now();res.push(h.items)}});
-  ls.set('nz_src',S.src);S.fb=todo.filter(x=>S.lm[x.id]).length}
- if(todo.length)log(`Listo: ${todo.filter(x=>S.hl[x.id]>0).length} de ${todo.length} fuentes correctas`+(S.fb?` (${S.fb} mediante servicio alternativo, limitado a 10 noticias)`:''),'ok');
- if(todo.length)log('Proxies: '+PX.filter(p=>!p.own||ownOn()).map(p=>`${p.n} ${p.ok} ok/${p.bad} fallos${p.hs?' HTTP '+Object.entries(p.hs).map(([k,v])=>k+'×'+v).join(' '):''}${p.last?' (último: '+p.last+')':''}${p.until>Date.now()?' EN PAUSA':''}`).join(' · '));
+ const sick=todo.filter(x=>S.hl[x.id]===0);
+ if(sick.length){await pool(sick,3,async x=>{const h=await heal(x);if(h&&!S.src.some(o=>o!==x&&o.url===h.url)){log(`${x.name}: feed corregido → ${h.url}`,'ok');x.url=h.url;S.hl[x.id]=h.items.length;S.ft[x.id]=Date.now();res.push(h.items)}});
+  ls.set('nz_src',S.src)}
+ if(todo.length)log(`Listo: ${todo.filter(x=>S.hl[x.id]>0).length} de ${todo.length} fuentes correctas`,'ok');
+ if(todo.length)log('Proxy: '+PX.map(p=>`${p.n} ${p.ok} ok/${p.bad} fallos${p.hs?' HTTP '+Object.entries(p.hs).map(([k,v])=>k+'×'+v).join(' '):''}${p.last?' (último: '+p.last+')':''}`).join(' · '));
  {const bo=S.bo?S.src.filter(x=>S.bo[x.id]>Date.now()).map(x=>x.name):[];if(bo.length)log('En pausa 6 h (el sitio pide pago o limita las peticiones): '+bo.join(', '),'err')}
  if(todo.length&&S.nf&&Object.keys(S.nf).length)log('Fallos del proxy por sitio: '+Object.entries(S.nf).sort((a,b)=>b[1].n-a[1].n).slice(0,12).map(([h,o])=>`${h} ×${o.n} (${o.s}${SN[o.s]?' · '+SN[o.s]:''})`).join(' · '),'err');
  const old=new Map(S.news.map(a=>[a.id,a]));
@@ -846,14 +837,15 @@ function render(skel){
  if(S.so==='cov'&&!S.pe&&!sv)list=list.filter(a=>Date.now()-a.date<2*864e5);
  if(S.fo&&!sv)list=list.filter(a=>topicOf(a));
  const AL=(!sv&&S.cat==='Todas'&&S.sf==='Todas')?alertList():{pin:[],mixed:[]};if(AL.mixed.length)list=list.concat(AL.mixed).sort((a,b)=>b.date-a.date);
+ if(q){const m0=srch(S.q);if(m0)list=list.filter(a=>m0.ok(hay(a)))} // filtrar antes de agrupar duplicados: mucho menos trabajo al buscar
  if(!sv){let T1=performance.now();list=dedupe(list);S.pt.d=Math.round(performance.now()-T1);T1=performance.now();if(S.so==='mix')list=mix(list);else if(S.so==='cov')list=list.filter(a=>a.also&&a.also.length>=2).sort((x,y)=>y.also.length-x.also.length||y.date-x.date);S.pt.m=Math.round(performance.now()-T1)}
  if(S.un)list=list.filter(a=>!S.rd.has(a.id));
  if(AL.pin.length)list=AL.pin.concat(list);
  const af=[];if(S.q)af.push(['q','Búsqueda: '+S.q]);if(S.un)af.push(['un','No leídas']);if(S.fo)af.push(['fo','Solo mis temas']);if(S.pe)af.push(['pe',{1:'Últimas 24 h',2:'Últimas 48 h',7:'Últimos 7 días'}[S.pe]]);if(S.so!=='mix')af.push(['so',S.so==='cov'?'Más cubiertas':'Más recientes']);
  $('#af').hidden=!af.length;$('#af').innerHTML=af.map(([k,t])=>`<button class="ac" data-k="${k}">${esc(t)}<svg class="i"><use href="#x"/></svg></button>`).join('')+(af.length>1?'<button class="ac cl" data-k="all">Limpiar todo</button>':'');
  const hasF=af.length||S.sf!=='Todas';
- const deep=!sv&&S.src.some(x=>x.on&&S.dp[x.id]!==99&&!S.lm[x.id]&&(S.cat==='Todas'||x.cat===S.cat)&&(S.sf==='Todas'||x.name===S.sf));
- if(q){const m=srch(S.q);if(m){list=list.filter(a=>m.ok(n2(a.title+' '+a.snip+' '+a.src)));const t=[],r=[];list.forEach(a=>(m.ok(n2(a.title))?t:r).push(a));list=t.concat(r)}}
+ const deep=!sv&&S.src.some(x=>x.on&&S.dp[x.id]!==99&&(S.cat==='Todas'||x.cat===S.cat)&&(S.sf==='Todas'||x.name===S.sf));
+ if(q){const m=srch(S.q);if(m){list=list.filter(a=>m.ok(hay(a)));const t=[],r=[];list.forEach(a=>(m.ok(hay(a,1))?t:r).push(a));list=t.concat(r)}}
  const key=[S.cat,S.sf,S.so,S.pe,S.un,S.q].join('|');if(key!==S.key){S.key=key;S.lim=40}
  S.V=list;
  S.lvI=(S.so==='new'&&!sv&&S.lv)?list.findIndex(a=>!a.alert&&a.date<S.lv):-1;if(S.lvI<1)S.lvI=-1;
@@ -898,7 +890,7 @@ function srcs(){
  const cnt={};S.news.forEach(a=>cnt[a.src]=(cnt[a.src]||0)+1);const g={};S.src.forEach((s,i)=>{if(smatch(s))(g[s.cat]=g[s.cat]||[]).push([s,i])});
  if(!S.ord)Object.values(g).forEach(a=>a.sort((p,q)=>(q[0].fav?1:0)-(p[0].fav?1:0)));
  const star=(s,i)=>`<button class="gb ${s.fav?'on':''}" data-fv="${i}" aria-label="${s.fav?'Quitar de favoritas':'Marcar como favorita'}" title="${s.fav?'Quitar de favoritas':'Favorita'}"><svg class="i"><use href="#fs"/></svg></button>`;
- const row=([s,i])=>`<div class="row">${S.ord?'':`<label class="sw"><input type="checkbox" data-t="${i}" ${s.on?'checked':''} aria-label="Activar ${esc(s.name)}"><span></span></label>`}<div><div class="nl"><b>${esc(s.name)}</b>${S.hl[s.id]===0?'<span class="chip bad">No carga</span>':''}${NR.has(host(s.url))?'<span class="chip bad">Sin regla</span>':''}</div><small class="sm"><span>${esc(host(s.url))}</span><span>· <strong>${cnt[s.name]||0}</strong> noticias</span></small></div>${star(s,i)}${S.ord?`<button class="gb" data-mu="${esc(s.id)}" aria-label="Subir"><svg class="i"><use href="#u"/></svg></button><button class="gb" data-md="${esc(s.id)}" aria-label="Bajar"><svg class="i"><use href="#dn"/></svg></button>`:`<button class="gb" data-e="${i}" aria-label="Editar"><svg class="i"><use href="#p"/></svg></button><button class="gb dg" data-d="${i}" aria-label="Eliminar"><svg class="i"><use href="#t"/></svg></button>`}</div>`;
+ const row=([s,i])=>`<div class="row">${S.ord?'':`<label class="sw"><input type="checkbox" data-t="${i}" ${s.on?'checked':''} aria-label="Activar ${esc(s.name)}"><span></span></label>`}<div><div class="nl"><b>${esc(s.name)}</b>${S.hl[s.id]===0?'<span class="chip bad">No carga</span>':''}</div><small class="sm"><span>${esc(host(s.url))}</span><span>· <strong>${cnt[s.name]||0}</strong> noticias</span></small></div>${star(s,i)}${S.ord?`<button class="gb" data-mu="${esc(s.id)}" aria-label="Subir"><svg class="i"><use href="#u"/></svg></button><button class="gb" data-md="${esc(s.id)}" aria-label="Bajar"><svg class="i"><use href="#dn"/></svg></button>`:`<button class="gb" data-e="${i}" aria-label="Editar"><svg class="i"><use href="#p"/></svg></button><button class="gb dg" data-d="${i}" aria-label="Eliminar"><svg class="i"><use href="#t"/></svg></button>`}</div>`;
  $('#sl').innerHTML=S.cats.filter(c=>g[c]).map(c=>[c,g[c]]).map(([c,a])=>`<div class="gh"><span>${esc(c)} · ${a.length}</span>${S.ord?'':`<button class="tg" data-g="${esc(c)}">${a.every(([x])=>x.on)?'Desactivar todas':'Activar todas'}</button>`}</div><div class="gc">`+a.map(row).join('')+'</div>').join('');
  const shown=Object.values(g).reduce((t,a)=>t+a.length,0);
  if(!shown)$('#sl').innerHTML='<p class="hint">Ninguna fuente coincide con tu búsqueda.</p>';
@@ -922,7 +914,13 @@ function renderCats(){mapCats();const ns={},nn={};S.src.forEach(x=>ns[x.cat]=(ns
  $('#cl2').innerHTML='<div class="gc">'+S.cats.map(c=>`<div class="row"><div><b>${esc(c)}</b><small>${ns[c]||0} ${ns[c]===1?'fuente':'fuentes'} · ${nn[c]||0} noticias</small></div><button class="gb" data-cu="${esc(c)}" aria-label="Subir"><svg class="i"><use href="#u"/></svg></button><button class="gb" data-cd="${esc(c)}" aria-label="Bajar"><svg class="i"><use href="#dn"/></svg></button><button class="gb" data-rc="${esc(c)}" aria-label="Renombrar"><svg class="i"><use href="#p"/></svg></button>${c==='General'?'':`<button class="gb dg" data-dc="${esc(c)}" aria-label="Eliminar"><svg class="i"><use href="#t"/></svg></button>`}</div>`).join('')+'</div>'}
 function renCat(o){const n=(prompt('Nuevo nombre de la categoría',o)||'').trim().slice(0,24);if(!n||n===o)return;if(S.cats.some(c=>c!==o&&c.toLowerCase()===n.toLowerCase()))return toast('Ya existe esa categoría');
  S.cats=S.cats.map(c=>c===o?n:c);S.src.forEach(x=>{if(x.cat===o)x.cat=n});Object.values(S.fav).forEach(a=>{if(a.cat===o)a.cat=n});bigSet('nz_fav',S.fav);if(S.cat===o)S.cat=n;saveSrc(1);renderCats()}
-function delCat(c){const k=S.src.filter(x=>x.cat===c).length;if(!confirm(k?`¿Eliminar «${c}»? Sus ${k} fuentes pasarán a «General».`:`¿Eliminar «${c}»?`))return;
+// Diálogo de confirmación con el estilo de la app (sustituye a confirm()). Devuelve una promesa true/false.
+function ask(msg,o={}){return new Promise(res=>{const ov=document.createElement('div'),d=document.createElement('div');ov.className='ov show';ov.id='askov';d.className='askd';d.setAttribute('role','alertdialog');d.setAttribute('aria-modal','true');
+ d.innerHTML=`${o.title?`<h3>${esc(o.title)}</h3>`:''}<p></p><div class="askb"><button class="btn o" data-a="0">${esc(o.no||'Cancelar')}</button><button class="btn${o.danger?' dg':''}" data-a="1">${esc(o.ok||'Aceptar')}</button></div>`;
+ d.querySelector('p').textContent=msg;const prev=document.activeElement;
+ const end=v=>{removeEventListener('keydown',kd,true);ov.remove();d.remove();try{prev&&prev.focus&&prev.focus({preventScroll:true})}catch(e){}res(v)},kd=e=>{if(e.key==='Escape'){e.stopPropagation();e.preventDefault();end(false)}};
+ ov.onclick=()=>end(false);d.onclick=e=>{const b=e.target.closest('[data-a]');if(b)end(b.dataset.a==='1')};addEventListener('keydown',kd,true);document.body.append(ov,d);d.querySelector(o.danger?'[data-a="0"]':'[data-a="1"]').focus()})}
+async function delCat(c){const k=S.src.filter(x=>x.cat===c).length;if(!await ask(k?`Sus ${k} fuentes pasarán a «General».`:'La categoría está vacía.',{title:`¿Eliminar «${c}»?`,ok:'Eliminar',danger:1}))return;
  S.src.forEach(x=>{if(x.cat===c)x.cat='General'});Object.values(S.fav).forEach(a=>{if(a.cat===c)a.cat='General'});bigSet('nz_fav',S.fav);S.cats=S.cats.filter(x=>x!==c);if(S.cat===c)S.cat='Todas';saveSrc(1);renderCats()}
 const saveSrc=nr=>{if(!nr)S.dirty=1;fixNames();syncCats();ls.set('nz_src',S.src);srcs()};
 const PN={1:'F',6:'A',7:'C',8:'V',9:'B'};
@@ -968,7 +966,7 @@ matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if(S.p
 $('.mc').addEventListener('click',e=>{const b=e.target.closest('.seg button');if(!b||!/^sg-/.test(b.parentNode.id))return;const k=b.parentNode.id.slice(3),v=b.dataset.v;
  if(k==='th')themePref(v);else{S.pf[k]=+v;ls.set('nz_pf',S.pf);if(k==='fs')applyFs();else if(k==='dp'){S.ft={};load()}else sched()}segs()});
 $('#cr').onclick=()=>{const old=[...S.rd];if(!old.length)return toast('No hay noticias leídas');S.rd.clear();bigSet('nz_rd',[]);render();undoFn('Historial de leídas borrado',()=>{old.forEach(x=>S.rd.add(x));bigSet('nz_rd',old);render()})};
-$('#cf').onclick=()=>{if(!confirm('¿Vaciar todas las noticias guardadas?'))return;S.fav={};bigSet('nz_fav',{});render();toast('Guardadas vaciadas')};
+$('#cf').onclick=async()=>{if(!await ask(`Se quitarán ${Object.keys(S.fav).length} noticias guardadas.`,{title:'¿Vaciar guardadas?',ok:'Vaciar',danger:1}))return;S.fav={};bigSet('nz_fav',{});render();toast('Guardadas vaciadas')};
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.pf.rf&&Date.now()-(S.last||0)>S.pf.rf*60000)load()});
 $('#st').onclick=()=>{tab(1);sub('l');$('#md').classList.add('show');lockOpen('#mx')};
 $('#lg').onclick=()=>{tab(8);$('#lgd').open=true;$('#md').classList.add('show');lockOpen('#mx');setTimeout(()=>$('#lgd').scrollIntoView({block:'start'}),60)};
@@ -1008,14 +1006,20 @@ $('#dr').addEventListener('touchend',e=>{const t=e.changedTouches[0],dx=t.client
 {let last=0;const chk=()=>{if(document.hidden||Date.now()-last<6e5)return;last=Date.now();fetch('version.txt?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.text():'').then(v=>{v=(v||'').trim();if(/^\d{4}-\d\d-\d\d-[\d.]+$/.test(v)&&v!==VER){$('#vnb').hidden=false;$('#vnb span').textContent=`Hay una versión nueva de la app (${v}).`}}).catch(()=>{})};
  setTimeout(chk,4000);document.addEventListener('visibilitychange',chk);setInterval(chk,18e5);$('#vng').onclick=()=>location.reload()}
 {const hd=$('header'),tw=$('#tabs'),R=document.documentElement.style,setH=()=>{R.setProperty('--hh',hd.offsetHeight+'px');R.setProperty('--th',tw.offsetHeight+'px')};setH();try{const o=new ResizeObserver(setH);o.observe(hd,{box:'border-box'});o.observe(tw,{box:'border-box'})}catch(e){}addEventListener('resize',setH);document.addEventListener('visibilitychange',setH);addEventListener('load',setH);setTimeout(setH,500);setTimeout(setH,2000)}
-addEventListener('scroll',()=>{const y=scrollY;$('#up').classList.toggle('show',y>700);document.body.classList.toggle('hdn',$('header').classList.toggle('hd',y>ly&&y>120&&mob()&&!$('.search').classList.contains('open')));if(Math.abs(y-ly)>4)S.up=y<ly;badge();ly=y},{passive:true});
+// Scroll: como mucho un cálculo por fotograma; la cabecera solo cambia tras ~24 px seguidos en la misma dirección (sin parpadeo)
+{let tk=0,acc=0,hid=false;const hdr=$('header'),upb=$('#up'),sbox=$('.search');
+ addEventListener('scroll',()=>{if(tk)return;tk=requestAnimationFrame(()=>{tk=0;const y=scrollY,d=y-ly;if(!d)return;
+  upb.classList.toggle('show',y>700);if(Math.sign(d)!==Math.sign(acc))acc=0;acc+=d;
+  const want=(y<=120||!mob()||sbox.classList.contains('open'))?false:acc>24?true:acc<-24?false:hid;
+  if(want!==hid){hid=want;hdr.classList.toggle('hd',hid);document.body.classList.toggle('hdn',hid)}
+  if(Math.abs(d)>4)S.up=d<0;badge();ly=y})},{passive:true})}
 $('#sl').addEventListener('change',e=>{if(e.target.dataset.t!==undefined){S.src[e.target.dataset.t].on=e.target.checked;saveSrc()}});
-$('#sl').addEventListener('click',e=>{
+$('#sl').addEventListener('click',async e=>{
  const fv=e.target.closest('[data-fv]');if(fv){const x=S.src[fv.dataset.fv];x.fav=!x.fav;ls.set('nz_src',S.src);srcs();tabs();toast(x.fav?'Fuente favorita: aparece antes':'Quitada de favoritas');return}
  const mu=e.target.closest('[data-mu]'),md=e.target.closest('[data-md]');if(mu||md){moveSrc((mu||md).dataset[mu?'mu':'md'],mu?-1:1);return}
  const tg=e.target.closest('[data-g]');if(tg){const v=S.src.filter(x=>x.cat===tg.dataset.g&&smatch(x)),on=!v.every(x=>x.on);v.forEach(x=>x.on=on);saveSrc();return}
  const b=e.target.closest('[data-d]'),ed=e.target.closest('[data-e]');
- if(b){const n=S.src[b.dataset.d].name;if(!confirm(`¿Eliminar «${n}»?`))return;S.src.splice(b.dataset.d,1);resetForm();saveSrc();toast('Fuente eliminada')}
+ if(b){const i=+b.dataset.d,n=S.src[i].name;if(!await ask('Dejarás de recibir sus noticias. Puedes volver a añadirla cuando quieras.',{title:`¿Eliminar «${n}»?`,ok:'Eliminar',danger:1}))return;S.src.splice(i,1);resetForm();saveSrc();toast('Fuente eliminada')}
  if(ed){const f=S.src[ed.dataset.e];resetForm();S.edit=+ed.dataset.e;$('#an').value=f.name;$('#au').value=f.url;$('#ac').value=f.cat;$('#ft').textContent='Editar fuente';$('#aa').textContent='Comprobar y guardar';$('#fr').hidden=false}
 });
 const fm=(m,c='')=>{const e=$('#fm');e.hidden=!m;e.className='w fm '+c;e.textContent=m||''};
@@ -1057,7 +1061,7 @@ function saveNews(){const full=n=>S.news.slice(0,n).map(a=>({...a,_t:undefined,a
 // "Buscar noticias más antiguas": pide la siguiente página de cada fuente visible
 async function deepen(){
  if(S.deep)return;S.deep=1;const b=$('#more');if(b){b.disabled=true;b.textContent='Buscando noticias más antiguas…'}
- const sc=S.src.filter(x=>x.on&&S.dp[x.id]!==99&&!S.lm[x.id]&&(S.cat==='Todas'||x.cat===S.cat)&&(S.sf==='Todas'||x.name===S.sf)),known=new Set(S.news.map(a=>a.id));let add=0;
+ const sc=S.src.filter(x=>x.on&&S.dp[x.id]!==99&&(S.cat==='Todas'||x.cat===S.cat)&&(S.sf==='Todas'||x.name===S.sf)),known=new Set(S.news.map(a=>a.id));let add=0;
  await pool(sc,8,async x=>{const pg=(S.dp[x.id]||1)+1,m=await viaProxies(addParam(x.url,'paged',pg),x).catch(()=>null),nw=(m||[]).filter(i=>i.link&&!known.has(i.id));
   if(!nw.length){S.dp[x.id]=99;return}nw.forEach(i=>known.add(i.id));S.dp[x.id]=pg;S.news.push(...nw);add+=nw.length});
  ls.set('nz_dp',S.dp);S.deep=0;
@@ -1235,12 +1239,12 @@ function bkClean(j){if(!j||j.app!=='noticiahz'||!j.data||typeof j.data!=='object
  if(['auto','light','dark'].includes(p.th))pf.th=p.th;if(Number.isFinite(p.ah)&&p.ah>=0&&p.ah<=360)pf.ah=p.ah;if(Number.isFinite(p.as)&&p.as>=0&&p.as<=1)pf.as=p.as;if(Number.isFinite(p.fs)&&p.fs>=.8&&p.fs<=1.3)pf.fs=p.fs;if([0,30,60].includes(p.rf))pf.rf=p.rf;if(Number.isInteger(p.dp)&&p.dp>=1&&p.dp<=3)pf.dp=p.dp;
  ['dr','np','sw','mws','ay','sn','ls'].forEach(k=>{if(typeof p[k]==='boolean')pf[k]=p[k]});if(isS(p.az,3)&&(p.az===''||AZ.some(a=>String(a[1])===p.az)))pf.az=p.az;if(isS(p.azz,100))pf.azz=p.azz;
  const dt=new Date(j.exported);const lr={};if(d.lr&&typeof d.lr==='object'&&!Array.isArray(d.lr))Object.entries(d.lr).slice(0,3000).forEach(([k,v])=>{if(isS(k,120)&&!bad.includes(k)&&v&&Number.isFinite(v.p)&&Number.isFinite(v.n))lr[k]={p:Math.max(0,Math.min(1e6,Math.round(v.p))),n:Math.max(0,Math.min(1e6,Math.round(v.n)))}});
- return{date:isNaN(dt)?'fecha desconocida':dt.toLocaleDateString('es-ES'),src,cats,fav,rd,dis,mw,tp,sm,seen,ui,pf,lr,wk:isU(d.wk)?d.wk:''}}
+ return{date:isNaN(dt)?'fecha desconocida':dt.toLocaleDateString('es-ES'),src,cats,fav,rd,dis,mw,tp,sm,seen,ui,pf,lr}}
 function bkBanner(){const now=Date.now(),lb=ls.get('nz_lb',0),ref=lb||ls.get('nz_fu',0),due=!!ref&&now-ref>30*864e5&&(ls.get('nz_bz',0)||0)<now&&$('#azb').hidden&&$('#ib').hidden;$('#bkb').hidden=!due;if(due)$('#bkm').textContent=lb?`Hace ${Math.floor((now-lb)/864e5)} días que no haces una copia de seguridad.`:'Todavía no has hecho ninguna copia de seguridad.'}
 $('#bkg').onclick=()=>{$('#bkb').hidden=true;$('#bx').click()};
 $('#bkz').onclick=()=>{ls.set('nz_bz',Date.now()+14*864e5);$('#bkb').hidden=true};
 const bkTxt=()=>{const t=ls.get('nz_lb',0);$('#bkt').textContent=`${Object.keys(S.fav).length} guardadas · ${S.rd.size} leídas · ${S.dis.size} descartadas · `+(t?'última copia '+ago(t).toLowerCase():'sin copias todavía')};
-$('#bx').onclick=()=>{const j={app:'noticiahz',v:1,exported:new Date().toISOString(),data:{src:S.src,cats:S.cats,pf:S.pf,mw:MW.list,tp:TP.list,sm:SM.m,seen:[...S.seen],ui:{cat:S.cat,sf:S.sf,so:S.so,pe:S.pe,un:S.un,fo:!!S.fo},wk:ls.get('nz_wk',''),fav:Object.values(S.fav).map(a=>({...a,_t:undefined,also:undefined,nw:undefined})),rd:[...S.rd],dis:[...S.dis],lr:S.lr||{}}};
+$('#bx').onclick=()=>{const j={app:'noticiahz',v:1,exported:new Date().toISOString(),data:{src:S.src,cats:S.cats,pf:S.pf,mw:MW.list,tp:TP.list,sm:SM.m,seen:[...S.seen],ui:{cat:S.cat,sf:S.sf,so:S.so,pe:S.pe,un:S.un,fo:!!S.fo},fav:Object.values(S.fav).map(a=>({...a,_t:undefined,also:undefined,nw:undefined})),rd:[...S.rd],dis:[...S.dis],lr:S.lr||{}}};
  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(j)],{type:'application/json'}));a.download=`noticiahz-copia-${new Date().toISOString().slice(0,10)}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),4e3);ls.set('nz_lb',Date.now());bkTxt();toast('Copia de seguridad descargada')};
 async function bkApply(r){
  let ns=0,nf=0,nm=0,nu=0;
@@ -1249,7 +1253,7 @@ async function bkApply(r){
  {const su=new Set(),sn=new Set();r.src=r.src.filter(b=>{const k=srcKey(b);if(su.has(b.url)||sn.has(k))return false;su.add(b.url);sn.add(k);return true})}
  r.src.forEach(b=>{const e=byUrl.get(b.url)||byName.get(srcKey(b));if(e)conf.push([e,b]);else fresh.push(b)});
  const diff=conf.filter(([e,b])=>e.url!==b.url||!!e.on!==!!b.on||!!e.fav!==!!b.fav||e.cat!==b.cat);
- if(diff.length&&confirm(`La copia trae ${conf.length} fuentes que ya tienes, y ${diff.length} ${diff.length===1?'es distinta':'son distintas'} (dirección, categoría, activa o favorita).\n\nAceptar: sobrescribirlas con las de la copia.\nCancelar: conservar las tuyas.\n\nEn ningún caso se duplicarán.`))
+ if(diff.length&&await ask(`La copia trae ${conf.length} fuentes que ya tienes, y ${diff.length} ${diff.length===1?'es distinta':'son distintas'} (dirección, categoría, activa o favorita). En ningún caso se duplicarán.`,{title:'Fuentes que ya tienes',ok:'Usar las de la copia',no:'Conservar las mías'}))
   diff.forEach(([e,b])=>{e.url=b.url;e.on=b.on;e.fav=b.fav;e.cat=b.cat;nu++});
  fresh.forEach(b=>{const k=srcKey(b);if(byName.has(k)||byUrl.has(b.url))return;if(ids.has(b.id))b={...b,id:b.id+'-'+Date.now().toString(36)+ns};S.src.push(b);ids.add(b.id);byName.set(k,b);byUrl.set(b.url,b);ns++});
  {const ix=new Map(r.src.map((x,i)=>[x.url,i]));S.src.sort((a,b)=>(ix.has(a.url)?ix.get(a.url):1e6)-(ix.has(b.url)?ix.get(b.url):1e6))}
@@ -1258,7 +1262,7 @@ async function bkApply(r){
  {const lk=new Set(Object.values(S.fav).map(a=>a.link));r.fav.forEach(a=>{if(!S.fav[a.id]&&!lk.has(a.link)){S.fav[a.id]=a;lk.add(a.link);nf++}})}r.rd.forEach(i=>S.rd.add(i));r.dis.forEach(([i,t])=>S.dis.set(i,Math.max(t,S.dis.get(i)||0)));
  r.mw.forEach(w=>{if(!MW.list.some(x=>n2(x)===n2(w))){MW.list.push(w);nm++}});
  r.tp.forEach(w=>{if(!TP.list.some(x=>n2(x)===n2(w))){TP.list.push(w);nm++}});ls.set('nz_tp',TP.list);tpBuild();if(r.cats.length){const k=new Set(r.cats);S.cats=[...r.cats,...S.cats.filter(c=>!k.has(c))];ls.set('nz_cats',S.cats)}
- Object.entries(r.sm).forEach(([k,v])=>{const o=SM.m[k];if(!o||v===1||(o!==1&&v>o))SM.m[k]=v});ls.set('nz_sm',SM.m);Object.assign(S.pf,r.pf);if(r.wk)ls.set('nz_wk',r.wk);ls.set('nz_pf',S.pf);ls.set('nz_mw',MW.list);mwBuild();
+ Object.entries(r.sm).forEach(([k,v])=>{const o=SM.m[k];if(!o||v===1||(o!==1&&v>o))SM.m[k]=v});ls.set('nz_sm',SM.m);Object.assign(S.pf,r.pf);ls.set('nz_pf',S.pf);ls.set('nz_mw',MW.list);mwBuild();
  await Promise.all([bigSet('nz_fav',S.fav),bigSet('nz_rd',[...S.rd]),bigSet('nz_dis',[...S.dis])]);
  saveSrc(1);applyFs();applyPf();applyAccent();setTheme(S.pf.th==='dark'||S.pf.th==='light'?S.pf.th:(sysDark()?'dark':'light'));sched();segs();syncPf();syncAz();mwUi();tpUi();bkTxt();
  {const L=r.lr||{};if(Object.keys(L).length){S.lr=S.lr||{};Object.entries(L).forEach(([k,v])=>{const o=S.lr[k]||{p:0,n:0};S.lr[k]={p:Math.max(o.p,v.p),n:Math.max(o.n,v.n)}});ls.set('nz_lr',S.lr)}snapUp()}
@@ -1266,7 +1270,7 @@ async function bkApply(r){
 $('#bi').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;if(f.size>3e7)return toast('Archivo demasiado grande');
  let j;try{j=JSON.parse(await f.text())}catch(x){return toast('El archivo no es una copia válida')}
  const r=bkClean(j);if(!r)return toast('No es una copia de Noticiahz');
- if(!confirm(`Copia del ${r.date}:\n• ${r.src.length} fuentes\n• ${r.fav.length} guardadas\n• ${r.rd.length} leídas\n• ${r.dis.length} descartadas\n• ${r.mw.length} palabras silenciadas\n• ${r.tp.length} temas destacados\n\nLas guardadas, leídas, descartadas, vistas, palabras y temas se SUMAN a los tuyos. Las fuentes (activas, favoritas y orden), categorías, ajustes y color se SUSTITUYEN por los de la copia. ¿Continuar?`))return;
+ if(!await ask(`• ${r.src.length} fuentes\n• ${r.fav.length} guardadas\n• ${r.rd.length} leídas\n• ${r.dis.length} descartadas\n• ${r.mw.length} palabras silenciadas\n• ${r.tp.length} temas destacados\n\nGuardadas, leídas, descartadas, vistas, palabras y temas se suman a los tuyos. Las fuentes nuevas se añaden sin duplicar; si alguna que ya tienes es distinta, te preguntaré. Categorías, ajustes y color se toman de la copia.`,{title:`Restaurar copia del ${r.date}`,ok:'Restaurar'}))return;
  await bkApply(r)};
 const tpUi=()=>{$('#tpl').innerHTML=TP.list.map(w=>`<button class="ac" data-tp="${esc(w)}">★ ${esc(w)}<svg class="i"><use href="#x"/></svg></button>`).join('')||'<span class="hint" style="margin:0">Aún no sigues ningún tema.</span>';
  const n=TP.list.length?S.news.filter(a=>!S.dis.has(a.id)&&!isMuted(a)&&topicOf(a)).length:0;$('#tps').textContent=TP.list.length?`Ahora mismo hay ${n} ${n===1?'noticia destacada':'noticias destacadas'}.`:''};
@@ -1351,20 +1355,20 @@ $('#am').addEventListener('click',e=>{const a=AM.a;if(!a)return;
 let rvF='p',rvN=40;
 function revUi(){const now=Date.now(),m=new Map();S.src.forEach(x=>m.set(x.name,{x,n:0,n30:0,last:0,op:0,sv:0,ds:0}));
  S.news.forEach(a=>{const r=m.get(a.src);if(!r)return;r.n++;if(now-a.date<30*864e5)r.n30++;if(a.date>r.last)r.last=a.date;if(S.rd.has(a.id))r.op++;if(S.fav[a.id])r.sv++;if(S.dis.get(a.id)>0)r.ds++});
- const all=[...m.values()].map(r=>{const x=r.x;r.bad=S.hl[x.id]===0;r.lim=!!S.lm[x.id];r.nr=NR.has(host(x.url));r.mu=smOn(x.name);r.idle=x.on&&(r.n===0||now-r.last>45*864e5);r.nev=x.on&&r.n30>=3&&!r.op&&!r.sv;r.prob=x.on&&(r.bad||r.lim||r.nr);return r});
+ const all=[...m.values()].map(r=>{const x=r.x;r.bad=S.hl[x.id]===0;r.mu=smOn(x.name);r.idle=x.on&&(r.n===0||now-r.last>45*864e5);r.nev=x.on&&r.n30>=3&&!r.op&&!r.sv;r.prob=x.on&&r.bad;return r});
  const F={p:r=>r.prob,i:r=>r.idle,s:r=>r.nev,m:r=>r.mu,t:()=>true},cnt={};for(const k in F)cnt[k]=all.filter(F[k]).length;
  $('#rvs').textContent=`${all.length} fuentes · ${cnt.p} con problemas · ${cnt.i} inactivas · ${cnt.s} sin abrir nunca`;
  $('#rvf').innerHTML=[['p','Problemas'],['i','Inactivas'],['s','Sin abrir'],['m','Silenciadas'],['t','Todas']].map(([k,l])=>`<button data-f="${k}" class="${k===rvF?'on':''}">${l} ${cnt[k]}</button>`).join('');
  const srt={p:(a,b)=>a.x.name.localeCompare(b.x.name),i:(a,b)=>a.last-b.last,s:(a,b)=>b.n30-a.n30,m:(a,b)=>a.x.name.localeCompare(b.x.name),t:(a,b)=>a.x.name.localeCompare(b.x.name)};
  const list=all.filter(F[rvF]).sort(srt[rvF]);
  const ch=(t,bad)=>`<span class="chip${bad?' bad':''}">${t}</span>`;
- const rows=list.slice(0,rvN).map(r=>{const x=r.x;return`<div class="row"><div><div class="nl"><b>${esc(x.name)}</b>${r.bad?ch('No carga',1):''}${r.lim?ch('Limitada',1):''}${r.nr?ch('Sin regla',1):''}${r.mu?ch('Silenciada'):''}${x.on?'':ch('Desactivada')}</div><small class="rvm">${esc(x.cat)} · ${r.n30} en 30 d · última ${r.last?ago(r.last).toLowerCase():'sin noticias'}<br>${r.op} abiertas · ${r.sv} guardadas · ${r.ds} descartadas</small></div>${r.mu?`<button class="rvb" data-ru="${esc(x.name)}">Reactivar</button>`:''}<label class="sw"><input type="checkbox" data-rt="${esc(x.id)}" ${x.on?'checked':''} aria-label="Activar ${esc(x.name)}"><span></span></label><button class="gb dg" data-rx="${esc(x.id)}" aria-label="Eliminar"><svg class="i"><use href="#t"/></svg></button></div>`}).join('');
+ const rows=list.slice(0,rvN).map(r=>{const x=r.x;return`<div class="row"><div><div class="nl"><b>${esc(x.name)}</b>${r.bad?ch('No carga',1):''}${r.mu?ch('Silenciada'):''}${x.on?'':ch('Desactivada')}</div><small class="rvm">${esc(x.cat)} · ${r.n30} en 30 d · última ${r.last?ago(r.last).toLowerCase():'sin noticias'}<br>${r.op} abiertas · ${r.sv} guardadas · ${r.ds} descartadas</small></div>${r.mu?`<button class="rvb" data-ru="${esc(x.name)}">Reactivar</button>`:''}<label class="sw"><input type="checkbox" data-rt="${esc(x.id)}" ${x.on?'checked':''} aria-label="Activar ${esc(x.name)}"><span></span></label><button class="gb dg" data-rx="${esc(x.id)}" aria-label="Eliminar"><svg class="i"><use href="#t"/></svg></button></div>`}).join('');
  $('#rvl').innerHTML=list.length?`<div class="gc">${rows}</div>`+(list.length>rvN?`<div class="more" style="padding-top:12px"><button class="btn o" id="rvm" style="margin:0">Ver más (${list.length-rvN})</button></div>`:''):'<p class="hint">Nada que mostrar aquí.</p>'}
 $('#rvf').onclick=e=>{const b=e.target.closest('[data-f]');if(b){rvF=b.dataset.f;rvN=40;revUi()}};
 $('#rvl').addEventListener('change',e=>{const id=e.target.dataset.rt;if(!id)return;const x=S.src.find(z=>z.id===id);if(x){x.on=e.target.checked;saveSrc();revUi()}});
-$('#rvl').addEventListener('click',e=>{
+$('#rvl').addEventListener('click',async e=>{
  const u=e.target.closest('[data-ru]');if(u){delete SM.m[u.dataset.ru];ls.set('nz_sm',SM.m);revUi();render();return}
- const d=e.target.closest('[data-rx]');if(d){const i=S.src.findIndex(z=>z.id===d.dataset.rx);if(i<0||!confirm(`¿Eliminar «${S.src[i].name}»?`))return;S.src.splice(i,1);saveSrc();revUi();toast('Fuente eliminada');return}
+ const d=e.target.closest('[data-rx]');if(d){const i=S.src.findIndex(z=>z.id===d.dataset.rx);if(i<0||!await ask('Dejarás de recibir sus noticias.',{title:`¿Eliminar «${S.src[i].name}»?`,ok:'Eliminar',danger:1}))return;S.src.splice(i,1);saveSrc();revUi();toast('Fuente eliminada');return}
  if(e.target.closest('#rvm')){rvN+=40;revUi()}});
 // ---- Color de la app ----
 const PRE=[['Esmeralda',null,null],['Turquesa',185,.85],['Azul',214,.9],['Índigo',243,.8],['Violeta',272,.7],['Rosa',328,.75],['Coral',6,.85],['Naranja',27,.95],['Ámbar',42,.95],['Grafito',215,.12]];
@@ -1375,8 +1379,8 @@ function swUi(){const h=S.pf.ah,s=S.pf.as;let sel=h==null?0:PRE.findIndex((x,i)=
  $('#swn').textContent=sel>=0?PRE[sel][0]:'Personalizado';if(document.activeElement!==$('#acc'))$('#acc').value=h==null?'#059669':hexHs(h,s*.8)}
 $('#sws').onclick=e=>{const b=e.target.closest('[data-i]');if(!b)return;const[n,h,s]=PRE[+b.dataset.i];if(h==null){delete S.pf.ah;delete S.pf.as}else{S.pf.ah=h;S.pf.as=s}savePf();applyAccent();swUi()};
 let swT;$('#acc').oninput=e=>{const[h,s]=hsOf(e.target.value);S.pf.ah=h;S.pf.as=+s.toFixed(2);applyAccent();clearTimeout(swT);swT=setTimeout(()=>{savePf();swUi()},250)};
-function gAll(on){const v=S.src.filter(x=>smatch(x)&&!!x.on!==on);if(!v.length)return toast(on?'Ya están todas activas':'Ya están todas desactivadas');
- if(!on&&!confirm(`¿Desactivar ${v.length} ${v.length===1?'fuente':'fuentes'}? No se borra nada: puedes volver a activarlas.`))return;
+async function gAll(on){const v=S.src.filter(x=>smatch(x)&&!!x.on!==on);if(!v.length)return toast(on?'Ya están todas activas':'Ya están todas desactivadas');
+ if(!on&&!await ask('No se borra nada: puedes volver a activarlas.',{title:`¿Desactivar ${v.length} ${v.length===1?'fuente':'fuentes'}?`,ok:'Desactivar'}))return;
  v.forEach(x=>x.on=on);saveSrc();toast(`${v.length} ${v.length===1?'fuente '+(on?'activada':'desactivada'):'fuentes '+(on?'activadas':'desactivadas')}`)}
 $('#gon').onclick=()=>gAll(true);$('#gof').onclick=()=>gAll(false);
 // ---- Primera visita: elige tus fuentes ----
@@ -1399,7 +1403,7 @@ function amCloseThen(fn){amHide();if(history.state&&history.state.r===3){const h
 function openAlso(c){const a=c&&S.V[+c.dataset.k];if(!a||!a.also||!a.also.length||!$('#am').hidden)return;AM.a=a;AM.c=c;AM.mode='also';AM.t=Date.now();
  $('#am').innerHTML=`<div class="amh"><b>La misma noticia en otros medios</b><small>${esc(a.src)} · ${esc(a.title)}</small></div>`+a.also.map((x,i)=>`<div class="alr"><div><b>${esc(x.src)}</b><small>${ago(x.date).toLowerCase()}</small></div><div class="alt">${esc(x.title)}</div><div class="alb"><button data-ao="${i}">Leer aquí</button><a href="${esc(x.link)}" target="_blank" rel="noopener noreferrer">Ir al sitio</a></div></div>`).join('');
  $('#am').hidden=false;$('#aov').classList.add('show');$('#am').scrollTop=0;history.pushState({r:3},'')}
-$('#rst').onclick=async()=>{if(!confirm('Vas a RESTABLECER la app: se borrarán tus fuentes y ajustes, las guardadas, leídas, descartadas, vistas, palabras silenciadas y temas, y volverás a la pantalla de la primera visita.\n\nNo se puede deshacer. Si no quieres perder nada, pulsa Cancelar y haz antes una copia de seguridad (Avanzado → Copia de seguridad).\n\n¿Restablecer todo?'))return;
+$('#rst').onclick=async()=>{if(!await ask('Se borrarán tus fuentes y ajustes, las guardadas, leídas, descartadas, vistas, palabras silenciadas y temas, y volverás a la pantalla de la primera visita.\n\nNo se puede deshacer. Si no quieres perder nada, cancela y haz antes una copia en la pestaña «Copia de seguridad».',{title:'¿Restablecer la app?',ok:'Restablecer todo',danger:1}))return;
  window.__rs=1;S.ready=0;
  try{Object.keys(localStorage).filter(k=>k.indexOf('nz_')===0).forEach(k=>localStorage.removeItem(k))}catch(e){}
  try{await new Promise(r=>{const q=indexedDB.deleteDatabase('noticiahz');q.onsuccess=q.onerror=q.onblocked=()=>r();setTimeout(r,1500)})}catch(e){}
