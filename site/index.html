@@ -250,7 +250,9 @@ body.qs .qd{display:flex}.qd input{flex:1;min-width:0;padding:10px 12px;border:1
 .fp::before{content:"";position:absolute;top:9px;left:50%;width:38px;height:4px;margin-left:-19px;border-radius:4px;background:var(--bd)}
 .fp{overscroll-behavior:contain}#fov{touch-action:none}.fp:not([hidden]){animation:sheet .22s cubic-bezier(.2,.8,.2,1)}.fp .fx{display:inline-flex}
 }
-.tpm{font-size:12px;font-weight:600;color:var(--em)}
+.tpm{display:inline-flex;align-items:center;gap:3px;font-size:11.5px;font-weight:700;color:var(--onem);background:var(--em);padding:2px 8px;border-radius:99px;letter-spacing:.01em;white-space:nowrap}
+.card.tp{border-color:color-mix(in srgb,var(--em) 55%,var(--bd))!important;box-shadow:inset 4px 0 0 var(--em),0 6px 18px -12px color-mix(in srgb,var(--em) 60%,transparent);background:color-mix(in srgb,var(--em) 5%,var(--card))}
+.card.tp.rd{box-shadow:inset 4px 0 0 color-mix(in srgb,var(--em) 45%,transparent)}
 .fvm{width:16px;height:16px;margin-left:auto;color:var(--em);fill:currentColor;flex:none}.fvm.pop{animation:pop .35s}
 
 .pl{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none}
@@ -430,7 +432,7 @@ main .card .ph{border-radius:0;background:var(--tint);aspect-ratio:16/9}.card .p
           <div class="seg" id="sg-fs"><button data-v="0.9">Pequeño</button><button data-v="1">Normal</button><button data-v="1.15">Grande</button></div></section><section class="set"><h3>Tarjetas</h3><p>Cómo se ven y cómo se manejan las noticias.</p><div class="gc"><div class="row"><div><b>Ocultar imágenes</b><small style="white-space:normal">Lista más compacta y menos datos.</small></div><label class="sw"><input type="checkbox" data-pf="np" aria-label="Ocultar imágenes"><span></span></label></div><div class="row"><div><b>Atenuar noticias leídas</b><small style="white-space:normal">Las ya abiertas se ven más apagadas.</small></div><label class="sw"><input type="checkbox" data-pf="dr" aria-label="Atenuar leídas"><span></span></label></div><div class="row"><div><b>Invertir el deslizamiento</b><small style="white-space:normal">Izquierda guarda y derecha descarta.</small></div><label class="sw"><input type="checkbox" data-pf="sw" aria-label="Invertir deslizamiento"><span></span></label></div></div></section>
       </div>
       <div id="pC" hidden>
-        <section class="set"><h3>Temas a destacar</h3><p>Las noticias cuyo título contenga estos temas salen antes y más a menudo en «Mezcladas» y llevan una ★. No cambian el orden de «Recientes». Si coincide con una palabra silenciada, gana el silencio.</p>
+        <section class="set"><h3>Temas a destacar</h3><p>Las noticias cuyo título contenga estos temas salen arriba del todo en «Mezcladas» (las primeras sin leer ocupan puestos fijos), pesan mucho más en la mezcla y se marcan con borde y etiqueta ★ en color. No cambian el orden de «Recientes». Si coincide con una palabra silenciada, gana el silencio.</p>
           <div style="display:flex;gap:8px"><input id="tpi" placeholder="Ej. Mallorca, Python, Real Madrid" maxlength="40" aria-label="Tema a destacar" autocomplete="off" style="flex:1;min-width:0;padding:11px 12px;border:1px solid var(--bd);border-radius:10px;background:var(--bg);font-size:16px"><button class="btn" id="tpa" style="margin:0">Añadir</button></div>
           <div class="af" id="tpl" style="padding:12px 0 0"></div><p id="tps" style="margin:8px 0 0"></p></section><section class="set"><h3>Palabras silenciadas</h3><p>Oculta las noticias cuyo título contenga estas palabras o frases, sin distinguir mayúsculas ni tildes. Con * al final cubres variantes: horóscop*.</p>
           <div style="display:flex;gap:8px"><input id="mwi" placeholder="Ej. horóscopo, quiniela" maxlength="40" aria-label="Palabra a silenciar" autocomplete="off" style="flex:1;min-width:0;padding:11px 12px;border:1px solid var(--bd);border-radius:10px;background:var(--bg);font-size:16px"><button class="btn" id="mwa" style="margin:0">Añadir</button></div>
@@ -640,7 +642,7 @@ function timed(fn,ms=10000){const c=new AbortController();const id=setTimeout(()
 
 const wk=()=>(ls.get('nz_wk','')||'').trim();
 // Proxy propio: /p/<host>/... lo atiende _worker.js (Cloudflare Pages)
-const VER='2026-10-20-3';
+const VER='2026-10-20-4';
 if(!ls.get('nz_fu',0))ls.set('nz_fu',Date.now());
 const NR=new Set(); // (en desuso con _worker.js: el proxy cubre cualquier sitio)
 const ownOn=()=>1;
@@ -787,11 +789,14 @@ function dedupe(list){const out=[],ix=new Map(),DAY=864e5;list.forEach(a=>{a.als
 // Después se evita repetir fuente (4 seguidas) y categoría (2 seguidas). Cada actualización usa una semilla nueva.
 const hs=s=>{let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0};
 function mix(list){const c={},now=Date.now();
- const r=list.map(a=>{const k=c[a.src]=(c[a.src]??-1)+1,w=Math.max(1e-4,Math.exp(-(now-a.date)/2.16e8)/(1+.12*k)*(S.snap.rd.has(a.id)?.08:S.pf.sn&&S.snap.seen.has(a.id)?.25:1)*(S.snap.sw.get(a.src)||1)*(topicOf(a)?4:1)),u=(hs(a.id+'|'+S.seed)+1)/4294967297;return{a,key:Math.log(u)/w}}).sort((x,y)=>y.key-x.key).map(x=>x.a);
+ const r=list.map(a=>{const k=c[a.src]=(c[a.src]??-1)+1,w=Math.max(1e-4,Math.exp(-(now-a.date)/2.16e8)/(1+.12*k)*(S.snap.rd.has(a.id)?.08:S.pf.sn&&S.snap.seen.has(a.id)?.25:1)*(S.snap.sw.get(a.src)||1)*(topicOf(a)?12:1)),u=(hs(a.id+'|'+S.seed)+1)/4294967297;return{a,key:Math.log(u)/w}}).sort((x,y)=>y.key-x.key).map(x=>x.a);
  const out=[];while(r.length){const n=out.length,lim=Math.min(r.length,80);let i=0;
   for(;i<lim;i++){const a=r[i];if(!out.slice(-4).some(o=>o.src===a.src)&&(!n||catOf(a)!==catOf(out[n-1])))break}
   if(i>=lim){i=0;for(;i<lim;i++)if(!out.slice(-2).some(o=>o.src===r[i].src))break;if(i>=lim)i=0}
   out.push(r.splice(i,1)[0])}
+ // Temas destacados: además de pesar ×12, los primeros (sin leer ni vistos) ocupan puestos fijos arriba
+ const SL=[0,2,5,9,14],tp=out.filter(a=>topicOf(a)&&!S.snap.rd.has(a.id)&&!(S.pf.sn&&S.snap.seen.has(a.id))).slice(0,SL.length);
+ if(tp.length){const rest=out.filter(a=>!tp.includes(a));tp.forEach((a,k)=>rest.splice(Math.min(SL[k],rest.length),0,a));return rest}
  return out}
 const saveRd=()=>{if(!S.ready)return;if(S.last&&S.news.length){const k=new Set(S.news.map(a=>a.id));Object.keys(S.fav).forEach(i=>k.add(i));S.rd.forEach(i=>k.has(i)||S.rd.delete(i))}bigSet('nz_rd',[...S.rd])};
 const markRead=a=>{if(!S.rd.has(a.id))lrAdd(a.src,'p',1);S.rd.add(a.id);saveRd()};
@@ -818,7 +823,7 @@ const lvSep=i=>i===S.lvI?`<div class="lvs" role="separator"><span>Tu última vis
 S.lv=ls.get('nz_lv',0);{let hid=0;document.addEventListener('visibilitychange',()=>{if(document.hidden){hid=Date.now();ls.set('nz_lv',hid)}else if(hid&&Date.now()-hid>18e5){S.lv=hid;hid=0;render()}});addEventListener('pagehide',()=>ls.set('nz_lv',Date.now()))}
 function card(a,i,hero){
  const bm=S.fav[a.id]?'on':'';
- return`<article class="card ${hero?'hero':''} ${S.rd.has(a.id)?'rd':''} ${a.alert?'al al-'+a.alert:''} ${!hero&&a.img&&i%9===4?'feat':''}" data-k="${i}" tabindex="0">
+ return`<article class="card ${hero?'hero':''} ${topicOf(a)?'tp':''} ${S.rd.has(a.id)?'rd':''} ${a.alert?'al al-'+a.alert:''} ${!hero&&a.img&&i%9===4?'feat':''}" data-k="${i}" tabindex="0">
  <div class="ph ${a.img?'':'noimg'}">${esc((a.src||'N')[0])}${a.img?`<img src="${esc(a.img)}" alt="" loading="lazy" referrerpolicy="no-referrer" onload="this.classList.add('ld')" onerror="this.parentNode.classList.add('noimg');this.remove()">`:''}${vid(a)&&a.img?'<span class="pl"></span>':''}</div>
  <div class="cb"><div class="meta"><button class="chip" data-sf="${esc(a.src)}" title="Ver solo ${esc(a.src)}"><i class="mg" style="--h:${hue(a.src)}">${esc((a.src||'N')[0])}</i>${esc(a.src)}</button>${a.nw?'<span class="dot" title="Nueva"></span>':''}<span>${ago(a.date)}</span>${tpx(a)}${S.rd.has(a.id)?'<span class="rdm"><svg class="i"><use href="#ck"/></svg>Leída</span>':''}${bm&&S.cat!=='Guardadas'?'<svg class="i fvm" aria-label="Guardada"><use href="#b"/></svg>':''}</div>
  <h3>${esc(a.title)}</h3><p>${esc(a.snip)}</p>
