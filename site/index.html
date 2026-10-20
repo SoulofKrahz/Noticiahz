@@ -438,7 +438,7 @@ main .card .ph{border-radius:0;background:var(--tint);aspect-ratio:16/9}.card .p
           <input id="azz" placeholder="Zonas concretas (opcional): Zamora, Sanabria" aria-label="Filtrar por zonas" autocomplete="off" style="width:100%;margin-top:8px;padding:11px 12px;border:1px solid var(--bd);border-radius:10px;background:var(--bg);font-size:16px">
           <div class="gc" style="margin-top:8px"><div class="row"><div><b>Incluir avisos amarillos</b><small style="white-space:normal">Aparecen mezclados con las noticias. Son frecuentes.</small></div><label class="sw"><input type="checkbox" data-pf="ay" aria-label="Incluir avisos amarillos"><span></span></label></div></div></section>
       </div>
-      <div id="pB" hidden><section class="set"><h3>Copia de seguridad</h3><p>Incluye fuentes (activas, favoritas y orden), categorías, ajustes y color, guardadas, leídas, descartadas, vistas, palabras silenciadas, temas, fuentes silenciadas y lo aprendido de tus lecturas. No incluye las noticias descargadas: se vuelven a bajar.</p><div class="lrs"><button class="lr" id="bx"><svg class="i"><use href="#dl"/></svg><div><b>Copia de seguridad completa</b><small id="bkt"></small></div></button><label class="lr"><svg class="i"><use href="#ul"/></svg><div><b>Restaurar copia de seguridad</b><small>Combina el archivo con tus datos actuales</small></div><input type="file" id="bi" accept=".json,application/json" hidden></label></div></section><section class="set"><h3>Fuentes (OPML)</h3><p>Para pasar tu lista de fuentes a otra app, o traerla.</p><div class="lrs"><button class="lr" id="ox"><svg class="i"><use href="#dl"/></svg><div><b>Exportar fuentes</b><small>Archivo OPML para usar en otra app</small></div></button><label class="lr"><svg class="i"><use href="#ul"/></svg><div><b>Importar fuentes</b><small>Desde un archivo OPML</small></div><input type="file" id="oi" accept=".opml,.xml" hidden></label><button class="lr" id="rs"><svg class="i"><use href="#r"/></svg><div><b>Restaurar fuentes por defecto</b><small>Vuelve a la lista inicial</small></div></button></div></section><section class="set"><h3>Limpieza</h3><p>Estas acciones no se pueden deshacer.</p><div class="lrs"><button class="lr" id="dup"><svg class="i"><use href="#ck"/></svg><div><b>Quitar fuentes duplicadas</b><small>Mismo nombre o misma dirección: se queda una</small></div></button><button class="lr" id="cr"><svg class="i"><use href="#ck"/></svg><div><b>Borrar historial de leídas</b><small>Todas vuelven a aparecer como no leídas</small></div></button><button class="lr" id="csn"><svg class="i"><use href="#ck"/></svg><div><b>Borrar historial de vistas</b><small></small></div></button><button class="lr" id="cd"><svg class="i"><use href="#r"/></svg><div><b>Restaurar noticias descartadas</b><small>0 descartadas</small></div></button><button class="lr dg" id="cf"><svg class="i"><use href="#t"/></svg><div><b>Vaciar guardadas</b><small>Elimina todas las noticias guardadas</small></div></button>
+      <div id="pB" hidden><section class="set"><h3>Copia de seguridad</h3><p>Incluye fuentes (activas, favoritas y orden), categorías, ajustes y color, guardadas, leídas, descartadas, vistas, palabras silenciadas, temas, fuentes silenciadas y lo aprendido de tus lecturas. No incluye las noticias descargadas: se vuelven a bajar.</p><div class="lrs"><button class="lr" id="bx"><svg class="i"><use href="#dl"/></svg><div><b>Copia de seguridad completa</b><small id="bkt"></small></div></button><label class="lr"><svg class="i"><use href="#ul"/></svg><div><b>Restaurar copia de seguridad</b><small>Combina el archivo con tus datos actuales</small></div><input type="file" id="bi" accept=".json,application/json" hidden></label></div></section><section class="set"><h3>Fuentes (OPML)</h3><p>Para pasar tu lista de fuentes a otra app, o traerla.</p><div class="lrs"><button class="lr" id="ox"><svg class="i"><use href="#dl"/></svg><div><b>Exportar fuentes</b><small>Archivo OPML para usar en otra app</small></div></button><label class="lr"><svg class="i"><use href="#ul"/></svg><div><b>Importar fuentes</b><small>Desde un archivo OPML</small></div><input type="file" id="oi" accept=".opml,.xml" hidden></label><button class="lr" id="rs"><svg class="i"><use href="#r"/></svg><div><b>Restaurar fuentes por defecto</b><small>Vuelve a la lista inicial</small></div></button></div></section><section class="set"><h3>Limpieza</h3><p>Estas acciones no se pueden deshacer.</p><div class="lrs"><button class="lr" id="cr"><svg class="i"><use href="#ck"/></svg><div><b>Borrar historial de leídas</b><small>Todas vuelven a aparecer como no leídas</small></div></button><button class="lr" id="csn"><svg class="i"><use href="#ck"/></svg><div><b>Borrar historial de vistas</b><small></small></div></button><button class="lr" id="cd"><svg class="i"><use href="#r"/></svg><div><b>Restaurar noticias descartadas</b><small>0 descartadas</small></div></button><button class="lr dg" id="cf"><svg class="i"><use href="#t"/></svg><div><b>Vaciar guardadas</b><small>Elimina todas las noticias guardadas</small></div></button>
             <button class="lr dg" id="rst"><svg class="i"><use href="#t"/></svg><div><b>Restablecer la app</b><small>Borra todo y vuelve al estado de la primera visita</small></div></button></div></section></div>
       <div id="pV" hidden>
         <section class="set" id="ins" hidden><h3>Instalar la app</h3><p>Ábrela como una app más: a pantalla completa y desde el icono.</p><div class="lrs"><button class="lr" id="insb"><svg class="i"><use href="#dl"/></svg><div><b>Instalar Noticiahz</b><small>Se añade a tu pantalla de inicio</small></div></button></div></section>
@@ -634,7 +634,7 @@ function timed(fn,ms=10000){const c=new AbortController();const id=setTimeout(()
 
 const wk=()=>(ls.get('nz_wk','')||'').trim();
 // Proxy propio: /p/<host>/... lo atiende _worker.js (Cloudflare Pages)
-const VER='2026-10-20-1.1';
+const VER='2026-10-20-1.2';
 if(!ls.get('nz_fu',0))ls.set('nz_fu',Date.now());
 const NR=new Set(); // (en desuso con _worker.js: el proxy cubre cualquier sitio)
 const ownOn=()=>1;
@@ -746,7 +746,7 @@ async function load(){
   await pool(lowq,4,async x=>{const a=await viaProxies(x.url,x).catch(()=>null);if(a){delete S.lm[x.id];S.hl[x.id]=a.length;S.ft[x.id]=Date.now();res.push(a)}});
   S.fb=todo.filter(x=>S.lm[x.id]).length}
  const sick=todo.filter(x=>S.lm[x.id]||S.hl[x.id]===0);
- if(sick.length){await pool(sick,3,async x=>{const h=await heal(x);if(h){log(`${x.name}: feed corregido → ${h.url}`,'ok');x.url=h.url;delete S.lm[x.id];S.hl[x.id]=h.items.length;S.ft[x.id]=Date.now();res.push(h.items)}});
+ if(sick.length){await pool(sick,3,async x=>{const h=await heal(x);if(h&&!S.src.some(o=>o!==x&&o.url===h.url)){log(`${x.name}: feed corregido → ${h.url}`,'ok');x.url=h.url;delete S.lm[x.id];S.hl[x.id]=h.items.length;S.ft[x.id]=Date.now();res.push(h.items)}});
   ls.set('nz_src',S.src);S.fb=todo.filter(x=>S.lm[x.id]).length}
  if(todo.length)log(`Listo: ${todo.filter(x=>S.hl[x.id]>0).length} de ${todo.length} fuentes correctas`+(S.fb?` (${S.fb} mediante servicio alternativo, limitado a 10 noticias)`:''),'ok');
  if(todo.length)log('Proxies: '+PX.filter(p=>!p.own||ownOn()).map(p=>`${p.n} ${p.ok} ok/${p.bad} fallos${p.hs?' HTTP '+Object.entries(p.hs).map(([k,v])=>k+'×'+v).join(' '):''}${p.last?' (último: '+p.last+')':''}${p.until>Date.now()?' EN PAUSA':''}`).join(' · '));
@@ -893,8 +893,6 @@ function moveCat(c,d){const i=S.cats.indexOf(c),j=i+d;if(i<0||j<0||j>=S.cats.len
 const catOf=a=>(S.sc&&S.sc[a.src])||a.cat||'General';
 const mapCats=()=>{S.sc={};S.src.forEach(x=>S.sc[x.name]=x.cat)};
 const srcKey=x=>n2(x.name).replace(/\s*\(\d+\)\s*$/,'').trim();
-// Quita fuentes repetidas (mismo nombre o misma dirección): se queda la primera y hereda «activa» y «favorita»
-function dedupeSrc(){const byU=new Map(),byN=new Map(),keep=[],gone=[];S.src.forEach(x=>{const e=byU.get(x.url)||byN.get(srcKey(x));if(e){e.on=e.on||x.on;e.fav=e.fav||x.fav;gone.push(x)}else{keep.push(x);byU.set(x.url,x);byN.set(srcKey(x),x)}});return{keep,gone}}
 function fixNames(){const seen={};let ch=0;S.src.forEach(x=>{const k=x.name.toLowerCase();if(seen[k]){seen[k]++;x.name=`${x.name} (${seen[k]})`;ch=1}else seen[k]=1});if(ch)ls.set('nz_src',S.src)}
 const syncCats=()=>{S.src.forEach(x=>{if(!S.cats.includes(x.cat))S.cats.push(x.cat)});if(!S.cats.includes('General'))S.cats.push('General');ls.set('nz_cats',S.cats)};
 const defCat=()=>S.cats.includes(S.cat)?S.cat:'General';
@@ -949,9 +947,6 @@ $('#th').onclick=()=>{themePref(document.documentElement.dataset.theme==='dark'?
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if(S.pf.th==='auto')setTheme(sysDark()?'dark':'light')});
 $('.mc').addEventListener('click',e=>{const b=e.target.closest('.seg button');if(!b||!/^sg-/.test(b.parentNode.id))return;const k=b.parentNode.id.slice(3),v=b.dataset.v;
  if(k==='th')themePref(v);else{S.pf[k]=+v;ls.set('nz_pf',S.pf);if(k==='fs')applyFs();else if(k==='dp'){S.ft={};load()}else sched()}segs()});
-$('#dup').onclick=()=>{const {keep,gone}=dedupeSrc();if(!gone.length)return toast('No hay fuentes duplicadas');
- if(!confirm(`Hay ${gone.length} ${gone.length===1?'fuente duplicada':'fuentes duplicadas'}:\n\n${gone.slice(0,12).map(x=>'• '+x.name).join('\n')}${gone.length>12?'\n…':''}\n\nSe quitarán y se quedará una de cada.`))return;
- const gn=new Set(gone.map(x=>x.name));S.news=S.news.filter(a=>!gn.has(a.src));S.src=keep;saveSrc(1);saveNews();render();toast(`${gone.length} ${gone.length===1?'duplicada quitada':'duplicadas quitadas'}`)};
 $('#cr').onclick=()=>{const old=[...S.rd];if(!old.length)return toast('No hay noticias leídas');S.rd.clear();bigSet('nz_rd',[]);render();undoFn('Historial de leídas borrado',()=>{old.forEach(x=>S.rd.add(x));bigSet('nz_rd',old);render()})};
 $('#cf').onclick=()=>{if(!confirm('¿Vaciar todas las noticias guardadas?'))return;S.fav={};bigSet('nz_fav',{});render();toast('Guardadas vaciadas')};
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.pf.rf&&Date.now()-(S.last||0)>S.pf.rf*60000)load()});
@@ -1011,11 +1006,12 @@ $('#aa').onclick=async()=>{
  if(!f.name)return fm('Escribe un nombre para la fuente.','err');
  if(!/^https?:\/\//i.test(f.url))return fm('La dirección debe empezar por http:// o https://','err');
  if(o.some(x=>x.url===f.url))return fm('Esa fuente ya está en tu lista.','err');
- if(o.some(x=>x.name.toLowerCase()===f.name.toLowerCase()))return fm('Ya tienes una fuente con ese nombre.','err');
+ if(o.some(x=>srcKey(x)===srcKey(f)))return fm('Ya tienes una fuente con ese nombre.','err');
  const b=$('#aa'),lbl=b.textContent;b.disabled=true;b.textContent='Comprobando…';$('#ak').hidden=true;S.pend=null;fm('Comprobando que el feed carga noticias…');
  const r=await check(f);
  b.disabled=false;b.textContent=lbl;
  if(!r){S.pend=f;$('#ak').hidden=false;return fm('No se ha podido cargar ninguna noticia de esta dirección. He probado el feed, la página, el sitemap de noticias y Google News sin éxito. Si estás seguro de que la dirección es correcta, puedes guardarla igualmente.','err')}
+ if(r.url!==f.url&&o.some(x=>x.url===r.url)){S.pend=null;return fm(`El feed de esa web ya está en tu lista (${esc(o.find(x=>x.url===r.url).name)}).`,'err')}
  const found=r.url!==f.url;f.url=r.url;commit(f);
  toast(r.via==='google'?`Añadida vía Google News (${r.items.length} noticias, sin imagen ni resumen)`:r.via==='sitemap'?`Añadida vía sitemap de noticias (${r.items.length} noticias)`:found?`Feed detectado automáticamente (${r.items.length} noticias)`:`${r.items.length} noticias encontradas`);
 };
@@ -1050,7 +1046,7 @@ $('#fb').onclick=()=>{const h=$('#fp').hidden=!$('#fp').hidden;$('#fb').classLis
 $('#un').onchange=e=>{S.un=e.target.checked;render()};
 $('#ox').onclick=()=>{const x=`<?xml version="1.0" encoding="UTF-8"?><opml version="2.0"><head><title>Noticiahz</title></head><body>${S.src.map(s=>`<outline type="rss" text="${esc(s.name)}" xmlUrl="${esc(s.url)}" category="${esc(s.cat)}"/>`).join('')}</body></opml>`;const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([x],{type:'text/x-opml'}));a.download='noticiahz.opml';a.click()};
 $('#oi').onchange=async e=>{const f=e.target.files[0];if(!f)return;const d=new DOMParser().parseFromString(await f.text(),'text/xml');let n=0;
- d.querySelectorAll('outline[xmlUrl]').forEach(o=>{const url=(o.getAttribute('xmlUrl')||'').trim();if(n>=500||!/^https?:\/\//i.test(url)||url.length>2000||S.src.some(s=>s.url===url))return;S.src.push({id:'u'+Date.now()+n,name:(o.getAttribute('text')||o.getAttribute('title')||url).slice(0,80),url,cat:((o.getAttribute('category')||'General').trim().slice(0,24))||'General',on:true});n++});
+ d.querySelectorAll('outline[xmlUrl]').forEach(o=>{const url=(o.getAttribute('xmlUrl')||'').trim();const nm=(o.getAttribute('text')||o.getAttribute('title')||url).slice(0,80);if(n>=500||!/^https?:\/\//i.test(url)||url.length>2000||S.src.some(s=>s.url===url||srcKey(s)===srcKey({name:nm})))return;S.src.push({id:'u'+Date.now()+n,name:nm,url,cat:((o.getAttribute('category')||'General').trim().slice(0,24))||'General',on:true});n++});
  saveSrc();e.target.value='';toast(`${n} fuentes importadas`);if(n)load()};
 // Novedades, desconexión, escucha, progreso de lectura y arrastrar para actualizar
 const T0=document.title;
