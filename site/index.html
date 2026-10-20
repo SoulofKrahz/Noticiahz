@@ -83,7 +83,7 @@ button.chip{border:0;cursor:pointer;font-family:inherit}button.chip:hover{backgr
 .card:active{transform:scale(.99)}.ib:disabled{opacity:.35;pointer-events:none}
 .top{position:fixed;right:16px;bottom:calc(20px + env(safe-area-inset-bottom));z-index:15;background:var(--em)!important;color:var(--onem)!important;border-color:var(--em)!important;box-shadow:0 6px 20px -6px #0006;opacity:0;pointer-events:none;transition:opacity .2s}.top.show{opacity:1;pointer-events:auto}
 header{transition:transform .25s}header.hd{transform:translateY(-100%)}
-@media(max-width:760px){#tabs-w{position:sticky;top:var(--hh,64px);z-index:19;background:var(--bg);transition:top .25s;margin:0 -16px;padding:0 16px}body.hdn #tabs-w{top:-70px}header{background:var(--bg)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}#srcs-w{position:sticky;top:calc(var(--hh,64px) + var(--th,50px) - 1px);z-index:18;background:var(--bg);transition:top .25s;margin:0 -16px;padding:0 16px 8px;border-bottom:1px solid color-mix(in srgb,var(--bd) 60%,transparent)}body.hdn #srcs-w{top:-150px}}
+@media(max-width:760px){header{background:var(--bg)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}#cbar{position:sticky;top:var(--hh,64px);z-index:19;background:var(--bg);transition:transform .25s;margin:0 -16px;padding:0 16px 8px;border-bottom:1px solid color-mix(in srgb,var(--bd) 60%,transparent)}body.hdn #cbar{transform:translateY(calc(-100% - var(--hh,64px)))}}
 .card:hover{border-color:var(--em2);box-shadow:0 10px 30px -18px var(--em2)}
 .ph{aspect-ratio:16/9;background:var(--tint);overflow:hidden;display:grid;place-items:center;color:var(--em);font:italic 600 40px Newsreader,serif}
 .ph{position:relative}.ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
@@ -276,7 +276,7 @@ body.qs .qd{display:flex}.qd input{flex:1;min-width:0;padding:10px 12px;border:1
 
 .dsk{display:none}.hsw{position:relative}.hsb{display:none;position:absolute;top:50%;transform:translateY(-50%);width:30px;height:30px;border-radius:50%;background:var(--card);border:1px solid var(--bd);box-shadow:var(--sh);place-items:center;z-index:3;color:var(--mu)}.hsb.l{left:2px}.hsb.r{right:2px}.hsb:hover{color:var(--em);border-color:var(--em2)}
 @media(hover:hover) and (pointer:fine){.dsk{display:inline-flex}.hsb{display:grid}.hsb[hidden]{display:none}.tabs,.srcs{cursor:grab}.tabs:active,.srcs:active{cursor:grabbing}}
-@media(min-width:761px){#tabs-w{position:sticky;top:65px;z-index:19;background:var(--bg)}.toast{top:auto;bottom:24px;transform:translate(-50%,140px)}.toast.show{transform:translate(-50%,0)}.undo{bottom:76px}}
+@media(min-width:761px){#cbar{position:sticky;top:65px;z-index:19;background:var(--bg)}.toast{top:auto;bottom:24px;transform:translate(-50%,140px)}.toast.show{transform:translate(-50%,0)}.undo{bottom:76px}}
 @media(min-width:1500px){.wrap{max-width:1380px}}
 
 /* ===== Rediseño: tinta navy y señal verde ===== */
@@ -644,7 +644,7 @@ function timed(fn,ms=10000){const c=new AbortController();const id=setTimeout(()
 
 const wk=()=>(ls.get('nz_wk','')||'').trim();
 // Proxy propio: /p/<host>/... lo atiende _worker.js (Cloudflare Pages)
-const VER='2026-10-20-5.1';
+const VER='2026-10-20-5.2';
 if(!ls.get('nz_fu',0))ls.set('nz_fu',Date.now());
 const NR=new Set(); // (en desuso con _worker.js: el proxy cubre cualquier sitio)
 const ownOn=()=>1;
@@ -1417,7 +1417,7 @@ function hscroll(el){const w=document.createElement('div');w.className='hsw';w.i
  addEventListener('pointermove',e=>{if(!dn)return;const d=e.clientX-sx;if(Math.abs(d)>6)mv=true;if(mv)el.scrollLeft=s0-d});
  addEventListener('pointerup',()=>{dn=false});
  el.addEventListener('click',e=>{if(mv){e.stopPropagation();e.preventDefault();mv=false}},true)}
-hscroll($('#tabs'));hscroll($('#srcs'));
+hscroll($('#tabs'));hscroll($('#srcs'));{const cb=document.createElement('div');cb.id='cbar';const t=$('#tabs-w');t.parentNode.insertBefore(cb,t);cb.append(t,$('#srcs-w'))}
 // Medición del tiempo de pintado (se muestra en el Registro)
 {const r0=render;render=function(k){const t=performance.now();r0(k);S.rt=Math.round(performance.now()-t)}}
 </script>
