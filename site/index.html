@@ -30,7 +30,7 @@ window.nzApply=function(h,s){var st=document.getElementById('acs');if(h==null||i
 try{var q=JSON.parse(localStorage.getItem('nz_pf'))||{};if(q.ah!=null)nzApply(q.ah,q.as)}catch(e){}</script>
 <script>try{var p=JSON.parse(localStorage.getItem('nz_pf'))||{},t=p.th||JSON.parse(localStorage.getItem('nz_theme'));if(t!=='dark'&&t!=='light')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t;document.documentElement.style.setProperty('--fs',p.fs||1)}catch(e){}</script>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='15' fill='%230a9d5c'/><path d='M21.5 17.5V50M21.5 34C21.5 25 27 22 33 22C40 22 44 26.5 44 33V50' fill='none' stroke='%2306150f' stroke-width='9'/><path d='M7 41H25L29 29L34 51L38 36L41 41H57' fill='none' stroke='white' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'/></svg>">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400..700&family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..700&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#f4f6fa;--card:#fff;--bd:#e1e6ee;--tx:#101827;--mu:#5a6578;--em:#047857;--em2:#059669;--tint:#e7f5ee;--onem:#fff;--sh:0 1px 2px #0f172a0d,0 14px 32px -22px #0f172a66}
 [data-theme=dark]{--bg:#0d1523;--card:#152033;--bd:#243249;--tx:#e8eef7;--mu:#98a8bd;--em:#3ddc9a;--em2:#18c488;--tint:#18c48826;--onem:#05140e;--sh:none}
@@ -826,7 +826,7 @@ async function load(){
  saveNews();
  $('#upd').textContent='Actualizado a las '+new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
  S.loading=false;S.last=Date.now();spinAll(false);loadAlerts();setTimeout(()=>{const r=LG.runs[0];if(r&&Date.now()-r.t<6e4){r.tech=`Técnico: v${VER} · ${S.news.length} noticias en memoria · pintado ${S.rt} ms · arranque ${S.t0} ms`;lgSave();lgDraw()}},700);
- if(!todo.length)toast('Ya estás al día');else if(!fresh.length)toast(navigator.onLine?'No se pudo conectar. Revisa el registro.':'Sin conexión');else if(bad)toast(`${bad} ${bad===1?'fuente no ha respondido':'fuentes no han respondido'}`);
+ if(!todo.length)toast('Ya estás al día');else if(!fresh.length)toast(navigator.onLine?'No se pudo conectar. Revisa el registro.':'Sin conexión');else if(bad)toast(`${added?added+' nuevas · ':''}${bad} ${bad===1?'fuente no ha respondido':'fuentes no han respondido'}`);else if(man)toast(added?`${added} ${added===1?'noticia nueva':'noticias nuevas'}`:'Sin noticias nuevas');
  render();
 }
 
