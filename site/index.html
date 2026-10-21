@@ -808,7 +808,8 @@ async function getFeed(src){
 const spinAll=on=>{['#rf','#b-rf'].forEach(q=>$(q).classList.toggle('spin',on));document.body.classList.toggle('ld',on)};
 const rlp={set textContent(v){document.querySelectorAll('.rft').forEach(e=>e.textContent=v)}};
 // Si algo falla a mitad de una actualización, la app no se queda «actualizando» para siempre
-async function load(){if(S.loading||!S.ready||S.ob)return;try{await loadRun()}catch(e){LG.run=null;errLog('Actualización: '+(e&&e.message||e));S.loading=false;spinAll(false);toast('La actualización falló. Detalle en el registro.')}}
+async function load(){if(S.loading||!S.ready||S.ob)return;if(!navigator.onLine){if(S.man){S.man=false;toast('Sin conexión: se actualizará al volver la red')}return} // sin red no se marca ninguna fuente como rota
+ try{await loadRun()}catch(e){LG.run=null;errLog('Actualización: '+(e&&e.message||e));S.loading=false;spinAll(false);toast('La actualización falló. Detalle en el registro.')}}
 async function loadRun(){
  S.loading=true;spinAll(true);
  const sc=S.man&&S.rsc;S.rsc=null;const on=S.src.filter(s=>s.on&&(!sc||((sc.cat==='Todas'||sc.cat==='Guardadas'||s.cat===sc.cat)&&(sc.sf==='Todas'||s.name===sc.sf))));

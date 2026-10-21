@@ -141,6 +141,10 @@ async function run(browser, label, viewport, mobile) {
   ok(cr.cards > 5 && cr.dis === 1, `arranca con datos guardados dañados (${cr.cards} tarjetas, ${cr.dis} descartadas válidas)`);
   const cq = await p.evaluate(async () => { try { await viaProxy('https://cuota.test/feed/', { name: 'q', cat: 'q' }) } catch (e) { } return why('cuota.test') });
   ok(/límite diario gratuito de Cloudflare/.test(cq), `distingue el límite de Cloudflare de un fallo de la web (${cq.slice(0, 50)})`);
+  await ctx.setOffline(true);
+  const off = await p.evaluate(async () => { const h = JSON.stringify(S.hl); refresh(); await new Promise(r => setTimeout(r, 300)); return { same: JSON.stringify(S.hl) === h, loading: S.loading, t: document.querySelector('.toast')?.textContent || '' } });
+  await ctx.setOffline(false);
+  ok(off.same && !off.loading && /Sin conexión/.test(off.t), 'sin red no intenta actualizar ni marca fuentes como rotas');
   ok(errs.length === 0, 'sin errores de JavaScript' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));
   await ctx.close();
 }
