@@ -89,6 +89,7 @@ header{transition:transform .25s}header.hd{transform:translateY(-100%)}
 .ph{position:relative}.ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .cb{padding:16px;display:flex;flex-direction:column;gap:8px;flex:1}
 .meta{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--mu)}
+.meta .chip[data-sf]{position:relative}.meta .chip[data-sf]::after{content:"";position:absolute;inset:-9px -6px} /* zona táctil ≥36 px sin cambiar el diseño */
 .chip{background:var(--tint);color:var(--em);padding:2px 9px;border-radius:99px;font-weight:600;font-size:12px}
 .card h3{font:600 20px/1.25 Newsreader,Georgia,serif;letter-spacing:-.005em}
 .card p{color:var(--mu);font-size:14px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
@@ -648,7 +649,7 @@ async function pool(items,n,fn){let i=0;await Promise.all(Array.from({length:Mat
 function timed(fn,ms=10000){const c=new AbortController();const id=setTimeout(()=>c.abort(),ms);return fn(c.signal).finally(()=>clearTimeout(id))}
 
 // Proxy propio: /p/<host>/... lo atiende _worker.js (Cloudflare Pages)
-const VER='2026-10-21-1';
+const VER='2026-10-21-1.1';
 if(!ls.get('nz_fu',0))ls.set('nz_fu',Date.now());
 const PX=[{f:u=>{const x=new URL(u);return '/p/'+x.host+x.pathname+x.search},can:u=>/^https?:\/\//i.test(u),own:1,n:'propio',ok:0,bad:0,until:0}];
 const addParam=(u,k,v)=>u+(u.includes('?')?'&':'?')+k+'='+v;
