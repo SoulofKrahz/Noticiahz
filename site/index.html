@@ -817,7 +817,7 @@ async function load(){
  const keep=S.news.filter(a=>S.src.some(s=>s.name===a.src)&&Date.now()-a.date<120*864e5);
  const seen=new Set();
  S.news=[...fresh,...keep].filter(a=>!seen.has(a.id)&&seen.add(a.id)).sort((a,b)=>b.date-a.date).slice(0,4000);
- let added=0;S.news.forEach(a=>{const o=old.get(a.id);if(o)a.nw=o.nw;else if(old.size){a.nw=1;added++}});if(added)S.nwPending=1;S.nw=S.news.filter(a=>a.nw).length;badge();
+ let added=0;const nowG=Date.now();S.news.forEach(a=>{const o=old.get(a.id);if(o){a.nw=o.nw;if(o.got)a.got=o.got}else{a.got=a.got||nowG;if(old.size){a.nw=1;added++}}});if(added)S.nwPending=1;S.nw=S.news.filter(a=>a.nw).length;badge();
  const bad=on.filter(x=>S.hl[x.id]===0).length;
  if(LG.run){const r=LG.run;r.ok=todo.filter(x=>S.hl[x.id]>0).length;r.items=fresh.length;r.added=added;r.dur=Date.now()-r.t;
   r.fails=todo.filter(x=>!(S.hl[x.id]>0)).map(x=>({n:x.name,h:host(x.url),r:why(host(x.url))}));
@@ -1127,9 +1127,9 @@ $('#rs').onclick=()=>{resetForm();S.src=DEFAULTS.map(d=>({...d}));S.news=[];save
 $('#sh').onclick=()=>{reseed();render();scrollTo({top:0,behavior:'smooth'});toast('Noticias mezcladas de nuevo')};
 $('#so').onchange=e=>{S.so=e.target.value;render()};
 $('#pe').onchange=e=>{S.pe=+e.target.value;render()};
-// Se guarda el texto completo solo de las 600 más recientes o de los últimos 3 días; del resto, el principio (el lector enlaza al original).
-// Menos datos que leer al abrir la app y menos memoria en el móvil.
-function saveNews(){const now=Date.now(),full=n=>S.news.slice(0,n).map((a,i)=>({...a,_t:undefined,also:undefined,nw:undefined,html:(i<600||now-a.date<2592e5||!a.html)?a.html:a.html.slice(0,1500)}));
+// Texto completo de todo lo descargado en los últimos 30 días. Solo de lo descargado hace más tiempo se guarda el principio
+// (el lector sigue enlazando al original): menos datos que leer al abrir la app y menos memoria en el móvil.
+function saveNews(){const now=Date.now(),full=n=>S.news.slice(0,n).map(a=>({...a,_t:undefined,also:undefined,nw:undefined,html:(!a.html||now-(a.got||a.date)<2592e6)?a.html:a.html.slice(0,1500)}));
  DB.set('nz_news',full(4000)).catch(()=>{[[1500,600],[900,600],[500,600],[250,1500],[120,1500]].some(([n,h])=>ls.set('nz_news',full(n).map(a=>({...a,html:a.html.slice(0,h)}))))})}
 // "Buscar noticias más antiguas": pide la siguiente página de cada fuente visible
 async function deepen(){
@@ -1172,7 +1172,8 @@ setTheme(S.pf.th==='dark'||S.pf.th==='light'?S.pf.th:(sysDark()?'dark':'light'))
 render(true);
 (async()=>{try{navigator.storage.persist()}catch(e){}
  const tI=performance.now();const [n,f,r,dd,sn]=await Promise.all([bigGet('nz_news',[]),bigGet('nz_fav',{}),bigGet('nz_rd',[]),bigGet('nz_dis',[]),bigGet('nz_seen',[])]);S.tdb=Math.round(performance.now()-tI);
- S.news=Array.isArray(n)?n:[];S.news.forEach(a=>{if(MOJ.test(a.title||'')){a.title=fixMoj(a.title);a.snip=fixMoj(a.snip);a.html=fixMoj(a.html)}});S.fav=f&&typeof f==='object'?f:{};S.rd=new Set(Array.isArray(r)?r:[]);S.dis=new Map(Array.isArray(dd)?dd:[]);S.seen=new Map(Array.isArray(sn)?sn:[]);S.ready=1;snapUp();urlFix();S.t0=Math.round(performance.now());
+ S.news=Array.isArray(n)?n:[];{const g=Date.now();S.news.forEach(a=>{if(!a.got)a.got=g})} // noticias de antes de este cambio: cuentan como descargadas hoy, no se recorta nada aún
+ S.news.forEach(a=>{if(MOJ.test(a.title||'')){a.title=fixMoj(a.title);a.snip=fixMoj(a.snip);a.html=fixMoj(a.html)}});S.fav=f&&typeof f==='object'?f:{};S.rd=new Set(Array.isArray(r)?r:[]);S.dis=new Map(Array.isArray(dd)?dd:[]);S.seen=new Map(Array.isArray(sn)?sn:[]);S.ready=1;snapUp();urlFix();S.t0=Math.round(performance.now());
  render(!S.news.length);if(S.news.length)render();shareIn();if(FIRST)obOpen();else load()})();
 // Accesos directos del icono (?a=…) y «Compartir» desde otras apps (share_target: ?st=&sx=&su=)
 let SH=null;
