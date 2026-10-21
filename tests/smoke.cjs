@@ -12,6 +12,7 @@ const rss = host => `<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"><c
 const fails = [];
 const ok = (cond, msg) => { if (!cond) fails.push(msg); console.log((cond ? '  ✓ ' : '  ✗ ') + msg); };
 
+const HITS = {};
 async function run(browser, label, viewport, mobile) {
   console.log(`\n== ${label}`);
   const ctx = await browser.newContext({ viewport, isMobile: mobile, hasTouch: mobile, serviceWorkers: 'block' });
@@ -25,7 +26,9 @@ async function run(browser, label, viewport, mobile) {
     if (rel.startsWith('p/')) {
       const host = rel.split('/')[1];
       if (/aemet|news\.google/.test(host)) return r.fulfill({ status: 404, body: 'no' });
-      if (/mondosonoro/.test(host)) return r.fulfill({ status: 403, body: 'no' });
+      HITS[host] = (HITS[host] || 0) + 1;
+      if (/mondosonoro|roto\.test/.test(host)) return r.fulfill({ status: 403, body: 'no' });
+      if (/viejo\.test/.test(host)) return r.fulfill({ status: 200, contentType: 'application/rss+xml', body: rss(host).replace(/<pubDate>[^<]*/g, '<pubDate>' + new Date(Date.now() - 400 * 864e5).toUTCString()) });
       return r.fulfill({ status: 200, contentType: 'application/rss+xml', body: rss(host) });
     }
     const f = path.join(SITE, rel || 'index.html');
@@ -84,6 +87,17 @@ async function run(browser, label, viewport, mobile) {
   await p.keyboard.press('Escape'); await p.waitForTimeout(250);
   ok(await p.evaluate(() => document.querySelector('#fr').hidden && document.querySelector('#md').classList.contains('show')), 'Esc cierra la ventana y deja Ajustes abierto');
 
+  // 6a) Comprobar fuentes: si falla o la web no publica, la ventana no se cierra y explica el motivo; si va bien, no se descarga dos veces
+  const tryAdd = async (name, url) => { await p.evaluate(([n, u]) => { const fr = document.querySelector('#fr'); if (fr.hidden) document.querySelector('#adb').click(); document.querySelector('#an').value = n; document.querySelector('#au').value = u; document.querySelector('#aa').click() }, [name, url]);
+    await p.waitForFunction(() => !document.querySelector('#aa').disabled, null, { timeout: 60000 }); await p.waitForTimeout(150);
+    return p.evaluate(() => ({ open: !document.querySelector('#fr').hidden, msg: document.querySelector('#fm').textContent, cls: document.querySelector('#fm').className, ak: !document.querySelector('#ak').hidden && document.querySelector('#ak').textContent })) };
+  const ro = await tryAdd('Roto', 'https://roto.test/feed/');
+  ok(ro.open && /No carga: el sitio bloquea al proxy \(403\)/.test(ro.msg) && ro.ak === 'Guardar igualmente', `una fuente que falla no cierra la ventana y dice por qué (${ro.msg.slice(0, 60)})`);
+  const vi = await tryAdd('Viejo', 'https://viejo.test/feed/');
+  ok(vi.open && /warn/.test(vi.cls) && /lo último que ha publicado es del/.test(vi.msg), `una web que no publica avisa en vez de cerrarse (${vi.msg.slice(0, 70)})`);
+  const h0 = HITS['bueno.test'] || 0, bu = await tryAdd('Bueno', 'https://bueno.test/feed/'); await idle();
+  ok(!bu.open && (HITS['bueno.test'] - h0) === 1 && await p.evaluate(() => S.news.some(a => a.src === 'Bueno')), `una fuente buena se añade con lo ya descargado (${HITS['bueno.test'] - h0} descarga)`);
+  await p.evaluate(() => { S.src = S.src.filter(x => x.name !== 'Bueno'); saveSrc() });
   // 6b) El color elegido cambia el manifest (icono de la app instalada); un color libre usa el más parecido
   const ico = await p.evaluate(async () => { const m = () => document.querySelector('link[rel=manifest]').getAttribute('href'); const r = []; document.querySelector('#sws .swc[data-i="2"]').click(); r.push(m()); const ok = (await fetch(m())).ok && (await fetch('ic/azul-mask.png')).ok; r.push(nzIco(200, .9), nzIco(10, .1), nzIco(150, .8)); document.querySelector('#sws .swc[data-i="0"]').click(); r.push(m(), ok); return r });
   ok(ico[0] === 'manifest-azul.webmanifest' && ico[1] === 'azul' && ico[2] === 'grafito' && ico[3] === '' && ico[4] === 'manifest.webmanifest' && ico[5], `el icono de la app sigue al color (${ico.join(', ')})`);
@@ -109,7 +123,7 @@ async function run(browser, label, viewport, mobile) {
 
   // 8) Actualizar solo la categoría visible
   await idle();
-  const sc = await p.evaluate(async c => { S.cat = c; render(); const hit = new Set(), of = window.fetch; window.fetch = (u, o) => { const m = String(u).match(/\/p\/([^/]+)/); if (m) hit.add(m[1]); return of(u, o) }; refresh(); await new Promise(r => setTimeout(r, 300)); while (S.loading) await new Promise(r => setTimeout(r, 100)); window.fetch = of; S.cat = 'Todas'; render(); return [hit.size, S.src.filter(x => x.on && x.cat === c).length] }, cats[1]);
+  const sc = await p.evaluate(async c => { S.cat = c; S.ft = {}; render(); const hit = new Set(), of = window.fetch; window.fetch = (u, o) => { const m = String(u).match(/\/p\/([^/]+)/); if (m) hit.add(m[1]); return of(u, o) }; refresh(); await new Promise(r => setTimeout(r, 300)); while (S.loading) await new Promise(r => setTimeout(r, 100)); window.fetch = of; S.cat = 'Todas'; render(); return [hit.size, S.src.filter(x => x.on && x.cat === c).length] }, cats[1]);
   ok(await p.evaluate(() => /nuevas|Sin noticias nuevas|no ha|no han/.test(document.querySelector('.toast')?.textContent || '')), 'al actualizar a mano avisa del resultado');
   ok(sc[0] <= sc[1] + 1, `actualizar en una categoría solo pide sus fuentes (${sc[0]} sitios para ${sc[1]} fuentes)`);
 

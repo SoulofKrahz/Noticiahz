@@ -11,7 +11,7 @@
 
 const TTL = 300;          // caché en el borde de Cloudflare: 5 min
 const MAX_BYTES = 5e6;    // tamaño máximo de respuesta
-const TIMEOUT_MS = 8000;
+const TIMEOUT_MS = 15000;   // webs lentas (WordPress en hosting barato) tardan más de 8 s
 const UA = 'Mozilla/5.0 (compatible; Noticiahz/1.0)';
 
 const txt = (s, status, extra = {}) =>

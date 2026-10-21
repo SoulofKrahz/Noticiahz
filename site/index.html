@@ -143,7 +143,7 @@ header{transition:transform .25s}header.hd{transform:translateY(-100%)}
 #frov{z-index:55}
 @keyframes popin{from{opacity:0;transform:translate(-50%,-46%)}}
 @media(max-width:760px){.add.pop{top:auto;bottom:0;left:0;right:0;width:auto;transform:none;border-radius:20px 20px 0 0;padding:20px 16px calc(16px + env(safe-area-inset-bottom));max-height:88dvh;animation:sheet .22s cubic-bezier(.2,.8,.2,1)}}.add h3{font:600 19px Newsreader,serif;margin-top:4px}
-.fm{font-size:13.5px;line-height:1.45;padding:10px 12px;border-radius:10px;background:var(--tint)}.fm.err{background:#e5484d1f;color:#d23c41}.chip.bad{background:#e5484d22;color:#d23c41}
+.fm{font-size:13.5px;line-height:1.45;padding:10px 12px;border-radius:10px;background:var(--tint)}.fm.err{background:#e5484d1f;color:#d23c41}.fm.warn{background:#f5a5241f;color:#a8640a}html[data-theme=dark] .fm.warn{color:#f0b452}.rsn{display:block;color:#d23c41;font-size:12px;margin-top:2px}.chip.bad{background:#e5484d22;color:#d23c41}
 pre{font:12.5px/1.6 ui-monospace,Menlo,monospace;white-space:pre-wrap;color:var(--mu)}
 pre .ok{color:var(--em)}pre .err{color:#e5484d}
 .seg{display:flex;background:var(--bg);border:1px solid var(--bd);border-radius:12px;padding:3px;gap:2px}
@@ -639,7 +639,7 @@ function log(m,c=''){if(LG.run)LG.run.notes.push({m,c});else{LG.evs.unshift({t:D
 function why(h){const f=S.nf&&S.nf[h],s=f&&f.s;if(s===undefined)return'no respondió';
  const T={402:'pide pago o ha superado su límite (402)',403:'el sitio bloquea al proxy (403)',404:'esa dirección ya no existe (404)',410:'esa dirección ya no existe (410)',429:'demasiadas peticiones, lo limita el sitio (429)',500:'error del propio sitio (500)',502:'el sitio no respondió bien (502)',503:'sitio caído o en mantenimiento (503)',504:'el sitio tardó demasiado (504)'};
  if(T[s])return T[s];if(typeof s==='number')return`error HTTP ${s}`;
- if(/abort/i.test(s))return'tardó más de 8 s';if(s==='Failed to fetch')return'no se pudo conectar';if(/XML no válido/.test(s))return'la dirección no devuelve un feed válido';if(/Sin artículos|sin titulares/i.test(s))return'no devuelve noticias (puede que la dirección sea una web y no un feed)';return s}
+ if(/abort/i.test(s))return'tardó demasiado en responder';if(s==='Failed to fetch')return'no se pudo conectar';if(/XML no válido/.test(s))return'la dirección no devuelve un feed válido';if(/Sin artículos|sin titulares/i.test(s))return'no devuelve noticias (puede que la dirección sea una web y no un feed)';return s}
 const lgWhen=t=>{const d=new Date(t),h=d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}),n=new Date(),y=new Date(n-864e5),same=(a,b)=>a.toDateString()===b.toDateString();return same(d,n)?`Hoy ${h}`:same(d,y)?`Ayer ${h}`:d.toLocaleDateString('es-ES',{day:'numeric',month:'short'})+' '+h};
 const lgProb=r=>r.fails.length+r.paused.length+r.enc.length+(r.aemet&&!r.aemet.ok?1:0);
 function lgDraw(){const el=$('#p2');if(!el)return;const nf=n=>n.toLocaleString('es-ES'),runs=LG.runs.filter(r=>!LG.only||lgProb(r));
@@ -717,39 +717,45 @@ async function pool(items,n,fn){let i=0;await Promise.all(Array.from({length:Mat
 function timed(fn,ms=10000){const c=new AbortController();const id=setTimeout(()=>c.abort(),ms);return fn(c.signal).finally(()=>clearTimeout(id))}
 
 // Proxy propio: /p/<host>/... lo atiende _worker.js (Cloudflare Pages)
-const VER='2026-10-21-4.1';
+const VER='2026-10-21-5';
 if(!ls.get('nz_fu',0))ls.set('nz_fu',Date.now());
 const PX=[{f:u=>{const x=new URL(u);return '/p/'+x.host+x.pathname+x.search},can:u=>/^https?:\/\//i.test(u),own:1,n:'propio',ok:0,bad:0,until:0}];
 const addParam=(u,k,v)=>u+(u.includes('?')?'&':'?')+k+'='+v;
 const pe=m=>{const e=Error(m);e.name='ParseError';return e};
 // Descarga a través del proxy propio (/p/… en _worker.js). Sin servicios públicos de terceros.
-function viaProxies(url,src){
+function viaProxies(url,src,ms=10000){
  const t=Date.now(),order=PX.filter(p=>p.until<=t&&(!p.can||p.can(url))).sort((a,b)=>(b.ok-b.bad)-(a.ok-a.bad));
  if(!order.length)return Promise.reject(Error('sin proxies disponibles'));
  return new Promise((res,rej)=>{
   let i=0,fails=0,done=false,tm;
   const next=()=>{if(done||i>=order.length)return;const p=order[i++];clearTimeout(tm);if(i<order.length)tm=setTimeout(next,3000);
-   timed(async sg=>{const r=await fetch(p.f(url),{signal:sg});if(!r.ok){const e=Error('HTTP '+r.status);e.st=r.status;throw e}return parse(await readXml(r),src)},8000)
+   timed(async sg=>{const r=await fetch(p.f(url),{signal:sg});if(!r.ok){const e=Error('HTTP '+r.status);e.st=r.status;throw e}return parse(await readXml(r),src)},ms)
    .then(v=>{p.ok++;if(!done){done=true;clearTimeout(tm);res(v)}})
    .catch(e=>{p.last=e.message;if(e.st)(p.hs=p.hs||{})[e.st]=(p.hs[e.st]||0)+1;if(p.own)try{const h=new URL(url).host,o=((S.nf=S.nf||{})[h]=S.nf[h]||{n:0});o.n++;o.s=e.st||e.message}catch(x){}if(e.name!=='ParseError')p.bad++;if(++fails>=order.length&&!done){done=true;clearTimeout(tm);rej(e)}else next()})};
   next();
  })}
 // Comprueba una fuente; si la URL es una web (no un feed), intenta detectar el feed en rutas habituales
-async function check(src){
- const items=await getFeed(src);if(items)return{items,url:src.url,via:'feed'};
- let u;try{u=new URL(src.url)}catch{return null}
- const any=async(list,via)=>{list=[...new Set(list)].filter(x=>x&&x!==src.url);if(!list.length)return null;const rs=await Promise.allSettled(list.map(async x=>({items:await viaProxies(x,src),url:x,via})));const ok=rs.find(x=>x.status==='fulfilled'&&x.value.items.length);return ok?ok.value:null};
+async function check(src,step=()=>{}){
+ const T=15000;step('Probando la dirección…');
+ try{const items=await viaProxies(src.url,src,T);if(items.length)return{items,url:src.url,via:'feed'}}catch(e){}
+ let u;try{u=new URL(src.url)}catch{return{fail:1,why:'la dirección no es válida'}}
+ const why0=why(u.host);
+ const any=async(list,via)=>{list=[...new Set(list)].filter(x=>x&&x!==src.url);if(!list.length)return null;const rs=await Promise.allSettled(list.map(async x=>({items:await viaProxies(x,src,T),url:x,via})));const ok=rs.find(x=>x.status==='fulfilled'&&x.value.items.length);return ok?ok.value:null};
  const o=u.origin;let r;
  // 1) Rutas habituales de feed (WordPress, Blogger, Ghost, Substack, periódicos…)
+ step('Buscando el feed en las rutas habituales…');
  if(r=await any(['/feed','/rss','/feed/','/rss/','/feed.xml','/rss.xml','/index.xml','/atom.xml','/feeds/posts/default','/?feed=rss2','/feed/rss','/rss/portada.xml','/rss/home.xml'].map(x=>o+x),'feed'))return r;
  // 2) Feeds enlazados en la página o en la portada (<link rel=alternate> y enlaces que parecen feeds)
+ step('Buscando enlaces a feeds dentro de la web…');
  if(r=await any((await discover(u,true)).slice(0,8),'feed'))return r;
  // 3) Sitemap de noticias
+ step('Probando el sitemap de noticias…');
  if(r=await sitemapFeed(u,src))return r;
  // 4) Último recurso: Google News de esa web (titular, fecha y enlace)
+ step('Último intento: Google News…');
  const h=u.hostname.replace(/^www\./,'');
- if(r=await any([`https://news.google.com/rss/search?q=site:${h}+when:3d&hl=es&gl=ES&ceid=ES:es`],'google'))return r;
- return null;
+ if(r=await any([`https://news.google.com/rss/search?q=site:${h}+when:7d&hl=es&gl=ES&ceid=ES:es`],'google'))return r;
+ return{fail:1,why:why0};
 }
 async function fetchTxt(x,ms=8000){return timed(async sg=>{const r=await fetch(PX[0].f(x),{signal:sg});if(!r.ok)throw Error('HTTP '+r.status);return(await r.text()).slice(0,6e6)},ms)}
 async function sitemapFeed(u,src){const o=u.origin,isNews=x=>/news|noticia|ultim|actualidad/i.test(x);let c=[];
@@ -815,6 +821,8 @@ async function load(){
   S.hl[x.id]=a?a.length:0;if(a)S.ft[x.id]=Date.now();{const f=S.nf&&S.nf[host(x.url)];if(f&&(f.s===402||f.s===429))(S.bo=S.bo||{})[x.id]=Date.now()+216e5}res.push(a||[]);rl.textContent=`${++done}/${todo.length}`});
  rl.textContent='Actualizar';ls.set('nz_dp',S.dp);
  const det=x=>{const f=S.nf&&S.nf[host(x.url)];return f&&(f.s==='Failed to fetch'||f.s===403||f.s===404)};
+ const slow=todo.filter(x=>S.hl[x.id]===0&&/abort|^50[24]$/i.test(String((S.nf[host(x.url)]||{}).s)));
+ if(slow.length)await pool(slow,4,async x=>{try{const a=await viaProxies(x.url,x,16000);if(a&&a.length){S.hl[x.id]=a.length;S.ft[x.id]=Date.now();res.push(a)}}catch(e){}});
  const sick=todo.filter(x=>S.hl[x.id]===0);
  if(sick.length){await pool(sick,3,async x=>{const h=await heal(x);if(h&&!S.src.some(o=>o!==x&&o.url===h.url)){if(LG.run)LG.run.fixed.push({n:x.name,u:h.url});x.url=h.url;S.hl[x.id]=h.items.length;S.ft[x.id]=Date.now();res.push(h.items)}});
   ls.set('nz_src',S.src)}
@@ -825,6 +833,7 @@ async function load(){
  const seen=new Set();
  S.news=[...fresh,...keep].filter(a=>!seen.has(a.id)&&seen.add(a.id)).sort((a,b)=>b.date-a.date).slice(0,4000);
  let added=0;const nowG=Date.now();S.news.forEach(a=>{const o=old.get(a.id);if(o){a.nw=o.nw;if(o.got)a.got=o.got}else{a.got=a.got||nowG;if(old.size){a.nw=1;added++}}});if(added)S.nwPending=1;S.nw=S.news.filter(a=>a.nw).length;badge();
+ S.hr=S.hr||{};todo.forEach(x=>{if(S.hl[x.id]===0)S.hr[x.id]=why(host(x.url));else delete S.hr[x.id]});
  const bad=on.filter(x=>S.hl[x.id]===0).length;
  if(LG.run){const r=LG.run;r.ok=todo.filter(x=>S.hl[x.id]>0).length;r.items=fresh.length;r.added=added;r.dur=Date.now()-r.t;
   r.fails=todo.filter(x=>!(S.hl[x.id]>0)).map(x=>({n:x.name,h:host(x.url),r:why(host(x.url))}));
@@ -964,7 +973,7 @@ function srcs(){
  const cnt={};S.news.forEach(a=>cnt[a.src]=(cnt[a.src]||0)+1);const g={};S.src.forEach((s,i)=>{if(smatch(s))(g[s.cat]=g[s.cat]||[]).push([s,i])});
  if(!S.ord)Object.values(g).forEach(a=>a.sort((p,q)=>(q[0].fav?1:0)-(p[0].fav?1:0)));
  const star=(s,i)=>`<button class="gb ${s.fav?'on':''}" data-fv="${i}" aria-label="${s.fav?'Quitar de favoritas':'Marcar como favorita'}" title="${s.fav?'Quitar de favoritas':'Favorita'}"><svg class="i"><use href="#fs"/></svg></button>`;
- const row=([s,i])=>`<div class="row">${S.ord?'':`<label class="sw"><input type="checkbox" data-t="${i}" ${s.on?'checked':''} aria-label="Activar ${esc(s.name)}"><span></span></label>`}<div><div class="nl"><b>${esc(s.name)}</b>${S.hl[s.id]===0?'<span class="chip bad">No carga</span>':''}</div><small class="sm"><span>${esc(host(s.url))}</span><span>· <strong>${cnt[s.name]||0}</strong> noticias</span></small></div>${star(s,i)}${S.ord?`<button class="gb" data-mu="${esc(s.id)}" aria-label="Subir"><svg class="i"><use href="#u"/></svg></button><button class="gb" data-md="${esc(s.id)}" aria-label="Bajar"><svg class="i"><use href="#dn"/></svg></button>`:`<button class="gb" data-e="${i}" aria-label="Editar"><svg class="i"><use href="#p"/></svg></button><button class="gb dg" data-d="${i}" aria-label="Eliminar"><svg class="i"><use href="#t"/></svg></button>`}</div>`;
+ const row=([s,i])=>`<div class="row">${S.ord?'':`<label class="sw"><input type="checkbox" data-t="${i}" ${s.on?'checked':''} aria-label="Activar ${esc(s.name)}"><span></span></label>`}<div><div class="nl"><b>${esc(s.name)}</b>${S.hl[s.id]===0?'<span class="chip bad">No carga</span>':''}</div><small class="sm"><span>${esc(host(s.url))}</span><span>· <strong>${cnt[s.name]||0}</strong> noticias</span></small>${S.hl[s.id]===0&&S.hr&&S.hr[s.id]?`<small class="rsn">${esc(S.hr[s.id][0].toUpperCase()+S.hr[s.id].slice(1))}. Pulsa editar para comprobarla.</small>`:''}</div>${star(s,i)}${S.ord?`<button class="gb" data-mu="${esc(s.id)}" aria-label="Subir"><svg class="i"><use href="#u"/></svg></button><button class="gb" data-md="${esc(s.id)}" aria-label="Bajar"><svg class="i"><use href="#dn"/></svg></button>`:`<button class="gb" data-e="${i}" aria-label="Editar"><svg class="i"><use href="#p"/></svg></button><button class="gb dg" data-d="${i}" aria-label="Eliminar"><svg class="i"><use href="#t"/></svg></button>`}</div>`;
  $('#sl').innerHTML=S.cats.filter(c=>g[c]).map(c=>[c,g[c]]).map(([c,a])=>`<div class="gh"><span>${esc(c)} · ${a.length}</span>${S.ord?'':`<button class="tg" data-g="${esc(c)}">${a.every(([x])=>x.on)?'Desactivar todas':'Activar todas'}</button>`}</div><div class="gc">`+a.map(row).join('')+'</div>').join('');
  const shown=Object.values(g).reduce((t,a)=>t+a.length,0);
  if(!shown)$('#sl').innerHTML='<p class="hint">Ninguna fuente coincide con tu búsqueda.</p>';
@@ -1102,11 +1111,14 @@ $('#sl').addEventListener('click',async e=>{
  if(ed){const f=S.src[ed.dataset.e];resetForm();S.edit=+ed.dataset.e;$('#an').value=f.name;$('#au').value=f.url;$('#ac').value=f.cat;$('#ft').textContent='Editar fuente';$('#aa').textContent='Comprobar y guardar';$('#fr').hidden=false}
 });
 const fm=(m,c='')=>{const e=$('#fm');e.hidden=!m;e.className='w fm '+c;e.textContent=m||''};
-function resetForm(){S.edit=null;S.pend=null;$('#an').value=$('#au').value='';fillCats(defCat());$('#ft').textContent='Añadir fuente';$('#aa').textContent='Comprobar y añadir';$('#ak').hidden=true;$('#fr').hidden=true;fm('')}
-function commit(f){
- const ed=S.edit!==null;
- if(ed){S.news=S.news.filter(a=>a.src!==S.src[S.edit].name);S.src[S.edit]={...S.src[S.edit],...f}}else S.src.push({id:'u'+Date.now(),on:true,...f});
- resetForm();saveSrc();toast(ed?'Fuente actualizada':'Fuente añadida');load();S.dirty=0;
+function resetForm(){S.edit=null;S.pend=null;$('#ak').textContent='Guardar igualmente';$('#an').value=$('#au').value='';fillCats(defCat());$('#ft').textContent='Añadir fuente';$('#aa').textContent='Comprobar y añadir';$('#ak').hidden=true;$('#fr').hidden=true;fm('')}
+function commit(f,items){
+ const ed=S.edit!==null;let x;
+ if(ed){S.news=S.news.filter(a=>a.src!==S.src[S.edit].name);x=S.src[S.edit]={...S.src[S.edit],...f}}else{x={id:'u'+Date.now(),on:true,...f};S.src.push(x)}
+ // Lo que ya se descargó al comprobar se usa tal cual: no hace falta pedirlo otra vez
+ if(items&&items.length){const now=Date.now(),have=new Set(S.news.map(a=>a.id)),add=items.filter(a=>a.link&&now-a.date<120*864e5&&!have.has(a.id)).map(a=>({...a,got:now}));
+  S.news=[...add,...S.news].sort((a,b)=>b.date-a.date);S.hl[x.id]=items.length;S.ft[x.id]=now;if(S.hr)delete S.hr[x.id];saveNews()}
+ const msg=ed?'Fuente actualizada':'Fuente añadida';resetForm();saveSrc();if(!items)toast(msg);load();S.dirty=0;
 }
 $('#aa').onclick=async()=>{
  const f={name:$('#an').value.trim(),url:$('#au').value.trim(),cat:$('#ac').value.trim()||'General'},o=S.src.filter((x,i)=>i!==S.edit);
@@ -1114,15 +1126,21 @@ $('#aa').onclick=async()=>{
  if(!/^https?:\/\//i.test(f.url))return fm('La dirección debe empezar por http:// o https://','err');
  if(o.some(x=>x.url===f.url))return fm('Esa fuente ya está en tu lista.','err');
  if(o.some(x=>srcKey(x)===srcKey(f)))return fm('Ya tienes una fuente con ese nombre.','err');
- const b=$('#aa'),lbl=b.textContent;b.disabled=true;b.textContent='Comprobando…';$('#ak').hidden=true;S.pend=null;fm('Comprobando que el feed carga noticias…');
- const r=await check(f);
+ const b=$('#aa'),lbl=b.textContent;b.disabled=true;b.textContent='Comprobando…';akSet(0);S.pend=null;
+ const r=await check(f,m=>fm(m));
  b.disabled=false;b.textContent=lbl;
- if(!r){S.pend=f;$('#ak').hidden=false;return fm('No se ha podido cargar ninguna noticia de esta dirección. He probado el feed, la página, el sitemap de noticias y Google News sin éxito. Si estás seguro de que la dirección es correcta, puedes guardarla igualmente.','err')}
- if(r.url!==f.url&&o.some(x=>x.url===r.url)){S.pend=null;return fm(`El feed de esa web ya está en tu lista (${esc(o.find(x=>x.url===r.url).name)}).`,'err')}
- const found=r.url!==f.url;f.url=r.url;commit(f);
- toast(r.via==='google'?`Añadida vía Google News (${r.items.length} noticias, sin imagen ni resumen)`:r.via==='sitemap'?`Añadida vía sitemap de noticias (${r.items.length} noticias)`:found?`Feed detectado automáticamente (${r.items.length} noticias)`:`${r.items.length} noticias encontradas`);
+ if(r.fail){S.pend={f};akSet('Guardar igualmente');return fm(`No carga: ${r.why}. He probado también las rutas de feed habituales, los enlaces de la web, el sitemap de noticias y Google News, sin éxito. Revisa la dirección; si sabes que es correcta, puedes guardarla igualmente.`,'err')}
+ if(r.url!==f.url&&o.some(x=>x.url===r.url))return fm(`El feed de esa web ya está en tu lista (${o.find(x=>x.url===r.url).name}).`,'err');
+ const found=r.url!==f.url,newest=Math.max(...r.items.map(a=>a.date)),age=Date.now()-newest,last=new Date(newest).toLocaleDateString('es-ES',{day:'numeric',month:'long',year:'numeric'});
+ f.url=r.url;const n=r.items.length;
+ const how=r.via==='google'?`Solo carga a través de Google News: ${n} titulares de los últimos días, sin imagen ni resumen.`:r.via==='sitemap'?`Solo carga a través de su sitemap de noticias: ${n} titulares, sin resumen.`:'';
+ if(age>45*864e5){S.pend={f,items:r.items};akSet('Guardar igualmente');return fm(`El feed funciona (${n} noticias), pero lo último que ha publicado es del ${last}. ${age>120*864e5?'Son demasiado antiguas para mostrarse, por eso no ves nada suyo.':'Publica muy poco.'} No es un fallo de la dirección: esta web apenas publica.`,'warn')}
+ if(how){S.pend={f,items:r.items};akSet('Guardar así');return fm(`${how} ${found?'No he encontrado un feed propio.':''} Última noticia: ${last}.`,'warn')}
+ commit(f,r.items);
+ toast(found?`Feed detectado automáticamente (${n} noticias)`:`${n} noticias encontradas`);
 };
-$('#ak').onclick=()=>{if(S.pend)commit(S.pend)};
+function akSet(t){$('#ak').hidden=!t;if(t)$('#ak').textContent=t}
+$('#ak').onclick=()=>{if(!S.pend)return;const{f,items}=S.pend;commit(f,items);toast(S.edit===null?'Fuente añadida':'Fuente actualizada')};
 $('#ac2').onclick=resetForm;
 $('#sq').addEventListener('input',e=>{S.sq=e.target.value;srcs()});
 $('#adb').onclick=()=>{const was=!$('#fr').hidden&&S.edit===null;resetForm();$('#fr').hidden=was};
@@ -1454,7 +1472,7 @@ function revUi(){const now=Date.now(),m=new Map();S.src.forEach(x=>m.set(x.name,
  const srt={p:(a,b)=>a.x.name.localeCompare(b.x.name),i:(a,b)=>a.last-b.last,s:(a,b)=>b.n30-a.n30,m:(a,b)=>a.x.name.localeCompare(b.x.name),t:(a,b)=>a.x.name.localeCompare(b.x.name)};
  const list=all.filter(F[rvF]).sort(srt[rvF]);
  const ch=(t,bad)=>`<span class="chip${bad?' bad':''}">${t}</span>`;
- const rows=list.slice(0,rvN).map(r=>{const x=r.x;return`<div class="row"><div><div class="nl"><b>${esc(x.name)}</b>${r.bad?ch('No carga',1):''}${r.mu?ch('Silenciada'):''}${x.on?'':ch('Desactivada')}</div><small class="rvm">${esc(x.cat)} · ${r.n30} en 30 d · última ${r.last?ago(r.last).toLowerCase():'sin noticias'}<br>${r.op} abiertas · ${r.sv} guardadas · ${r.ds} descartadas</small></div>${r.mu?`<button class="rvb" data-ru="${esc(x.name)}">Reactivar</button>`:''}<label class="sw"><input type="checkbox" data-rt="${esc(x.id)}" ${x.on?'checked':''} aria-label="Activar ${esc(x.name)}"><span></span></label><button class="gb dg" data-rx="${esc(x.id)}" aria-label="Eliminar"><svg class="i"><use href="#t"/></svg></button></div>`}).join('');
+ const rows=list.slice(0,rvN).map(r=>{const x=r.x;return`<div class="row"><div><div class="nl"><b>${esc(x.name)}</b>${r.bad?ch('No carga',1):''}${r.mu?ch('Silenciada'):''}${x.on?'':ch('Desactivada')}</div>${r.bad&&S.hr&&S.hr[x.id]?`<small class="rsn">${esc(S.hr[x.id][0].toUpperCase()+S.hr[x.id].slice(1))}</small>`:''}<small class="rvm">${esc(x.cat)} · ${r.n30} en 30 d · última ${r.last?ago(r.last).toLowerCase():'sin noticias'}<br>${r.op} abiertas · ${r.sv} guardadas · ${r.ds} descartadas</small></div>${r.mu?`<button class="rvb" data-ru="${esc(x.name)}">Reactivar</button>`:''}<label class="sw"><input type="checkbox" data-rt="${esc(x.id)}" ${x.on?'checked':''} aria-label="Activar ${esc(x.name)}"><span></span></label><button class="gb dg" data-rx="${esc(x.id)}" aria-label="Eliminar"><svg class="i"><use href="#t"/></svg></button></div>`}).join('');
  $('#rvl').innerHTML=list.length?`<div class="gc">${rows}</div>`+(list.length>rvN?`<div class="more" style="padding-top:12px"><button class="btn o" id="rvm" style="margin:0">Ver más (${list.length-rvN})</button></div>`:''):'<p class="hint">Nada que mostrar aquí.</p>'}
 $('#rvf').onclick=e=>{const b=e.target.closest('[data-f]');if(b){rvF=b.dataset.f;rvN=40;revUi()}};
 $('#rvl').addEventListener('change',e=>{const id=e.target.dataset.rt;if(!id)return;const x=S.src.find(z=>z.id===id);if(x){x.on=e.target.checked;saveSrc();revUi()}});
