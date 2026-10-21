@@ -432,7 +432,7 @@ main .card .ph{border-radius:0;background:var(--tint);aspect-ratio:16/9}.card .p
   <div class="ov show" id="mov"></div>
   <div class="mb" role="dialog" aria-modal="true" aria-label="Ajustes">
     <div class="mh"><div class="mht"><span class="mhi"><svg class="i"><use href="#cog"/></svg></span><div><h2>Ajustes</h2><small>Personaliza tu Noticiahz</small></div></div><button class="ib" id="mx" aria-label="Cerrar"><svg class="i"><use href="#x"/></svg></button></div>
-    <div class="mt"><button class="on" id="t1">Fuentes</button><button id="t6">Apariencia</button><button id="t7">Contenido</button><button id="t9">Backup</button><button id="t8">Avanzado</button></div>
+    <div class="mt"><button class="on" id="t1">Fuentes</button><button id="t6">Apariencia</button><button id="t7">Contenido</button><button id="t9">Datos</button><button id="t8">Avanzado</button></div>
     <div class="mc">
       <div id="pF">
         <div class="stk"><div class="seg" id="sgF"><button class="on" data-s="l">Lista</button><button data-s="r">Revisión</button><button data-s="c">Categorías</button></div></div>
@@ -843,7 +843,7 @@ async function loadRun(){
   LG.runs.unshift(r);LG.runs=LG.runs.slice(0,15);LG.run=null;lgSave();lgDraw()}
  saveNews();
  $('#upd').textContent='Actualizado a las '+new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
- S.loading=false;S.last=Date.now();spinAll(false);loadAlerts();setTimeout(()=>{const r=LG.runs[0];if(r&&Date.now()-r.t<6e4){r.tech=`Técnico: v${VER} · ${S.news.length} noticias en memoria · pintado ${S.rt} ms · arranque ${S.t0} ms (código ${S.tsc} · datos ${S.tdb} · feed visible ${S.tp} · textos ${S.tb}) ms`;lgSave();lgDraw()}},700);
+ S.loading=false;S.last=Date.now();spinAll(false);loadAlerts();setTimeout(()=>{const r=LG.runs[0];if(r&&Date.now()-r.t<6e4){r.tech=`Técnico: v${VER} · ${S.news.length} noticias en memoria · pintado ${S.rt} ms · arranque ${S.t0} ms (código ${S.tsc} · datos ${S.tdb} · feed visible ${S.tp} · textos ${S.tb} ms)`;lgSave();lgDraw()}},700);
  if(!todo.length)toast('Ya estás al día');else if(Object.values(S.nf||{}).some(f=>f.s==='cf'))toast(`El proxy no responde: posible límite diario de Cloudflare (vuelve a las ${cfReset()})`);else if(!fresh.length)toast(navigator.onLine?'No se pudo conectar. Revisa el registro.':'Sin conexión');else if(bad)toast(`${added?added+' nuevas · ':''}${bad} ${bad===1?'fuente no ha respondido':'fuentes no han respondido'}`);else if(man)toast(added?`${added} ${added===1?'noticia nueva':'noticias nuevas'}`:'Sin noticias nuevas');
  render();
 }
@@ -882,13 +882,13 @@ function mix(list){const c={},now=Date.now();
 const saveRd=()=>{if(!S.ready)return;if(S.last&&S.news.length){const k=new Set(S.news.map(a=>a.id));Object.keys(S.fav).forEach(i=>k.add(i));S.rd.forEach(i=>k.has(i)||S.rd.delete(i))}bigSet('nz_rd',[...S.rd])};
 const markRead=a=>{if(!S.rd.has(a.id))lrAdd(a.src,'p',1);S.rd.add(a.id);saveRd()};
 function tabs(){
- mapCats();const nDis=disList().length,cats=['Todas',...S.cats.filter(c=>S.src.some(x=>x.on&&x.cat===c)),'Guardadas',...(nDis||S.cat==='Descartadas'?['Descartadas']:[])];
+ mapCats();const DL=disList(),nDis=DL.length,cats=['Todas',...S.cats.filter(c=>S.src.some(x=>x.on&&x.cat===c)),'Guardadas',...(nDis||S.cat==='Descartadas'?['Descartadas']:[])];
  if(!cats.includes(S.cat))S.cat='Todas';
  const ci=c=>{const k=S.cats.indexOf(c);return k<0?999:k};
- const nm=S.cat==='Guardadas'?[...new Set(Object.values(S.fav).map(a=>a.src))]:S.cat==='Descartadas'?[...new Set(disList().map(a=>a.src))]:S.src.filter(s=>s.on&&(S.cat==='Todas'||s.cat===S.cat)).sort((a,b)=>(b.fav?1:0)-(a.fav?1:0)||(S.cat==='Todas'?ci(a.cat)-ci(b.cat):0)).map(s=>s.name);
+ const nm=S.cat==='Guardadas'?[...new Set(Object.values(S.fav).map(a=>a.src))]:S.cat==='Descartadas'?[...new Set(DL.map(a=>a.src))]:S.src.filter(s=>s.on&&(S.cat==='Todas'||s.cat===S.cat)).sort((a,b)=>(b.fav?1:0)-(a.fav?1:0)||(S.cat==='Todas'?ci(a.cat)-ci(b.cat):0)).map(s=>s.name);
  if(S.sf!=='Todas'&&!nm.includes(S.sf))S.sf='Todas';
  const sr=$('#srcs');sr.hidden=!nm.length; // siempre visible si hay al menos una fuente
- const cn={};(S.cat==='Guardadas'?Object.values(S.fav):S.cat==='Descartadas'?disList():S.news.filter(a=>!S.dis.has(a.id)&&!isMuted(a)&&!smOn(a.src))).forEach(a=>{if(S.cat==='Todas'||S.cat==='Guardadas'||S.cat==='Descartadas'||catOf(a)===S.cat)cn[a.src]=(cn[a.src]||0)+1});
+ const cn={};(S.cat==='Guardadas'?Object.values(S.fav):S.cat==='Descartadas'?DL:S.news.filter(a=>!S.dis.has(a.id)&&!isMuted(a)&&!smOn(a.src))).forEach(a=>{if(S.cat==='Todas'||S.cat==='Guardadas'||S.cat==='Descartadas'||catOf(a)===S.cat)cn[a.src]=(cn[a.src]||0)+1});
  sr.innerHTML=`<button class="sc ${S.sf==='Todas'?'on':''}" data-sf="Todas">Todas</button>`+nm.map(n=>`<button class="sc ${n===S.sf?'on':''}" data-sf="${esc(n)}"><i style="--h:${hue(n)}">${esc(n[0])}</i>${esc(n)} <em>${cn[n]||0}</em></button>`).join('');
  const fc=(S.so!=='mix')+(S.pe>0)+S.un+!!S.fo,fn=$('#fn');fn.hidden=!fc;fn.textContent=fc;const f2=$('#fn2');f2.hidden=!fc;f2.textContent=fc;
  $('#tabs').innerHTML=cats.map(c=>`<button class="tab ${c===S.cat?'on':''}" data-c="${esc(c)}">${esc(c)}${c==='Descartadas'&&nDis?` <small class="cnt">${nDis}</small>`:''}${c==='Guardadas'&&Object.keys(S.fav).length?` <small class="cnt">${Object.keys(S.fav).length}</small>`:''}</button>`).join('');
