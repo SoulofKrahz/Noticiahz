@@ -23,9 +23,10 @@
  var bgD=N('#0d1523'),cdD=N('#152033'),bdD=N('#243249'),txD=N('#e8eef7'),muD=N('#98a8bd');
  var ld=58;while(ld<90&&cr(C(h,s*.75,ld),cdD)<6.5)ld++;var emD=C(h,s*.75,ld);
  var l2d=Math.max(ld-12,36);var e2D=C(h,s*.8,l2d),onD=C(h,.6,6);
- var css='html:root{--bg:'+hx(bg)+';--card:#fff;--bd:'+hx(bd)+';--tx:'+hx(tx)+';--mu:'+hx(mu)+';--em:'+hx(em)+';--em2:'+hx(e2)+';--tint:'+hx(tint)+';--onem:#fff}'
-  +'html[data-theme=dark]{--bg:'+hx(bgD)+';--card:'+hx(cdD)+';--bd:'+hx(bdD)+';--tx:'+hx(txD)+';--mu:'+hx(muD)+';--em:'+hx(emD)+';--em2:'+hx(e2D)+';--tint:hsla('+Math.round(h)+','+Math.round(s*80)+'%,48%,.14);--onem:'+hx(onD)+'}';
- return{css:css,barL:hx(em),barD:hx(bgD),fav:hx(e2)}};
+ var K=N('#06150f'),lt=cr(e2,K)<2.6,ltD=cr(e2D,K)<2.6,lv=function(f,c){return';--lgn:'+(f?'#fff':'#06150f')+';--lgh:'+(f?hx(c):'transparent')};
+ var css='html:root{--bg:'+hx(bg)+';--card:#fff;--bd:'+hx(bd)+';--tx:'+hx(tx)+';--mu:'+hx(mu)+';--em:'+hx(em)+';--em2:'+hx(e2)+';--tint:'+hx(tint)+';--onem:#fff'+lv(lt,e2)+'}'
+  +'html[data-theme=dark]{--bg:'+hx(bgD)+';--card:'+hx(cdD)+';--bd:'+hx(bdD)+';--tx:'+hx(txD)+';--mu:'+hx(muD)+';--em:'+hx(emD)+';--em2:'+hx(e2D)+';--tint:hsla('+Math.round(h)+','+Math.round(s*80)+'%,48%,.14);--onem:'+hx(onD)+lv(ltD,e2D)+'}';
+ return{css:css,barL:hx(em),barD:hx(bgD),fav:hx(e2),lt:lt}};
 window.nzApply=function(h,s){var st=document.getElementById('acs');if(h==null||isNaN(h)){if(st)st.remove();window.nzLast=null;return null}var a=nzAcc(+h,s==null?.85:+s);if(!st){st=document.createElement('style');st.id='acs';document.head.appendChild(st)}st.textContent=a.css;window.nzLast=a;return a};
 // Icono de la app instalada: cada color de la paleta tiene su manifest con iconos de ese color; un color personalizado usa el más parecido.
 window.nzIco=function(h,s){if(h==null||isNaN(h))return'';h=+h;s=s==null?.85:+s;if(s<.3)return'grafito';var P=[['',152],['turquesa',185],['azul',214],['indigo',243],['violeta',272],['rosa',328],['coral',6],['naranja',27],['ambar',42]],b=P[0],d=1e9;P.forEach(function(x){var e=Math.abs(h-x[1])%360;e=Math.min(e,360-e);if(e<d){d=e;b=x}});return b[0]};
@@ -294,7 +295,7 @@ body.qs .qd{display:flex}.qd input{flex:1;min-width:0;padding:10px 12px;border:1
 .amr{display:flex;gap:8px;margin-bottom:14px}.amr button{flex:1;padding:12px 6px;border:1px solid var(--bd);border-radius:12px;background:var(--bg);font-weight:600;font-size:13.5px}.amr button:active{background:var(--tint);color:var(--em)}
 .amt{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:12.5px;font-weight:600;color:var(--mu);padding:2px 2px 8px}.am .seg button{flex:none;padding:6px 12px;font-size:12.5px}.am .af{padding-bottom:4px}
 #rvf{overflow-x:auto;scrollbar-width:none}#rvf button{flex:none;white-space:nowrap;padding:9px 12px}.row small.rvm{white-space:normal}.rvb{font-size:12.5px;font-weight:600;color:var(--em);padding:6px 10px;border:1px solid var(--em2);border-radius:99px;white-space:nowrap}
-.lgi rect{fill:var(--em2)}
+.lgi rect{fill:var(--em2)}.lgi .n{stroke:var(--lgn,#06150f)}.lgi .h{stroke:var(--lgh,none)}
 .sws{display:flex;flex-wrap:wrap;gap:12px;margin-top:14px}.swc{width:40px;height:40px;border-radius:50%;border:2px solid var(--card);box-shadow:0 0 0 1px var(--bd);flex:none}.swc.on{box-shadow:0 0 0 2px var(--card),0 0 0 4px var(--em2)}
 .gb.on{color:#e3a008}.gb.on svg{fill:currentColor}
 .obf{padding:12px 16px calc(12px + env(safe-area-inset-bottom));border-top:1px solid var(--bd);background:var(--card);border-radius:0}
@@ -386,7 +387,7 @@ main .card .ph{border-radius:0;background:var(--tint);aspect-ratio:16/9}.card .p
 </defs></svg>
 
 <header><div class="wrap"><div class="bar">
-  <div class="logo" role="img" aria-label="Noticiahz"><svg class="lgi" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="15" fill="#0a9d5c"/><path d="M21.5 17.5V50M21.5 34C21.5 25 27 22 33 22C40 22 44 26.5 44 33V50" fill="none" stroke="#06150f" stroke-width="9"/><path d="M7 41H25L29 29L34 51L38 36L41 41H57" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="lw" aria-hidden="true">noticia<em>hz</em></span><svg class="lp" viewBox="0 0 44 24" aria-hidden="true"><path d="M1 13H13L17 2L23 21L27 8L30 13H43"/></svg></div>
+  <div class="logo" role="img" aria-label="Noticiahz"><svg class="lgi" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="15" fill="#0a9d5c"/><path class="n" d="M21.5 17.5V50M21.5 34C21.5 25 27 22 33 22C40 22 44 26.5 44 33V50" fill="none" stroke="#06150f" stroke-width="9"/><path class="h" d="M7 41H25L29 29L34 51L38 36L41 41H57" fill="none" stroke="none" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 41H25L29 29L34 51L38 36L41 41H57" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="lw" aria-hidden="true">noticia<em>hz</em></span><svg class="lp" viewBox="0 0 44 24" aria-hidden="true"><path d="M1 13H13L17 2L23 21L27 8L30 13H43"/></svg></div>
   <label class="search"><svg class="i"><use href="#s"/></svg><input id="q" type="search" placeholder="Buscar en las noticias" aria-label="Buscar" autocomplete="off" enterkeyhint="search"></label>
   <button class="ib sb" id="sb" title="Buscar" aria-label="Buscar"><svg class="i"><use href="#s"/></svg></button>
   <button class="ib" id="th" title="Cambiar tema" aria-label="Cambiar tema"><svg class="i"><use href="#m"/></svg></button>
@@ -492,7 +493,7 @@ main .card .ph{border-radius:0;background:var(--tint);aspect-ratio:16/9}.card .p
           <div class="seg" id="sg-rf"><button data-v="30">30 min</button><button data-v="60">1 hora</button><button data-v="0">Nunca</button></div></section><section class="set"><h3>Noticias por fuente</h3><p>Cuántas páginas de cada fuente se descargan. Más páginas = más noticias, pero tarda más. Si una web no permite páginas, solo se cargan sus últimas.</p>
           <div class="seg" id="sg-dp"><button data-v="1">Últimas</button><button data-v="3">Amplio</button><button data-v="8">Máximo</button></div></section>
         <details id="lgd" class="set" style="margin-top:4px"><summary style="font:600 15px Inter,sans-serif;cursor:pointer">Registro de actividad</summary><p style="margin:6px 0 10px">Qué pasó en cada actualización y qué fuentes fallaron y por qué. «Copiar» lo prepara en texto para enviarlo.</p><div id="p2"></div></details>
-        <div class="abt"><div class="logo" style="margin:0" role="img" aria-label="Noticiahz"><svg class="lgi" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="15" fill="#0a9d5c"/><path d="M21.5 17.5V50M21.5 34C21.5 25 27 22 33 22C40 22 44 26.5 44 33V50" fill="none" stroke="#06150f" stroke-width="9"/><path d="M7 41H25L29 29L34 51L38 36L41 41H57" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="lw" aria-hidden="true">noticia<em>hz</em></span><svg class="lp" viewBox="0 0 44 24" aria-hidden="true"><path d="M1 13H13L17 2L23 21L27 8L30 13H43"/></svg></div><span>Diseñado y creado por <strong>Krahz</strong></span><p class="hint" id="ver"></p></div>
+        <div class="abt"><div class="logo" style="margin:0" role="img" aria-label="Noticiahz"><svg class="lgi" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="15" fill="#0a9d5c"/><path class="n" d="M21.5 17.5V50M21.5 34C21.5 25 27 22 33 22C40 22 44 26.5 44 33V50" fill="none" stroke="#06150f" stroke-width="9"/><path class="h" d="M7 41H25L29 29L34 51L38 36L41 41H57" fill="none" stroke="none" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 41H25L29 29L34 51L38 36L41 41H57" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="lw" aria-hidden="true">noticia<em>hz</em></span><svg class="lp" viewBox="0 0 44 24" aria-hidden="true"><path d="M1 13H13L17 2L23 21L27 8L30 13H43"/></svg></div><span>Diseñado y creado por <strong>Krahz</strong></span><p class="hint" id="ver"></p></div>
       </div>
     </div>
   </div>
@@ -1025,7 +1026,8 @@ $('#sb').onclick=()=>{const o=$('.search').classList.toggle('open');$('#sb').cla
 const sysDark=()=>matchMedia('(prefers-color-scheme: dark)').matches;
 const FAV0=document.querySelector('link[rel=icon]').getAttribute('href');
 const barCol=d=>{const a=window.nzLast;return a?(d==='dark'?a.barD:a.barL):(d==='dark'?'#0d1523':'#047857')};
-function applyAccent(){const a=nzApply(S.pf.ah,S.pf.as);nzMan(S.pf.ah,S.pf.as);document.querySelector('meta[name=theme-color]').content=barCol(document.documentElement.dataset.theme);document.querySelector('link[rel=icon]').setAttribute('href',a?FAV0.replace('%230a9d5c','%23'+a.fav.slice(1)):FAV0)}
+function applyAccent(){const a=nzApply(S.pf.ah,S.pf.as);nzMan(S.pf.ah,S.pf.as);document.querySelector('meta[name=theme-color]').content=barCol(document.documentElement.dataset.theme);document.querySelector('link[rel=icon]').setAttribute('href',a?favFor(a):FAV0)}
+function favFor(a){const c='%23'+a.fav.slice(1);let f=FAV0.replace('%230a9d5c',c);if(a.lt)f=f.replace("stroke='%2306150f'","stroke='white'").replace("<path d='M7","<path d='M7 41H25L29 29L34 51L38 36L41 41H57' fill='none' stroke='"+c+"' stroke-width='7.5' stroke-linecap='round' stroke-linejoin='round'/><path d='M7");return f}
 function setTheme(d){const h=document.documentElement;h.classList.add('tm');h.dataset.theme=d;$('#th use').setAttribute('href',d==='dark'?'#sun':'#m');$('#th').title=d==='dark'?'Tema claro':'Tema oscuro';
  document.querySelector('meta[name=theme-color]').content=barCol(d);clearTimeout(setTheme.t);setTheme.t=setTimeout(()=>h.classList.remove('tm'),450)}
 function themePref(v){S.pf.th=v;ls.set('nz_pf',S.pf);setTheme(v==='auto'?(sysDark()?'dark':'light'):v)}
