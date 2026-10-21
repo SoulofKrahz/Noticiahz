@@ -135,6 +135,12 @@ async function run(browser, label, viewport, mobile) {
   ok(!cx, 'cancelar mientras se comprueba no añade la fuente');
   const lf = await p.evaluate(async () => { const o = window.pool; window.pool = () => { throw Error('fallo simulado') }; S.ft = {}; await load(); window.pool = o; return { loading: S.loading, spin: document.body.classList.contains('ld'), log: LG.evs.some(e => /fallo simulado/.test(e.m)) } });
   ok(!lf.loading && !lf.spin && lf.log, `si una actualización revienta no se queda colgada y queda en el registro (${JSON.stringify(lf)})`);
+  // Guardado en dos partes: lista ligera + textos aparte; al reabrir, los textos vuelven
+  await p.evaluate(async () => { saveNews(); await new Promise(r => setTimeout(r, 600)) });
+  const st1 = await p.evaluate(async () => { const n = await DB.get('nz_news'), b = await DB.get('nz_body'); return { light: n.every(a => !a.html), bodies: b ? Object.keys(b).length : 0 } });
+  await p.reload(); await idle(); await p.waitForFunction(() => S.bodyOk, null, { timeout: 10000 });
+  const st2 = await p.evaluate(() => { const a = S.news.find(x => x.html); if (!a) return { ok: false }; open(a); const t = document.querySelector('#art .body').textContent; hide(); return { ok: t.length > 0, n: S.news.filter(x => x.html).length } });
+  ok(st1.light && st1.bodies > 10 && st2.ok, `abre leyendo solo la lista y recupera los textos después (${st1.bodies} textos, ${st2.n} con texto tras reabrir)`);
   await p.evaluate(async () => { await DB.set('nz_dis', [1, 2, ['a', 5]]); await DB.set('nz_news', [...S.news.slice(0, 20), null, { id: 7 }, { id: 'z', title: 'z', date: 'nope' }]); await DB.set('nz_seen', 'roto') });
   await p.reload(); await idle();
   const cr = await p.evaluate(() => ({ cards: document.querySelectorAll('#grid .card').length, dis: S.dis.size }));

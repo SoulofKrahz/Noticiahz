@@ -577,7 +577,6 @@ const DEFAULTS=[
  {id:"expansion",name:"Expansión",cat:"Economía",on:true,url:"https://e00-expansion.uecdn.es/rss/portada.xml"},
  {id:"mundodeportivo",name:"Mundo Deportivo",cat:"Deportes",on:true,url:"https://www.mundodeportivo.com/rss/home.xml"},
  {id:"cochesnetnoticias",name:"Coches.net Noticias",cat:"Motor",on:true,url:"https://www.coches.net/noticias/rss/"},
- {id:"lamiradadelreplicante",name:"La Mirada del Replicante",cat:"Programación",on:true,url:"https://lamiradadelreplicante.com/feed/"},
  {id:"hackplayers",name:"HackPlayers",cat:"Ciberseguridad",on:true,url:"https://www.hackplayers.com/feeds/posts/default"},
  {id:"3djuegos",name:"3DJuegos",cat:"Videojuegos",on:true,url:"https://www.3djuegos.com/feedburner.xml"},
  {id:"followthewhiterabbit",name:"Follow The White Rabbit",cat:"Ciberseguridad",on:true,url:"https://www.fwhibbit.es/feed"},
@@ -725,7 +724,7 @@ async function pool(items,n,fn){let i=0;await Promise.all(Array.from({length:Mat
 function timed(fn,ms=10000){const c=new AbortController();const id=setTimeout(()=>c.abort(),ms);return fn(c.signal).finally(()=>clearTimeout(id))}
 
 // Proxy propio: /p/<host>/… lo atiende _worker.js (Cloudflare Pages). Ningún servicio de terceros ve qué lees.
-const VER='2026-10-21-7';
+const VER='2026-10-21-8';
 if(!ls.get('nz_fu',0))ls.set('nz_fu',Date.now());
 const px=u=>{const x=new URL(u);return '/p/'+x.host+x.pathname+x.search};
 // Si la respuesta de error no lleva la marca X-Nz, no la dio nuestro proxy sino Cloudflare (límite diario gratuito o caída): se anota como 'cf'
@@ -844,7 +843,7 @@ async function loadRun(){
   LG.runs.unshift(r);LG.runs=LG.runs.slice(0,15);LG.run=null;lgSave();lgDraw()}
  saveNews();
  $('#upd').textContent='Actualizado a las '+new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
- S.loading=false;S.last=Date.now();spinAll(false);loadAlerts();setTimeout(()=>{const r=LG.runs[0];if(r&&Date.now()-r.t<6e4){r.tech=`Técnico: v${VER} · ${S.news.length} noticias en memoria · pintado ${S.rt} ms · arranque ${S.t0} ms`;lgSave();lgDraw()}},700);
+ S.loading=false;S.last=Date.now();spinAll(false);loadAlerts();setTimeout(()=>{const r=LG.runs[0];if(r&&Date.now()-r.t<6e4){r.tech=`Técnico: v${VER} · ${S.news.length} noticias en memoria · pintado ${S.rt} ms · arranque ${S.t0} ms (código ${S.tsc} · datos ${S.tdb} · feed visible ${S.tp} · textos ${S.tb}) ms`;lgSave();lgDraw()}},700);
  if(!todo.length)toast('Ya estás al día');else if(Object.values(S.nf||{}).some(f=>f.s==='cf'))toast(`El proxy no responde: posible límite diario de Cloudflare (vuelve a las ${cfReset()})`);else if(!fresh.length)toast(navigator.onLine?'No se pudo conectar. Revisa el registro.':'Sin conexión');else if(bad)toast(`${added?added+' nuevas · ':''}${bad} ${bad===1?'fuente no ha respondido':'fuentes no han respondido'}`);else if(man)toast(added?`${added} ${added===1?'noticia nueva':'noticias nuevas'}`:'Sin noticias nuevas');
  render();
 }
@@ -869,10 +868,13 @@ function dedupeC(list){let k=list.length+'|'+S.news.length;for(const a of list)k
 const hs=s=>{let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0};
 function mix(list){const c={},now=Date.now();
  const r=list.map(a=>{const k=c[a.src]=(c[a.src]??-1)+1,w=Math.max(1e-4,Math.exp(-(now-a.date)/2.16e8)/(1+.12*k)*(S.snap.rd.has(a.id)?.08:S.pf.sn&&S.snap.seen.has(a.id)?.25:1)*(S.snap.sw.get(a.src)||1)*(topicOf(a)?12:1)),u=(hs(a.id+'|'+S.seed)+1)/4294967297;return{a,key:Math.log(u)/w}}).sort((x,y)=>y.key-x.key).map(x=>x.a);
- const out=[];while(r.length){const n=out.length,lim=Math.min(r.length,80);let i=0;
-  for(;i<lim;i++){const a=r[i];if(!out.slice(-4).some(o=>o.src===a.src)&&(!n||catOf(a)!==catOf(out[n-1])))break}
-  if(i>=lim){i=0;for(;i<lim;i++)if(!out.slice(-2).some(o=>o.src===r[i].src))break;if(i>=lim)i=0}
-  out.push(r.splice(i,1)[0])}
+ // Intercalado: evita la misma fuente en las 4 últimas y la misma categoría seguida. Avanza con un puntero (h) en vez de
+ // r.splice(), que movía toda la lista en cada paso (cuadrático: con 4.000 noticias era lo más lento al abrir la app).
+ const out=[],N=r.length,rec=(a,k)=>{for(let j=out.length-1,e=Math.max(0,out.length-k);j>=e;j--)if(out[j].src===a.src)return true;return false};let h=0;
+ while(h<N){const n=out.length,lim=Math.min(N-h,80),pc=n?catOf(out[n-1]):null;let i=0;
+  for(;i<lim;i++){const a=r[h+i];if(!rec(a,4)&&(!n||catOf(a)!==pc))break}
+  if(i>=lim){i=0;for(;i<lim;i++)if(!rec(r[h+i],2))break;if(i>=lim)i=0}
+  const pick=r[h+i];for(let j=h+i;j>h;j--)r[j]=r[j-1];h++;out.push(pick)}
  // Temas destacados: además de pesar ×12, los primeros (sin leer ni vistos) ocupan puestos fijos arriba
  const SL=[0,2,5,9,14],tp=out.filter(a=>topicOf(a)&&!S.snap.rd.has(a.id)&&!(S.pf.sn&&S.snap.seen.has(a.id))).slice(0,SL.length);
  if(tp.length){const rest=out.filter(a=>!tp.includes(a));tp.forEach((a,k)=>rest.splice(Math.min(SL[k],rest.length),0,a));return rest}
@@ -947,9 +949,10 @@ function render(skel){
 
 const pos=()=>S.V.findIndex(x=>x.id===S.cur.id);
 function go(d){const n=S.V[pos()+d];if(n)open(n)}
+function bodyOf(a){const b=a.html?clean(a.html,a.img):'';return txt(b)||/<img/i.test(b)?b:`<p>${esc(a.snip||(vid(a)?'Sin descripción. Abre el vídeo para verlo.':'Sin vista previa. Abre el artículo completo para leerlo.'))}</p>`}
 function open(a){
  S.cur=a;markRead(a);try{speechSynthesis.cancel()}catch(e){}$('#dt').classList.remove('on');$('#rp').style.width=0;const k=pos();$('#dp').disabled=k<1;$('#dn').disabled=k<0||k>=S.V.length-1;
- let body=a.html?clean(a.html,a.img):'';if(!txt(body)&&!/<img/i.test(body))body=`<p>${esc(a.snip||(vid(a)?'Sin descripción. Abre el vídeo para verlo.':'Sin vista previa. Abre el artículo completo para leerlo.'))}</p>`;const im=a.img?`<img class="hi" src="${esc(a.img)}" alt="" referrerpolicy="no-referrer" onerror="this.remove()">`:'';
+ let body=bodyOf(a);if(!a.html&&!S.bodyOk&&S.bodyP)S.bodyP.then(()=>{if(S.cur===a&&a.html){const el=$('#art .body');if(el)el.innerHTML=bodyOf(a)}});const im=a.img?`<img class="hi" src="${esc(a.img)}" alt="" referrerpolicy="no-referrer" onerror="this.remove()">`:'';
  $('#art').innerHTML=`<div class="meta"><span class="chip">${esc(a.src)}</span><span>${new Date(a.date).toLocaleString('es-ES',{dateStyle:'long',timeStyle:'short'})}</span>${vid(a)?'<span>▶ Vídeo</span>':''}</div>
  <h2>${esc(a.title)}</h2>${a.img?(vid(a)?`<a class="vh" href="${esc(a.link)}" target="_blank" rel="noopener noreferrer" aria-label="${esc(act(a).t)}">${im}<span class="pl"></span></a>`:im):''}
  <div class="body">${body}</div>${a.also&&a.also.length?`<div class="alsob"><h4>También en otros medios</h4>${a.also.map(x=>`<a href="${esc(x.link)}" target="_blank" rel="noopener noreferrer"><b>${esc(x.src)}</b> · ${esc(x.title)}</a>`).join('')}</div>`:''}
@@ -1166,8 +1169,14 @@ const NMAX=4000;
 function fairNews(list){if(list.length<=NMAX)return list;const by=new Map();list.forEach(a=>{const g=by.get(a.src);g?g.push(a):by.set(a.src,[a])});
  const per=Math.max(5,Math.min(30,Math.floor(NMAX*.6/by.size))),keep=new Set();by.forEach(g=>g.slice(0,per).forEach(a=>keep.add(a)));
  let room=NMAX-keep.size;for(const a of list){if(room<=0)break;if(!keep.has(a)){keep.add(a);room--}}return list.filter(a=>keep.has(a))}
-function saveNews(){const now=Date.now(),full=n=>S.news.slice(0,n).map(a=>({...a,_t:undefined,also:undefined,nw:undefined,html:(!a.html||now-(a.got||a.date)<2592e6)?a.html:a.html.slice(0,1500)}));
- DB.set('nz_news',full(NMAX)).catch(()=>{[[1500,600],[900,600],[500,600],[250,1500],[120,1500]].some(([n,h])=>ls.set('nz_news',full(n).map(a=>({...a,html:a.html.slice(0,h)}))))})}
+// Se guarda en dos partes: la lista ligera (lo que pinta el feed) y los textos completos aparte. Al abrir la app solo se lee
+// la lista, que es pequeña; los textos se cargan justo después, sin bloquear. Los textos solo se reescriben si cambian las noticias.
+let bodySig='';
+function saveNews(){const now=Date.now(),cut=a=>(!a.html||now-(a.got||a.date)<2592e6)?a.html||'':a.html.slice(0,1500),full=n=>S.news.slice(0,n).map(a=>({...a,_t:undefined,also:undefined,nw:undefined,html:cut(a)}));
+ if(!S.bodyOk){if(S.bodyP&&!S.bodyW){S.bodyW=1;S.bodyP.then(()=>{S.bodyW=0;saveNews()})}return} // aún no han llegado los textos: se guarda en cuanto lleguen
+ const L=S.news.slice(0,NMAX),sig=L.length+'|'+hs(L.map(a=>a.id).join('\n'));
+ const light=L.map(a=>({...a,_t:undefined,also:undefined,nw:undefined,html:undefined}));
+ DB.set('nz_news',light).then(()=>{if(sig===bodySig)return;const b={};L.forEach(a=>{const h=cut(a);if(h)b[a.id]=h});return DB.set('nz_body',b).then(()=>{bodySig=sig})}).catch(()=>{[[1500,600],[900,600],[500,600],[250,1500],[120,1500]].some(([n,h])=>ls.set('nz_news',full(n).map(a=>({...a,html:a.html.slice(0,h)}))))})}
 // "Buscar noticias más antiguas": pide la siguiente página de cada fuente visible
 async function deepen(){
  if(S.deep)return;S.deep=1;const b=$('#more');if(b){b.disabled=true;b.textContent='Buscando noticias más antiguas…'}
@@ -1208,11 +1217,16 @@ const ui=ls.get('nz_ui',{});S.cat=typeof ui.cat==='string'?ui.cat:'Todas';S.sf=t
 setTheme(S.pf.th==='dark'||S.pf.th==='light'?S.pf.th:(sysDark()?'dark':'light'));applyFs();applyPf();applyAccent();sched();
 render(true);
 (async()=>{try{navigator.storage.persist()}catch(e){}
- const tI=performance.now();const [n,f,r,dd,sn]=await Promise.all([bigGet('nz_news',[]),bigGet('nz_fav',{}),bigGet('nz_rd',[]),bigGet('nz_dis',[]),bigGet('nz_seen',[])]);S.tdb=Math.round(performance.now()-tI);
+ const tI=performance.now();S.tsc=Math.round(tI);const [n,f,r,dd,sn]=await Promise.all([bigGet('nz_news',[]),bigGet('nz_fav',{}),bigGet('nz_rd',[]),bigGet('nz_dis',[]),bigGet('nz_seen',[])]);S.tdb=Math.round(performance.now()-tI);
  const safe=(f,d)=>{try{return f()}catch(e){errLog('Datos guardados: '+e.message);return d}};
  S.news=(Array.isArray(n)?n:[]).filter(a=>a&&typeof a.id==='string'&&a.id&&typeof a.title==='string'&&isFinite(a.date));{const g=Date.now();S.news.forEach(a=>{if(!a.got)a.got=g})} // noticias de antes de este cambio: cuentan como descargadas hoy, no se recorta nada aún
- S.news.forEach(a=>{if(MOJ.test(a.title||'')){a.title=fixMoj(a.title);a.snip=fixMoj(a.snip);a.html=fixMoj(a.html)}});S.fav=f&&typeof f==='object'&&!Array.isArray(f)?f:{};S.rd=new Set(Array.isArray(r)?r:[]);S.dis=safe(()=>new Map((Array.isArray(dd)?dd:[]).filter(x=>Array.isArray(x)&&x.length===2)),new Map());S.seen=safe(()=>new Map((Array.isArray(sn)?sn:[]).filter(x=>Array.isArray(x)&&x.length===2)),new Map());S.ready=1;snapUp();S.t0=Math.round(performance.now());
- render(!S.news.length);if(S.news.length)render();shareIn();if(FIRST)obOpen();else load()})();
+ S.news.forEach(a=>{if(MOJ.test(a.title||'')){a.title=fixMoj(a.title);a.snip=fixMoj(a.snip);if(a.html)a.html=fixMoj(a.html)}});S.fav=f&&typeof f==='object'&&!Array.isArray(f)?f:{};S.rd=new Set(Array.isArray(r)?r:[]);S.dis=safe(()=>new Map((Array.isArray(dd)?dd:[]).filter(x=>Array.isArray(x)&&x.length===2)),new Map());S.seen=safe(()=>new Map((Array.isArray(sn)?sn:[]).filter(x=>Array.isArray(x)&&x.length===2)),new Map());S.ready=1;snapUp();S.t0=Math.round(performance.now());
+ if(S.news.length)render();else render(true);S.tp=Math.round(performance.now());shareIn();
+ // Textos completos: si la lista vieja ya los traía dentro (formato anterior), no hay nada que leer
+ S.bodyP=(S.news.some(a=>a.html)?Promise.resolve(null):DB.get('nz_body').catch(()=>null)).then(b=>{
+  if(b&&typeof b==='object'){S.news.forEach(a=>{const h=b[a.id];if(typeof h==='string')a.html=MOJ.test(h)?fixMoj(h):h});let fv=0;Object.values(S.fav).forEach(x=>{if(!x.html&&typeof b[x.id]==='string'){x.html=b[x.id];fv=1}});if(fv)bigSet('nz_fav',S.fav);bodySig=S.news.length+'|'+hs(S.news.slice(0,NMAX).map(a=>a.id).join('\n'))}
+  S.bodyOk=1;S.tb=Math.round(performance.now())});
+ if(FIRST)obOpen();else S.bodyP.then(()=>load())})();
 // Accesos directos del icono (?a=…) y «Compartir» desde otras apps (share_target: ?st=&sx=&su=)
 let SH=null;
 function shareIn(){const q=new URLSearchParams(location.search),sh=['su','sx','st'].some(k=>q.has(k)),act=q.get('a');
