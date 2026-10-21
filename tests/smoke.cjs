@@ -70,6 +70,7 @@ async function run(browser, label, viewport, mobile) {
   // 6) Ajustes: pestañas y ventana de añadir fuente
   await p.evaluate(() => document.querySelector('#st').click()); await p.waitForTimeout(300);
   ok(await p.evaluate(() => document.querySelector('#md').classList.contains('show')), 'abre Ajustes');
+  ok(await p.evaluate(() => [...document.querySelectorAll('.mt button')].every(b => { const r = b.getBoundingClientRect(); return r.height > 30 && r.right <= innerWidth + 1 })), 'las pestañas de Ajustes se ven enteras');
   for (const t of ['t6', 't7', 't9', 't8', 't1']) await p.evaluate(t => document.querySelector('#' + t).click(), t);
   for (const s of ['r', 'c', 'l']) await p.evaluate(s => document.querySelector(`#sgF [data-s="${s}"]`).click(), s);
   ok(await p.evaluate(() => !document.querySelector('#p1').hidden), 'recorre pestañas y sub-pestañas de Ajustes');

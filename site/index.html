@@ -342,6 +342,12 @@ main .card .ph{border-radius:0;background:var(--tint);aspect-ratio:16/9}.card .p
 @media(max-width:760px){.mt{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0;padding:0 4px;overflow:visible}.mt button{white-space:normal;line-height:1.15;padding:8px 2px;font-size:13px;text-align:center;display:flex;align-items:center;justify-content:center;min-height:50px}}
 #lgd summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:10px}#lgd summary::-webkit-details-marker{display:none}
 #lgd summary::after{content:"";width:9px;height:9px;border-right:2px solid var(--mu);border-bottom:2px solid var(--mu);transform:rotate(45deg) translateY(-3px);transition:transform .2s;flex:none;margin-right:4px}#lgd[open] summary::after{transform:rotate(-135deg) translateX(-3px)}
+
+.mh,.mt{flex:none} /* en PC la barra de pestañas se encogía hasta desaparecer */
+#md .mb:focus{outline:none}
+/* Cabecera de Ajustes: icono + título + subtítulo */
+.mht{display:flex;align-items:center;gap:12px;min-width:0}.mhi{flex:none;display:grid;place-items:center;width:42px;height:42px;border-radius:13px;background:var(--tint);color:var(--em)}.mhi svg{width:22px;height:22px}
+.mh h2{font:650 20px/1.15 Inter,system-ui,sans-serif;letter-spacing:-.02em;margin:0}.mht small{display:block;font-size:12.5px;color:var(--mu);margin-top:2px}
 </style>
 </head>
 <body>
@@ -419,8 +425,8 @@ main .card .ph{border-radius:0;background:var(--tint);aspect-ratio:16/9}.card .p
 <div class="modal" id="md">
   <div class="ov show" id="mov"></div>
   <div class="mb" role="dialog" aria-modal="true" aria-label="Ajustes">
-    <div class="mh"><h2>Ajustes</h2><button class="ib" id="mx" aria-label="Cerrar"><svg class="i"><use href="#x"/></svg></button></div>
-    <div class="mt"><button class="on" id="t1">Fuentes</button><button id="t6">Apariencia</button><button id="t7">Contenido</button><button id="t9">Copia de seguridad</button><button id="t8">Avanzado</button></div>
+    <div class="mh"><div class="mht"><span class="mhi"><svg class="i"><use href="#cog"/></svg></span><div><h2>Ajustes</h2><small>Personaliza tu Noticiahz</small></div></div><button class="ib" id="mx" aria-label="Cerrar"><svg class="i"><use href="#x"/></svg></button></div>
+    <div class="mt"><button class="on" id="t1">Fuentes</button><button id="t6">Apariencia</button><button id="t7">Contenido</button><button id="t9">Backup</button><button id="t8">Avanzado</button></div>
     <div class="mc">
       <div id="pF">
         <div class="stk"><div class="seg" id="sgF"><button class="on" data-s="l">Lista</button><button data-s="r">Revisión</button><button data-s="c">Categorías</button></div></div>
@@ -704,7 +710,7 @@ async function pool(items,n,fn){let i=0;await Promise.all(Array.from({length:Mat
 function timed(fn,ms=10000){const c=new AbortController();const id=setTimeout(()=>c.abort(),ms);return fn(c.signal).finally(()=>clearTimeout(id))}
 
 // Proxy propio: /p/<host>/... lo atiende _worker.js (Cloudflare Pages)
-const VER='2026-10-21-2.4';
+const VER='2026-10-21-2.6';
 if(!ls.get('nz_fu',0))ls.set('nz_fu',Date.now());
 const PX=[{f:u=>{const x=new URL(u);return '/p/'+x.host+x.pathname+x.search},can:u=>/^https?:\/\//i.test(u),own:1,n:'propio',ok:0,bad:0,until:0}];
 const addParam=(u,k,v)=>u+(u.includes('?')?'&':'?')+k+'='+v;
@@ -934,7 +940,7 @@ function open(a){
 const isOpen=()=>$('#dr').classList.contains('show')||$('#md').classList.contains('show');
 function hide(){if(!isOpen())return;try{speechSynthesis.cancel()}catch(e){}$('#dt').classList.remove('on');$('#dr').classList.remove('show');$('#ov').classList.remove('show');$('#md').classList.remove('show');document.body.classList.remove('lock');if(S.lf&&S.lf.focus)S.lf.focus({preventScroll:true});resetForm();S.sq='';$('#sq').value='';tabs();render();if(S.dirty){S.dirty=0;load()}}
 function closeAll(){if(!$('#fr').hidden){resetForm();return}if(!$('#am').hidden){amClose();return}if(!$('#fp').hidden){fpClose();return}if(history.state&&history.state.r)history.back();else hide()}
-function lockOpen(f){S.lf=document.activeElement;history.pushState({r:1},'');document.body.classList.add('lock');if(f)$(f).focus({preventScroll:true,focusVisible:false})}
+function lockOpen(f){S.lf=document.activeElement;history.pushState({r:1},'');document.body.classList.add('lock');if(f){let el=$(f);if(f==='#mx'){el=$('#md .mb');el.tabIndex=-1}el.focus({preventScroll:true,focusVisible:false})}}
 // Ventana de añadir/editar fuente: flotante sobre Ajustes, con fondo oscuro; atrás, Esc o tocar fuera la cierran
 let FRP=0,FRSKIP=0;
 addEventListener('popstate',()=>{if(FRSKIP){FRSKIP=0;return}if(FRP){FRP=0;resetForm();return}hide()});
