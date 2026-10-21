@@ -237,6 +237,16 @@ html{overscroll-behavior-y:contain}.more{grid-column:1/-1;text-align:center}
 .bm{padding:8px;margin:-8px -4px -8px 0;border-radius:8px;transition:color .15s,background .15s}.bm:hover{color:var(--em);background:var(--tint)}.bm[data-ds]:hover{color:#d23c41;background:#e5484d1f}
 @keyframes pop{40%{transform:scale(1.5)}}.bm.pop svg{animation:pop .35s}
 @keyframes rise{from{opacity:0;transform:translate(-50%,14px)}}.undo{animation:rise .22s}
+.upd{position:fixed;z-index:58;left:16px;right:16px;bottom:calc(20px + env(safe-area-inset-bottom));display:flex;align-items:center;gap:12px;padding:12px 10px 12px 12px;background:var(--card);color:var(--tx);border:1px solid color-mix(in srgb,var(--em) 35%,var(--bd));border-radius:18px;box-shadow:0 18px 40px -18px #0009,0 2px 6px -2px #0002;animation:updin .32s cubic-bezier(.2,.8,.2,1)}
+.upd[hidden]{display:none}
+.upi{flex:none;display:grid;place-items:center;width:40px;height:40px;border-radius:12px;background:var(--tint);color:var(--em)}.upi svg{width:20px;height:20px}
+.upt{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.25}.upt b{font-size:14.5px;font-weight:650;letter-spacing:-.01em}.upt small{font-size:12.5px;color:var(--mu);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.upd .btn{flex:none;margin:0;padding:9px 16px;border-radius:12px;font-size:13.5px;gap:6px}.upd .btn svg{width:15px;height:15px}.upd .btn:disabled{opacity:.85}
+.upx{flex:none;width:34px;height:34px;color:var(--mu)}
+body:has(#undo:not([hidden])) .upd{transform:translateY(-64px)}
+@keyframes updin{from{opacity:0;transform:translateY(18px) scale(.98)}}
+@media(max-width:760px){.upd{bottom:calc(76px + env(safe-area-inset-bottom))}}
+@media(min-width:761px){.upd{left:24px;right:auto;bottom:24px;width:440px}}
 body.nopics .ph,body.nopics .art .hi{display:none}body.dimrd .card.rd{opacity:.55}body.dimrd .card.rd:hover{opacity:1}
 
 .card.al{border-left:4px solid var(--alc)}.card.al .ph{display:none}.card.al p{display:-webkit-box}
@@ -382,8 +392,7 @@ main .card .ph{border-radius:0;background:var(--tint);aspect-ratio:16/9}.card .p
     <div class="fl"><span id="upd"></span><button id="lg">Ver registro</button></div>
   </div>
   <div class="af" id="af" hidden></div>
-  <div class="azb" id="vnb" hidden><span style="flex:1 1 200px">Hay una versión nueva de la app.</span><span style="display:flex;gap:2px;margin-left:auto"><button id="vng" style="color:var(--em)">Actualizar ahora</button></span></div>
-  <div class="azb" id="ib" hidden><span id="im" style="flex:1 1 200px">Instala la app: acceso desde el icono y a pantalla completa.</span><span style="display:flex;gap:2px;margin-left:auto"><button id="ig" style="color:var(--em)">Instalar</button><button id="iz">Ahora no</button></span></div>
+    <div class="azb" id="ib" hidden><span id="im" style="flex:1 1 200px">Instala la app: acceso desde el icono y a pantalla completa.</span><span style="display:flex;gap:2px;margin-left:auto"><button id="ig" style="color:var(--em)">Instalar</button><button id="iz">Ahora no</button></span></div>
   <div class="azb" id="bkb" hidden><span id="bkm" style="flex:1 1 200px"></span><span style="display:flex;gap:2px;margin-left:auto"><button id="bkg" style="color:var(--em)">Hacer copia</button><button id="bkz">Más tarde</button></span></div>
   <div class="azb" id="azb" hidden><span>¿Avisos meteorológicos oficiales (AEMET) de tu zona?</span><select id="azs0" aria-label="Comunidad autónoma"></select><button id="azn">No, gracias</button></div>
   <section class="grid" id="grid"></section>
@@ -474,6 +483,7 @@ main .card .ph{border-radius:0;background:var(--tint);aspect-ratio:16/9}.card .p
 <div class="np off" id="of" hidden>Sin conexión. Mostrando las últimas noticias descargadas.</div>
 <div class="ptr" id="ptr"><svg class="i"><use href="#r"/></svg></div>
 <button class="ib top" id="up" aria-label="Volver arriba"><svg class="i"><use href="#u"/></svg></button>
+<div class="upd" id="vnb" hidden role="status" aria-live="polite"><span class="upi"><svg class="i"><use href="#r"/></svg></span><div class="upt"><b>Nueva versión lista</b><small id="vnv">Mejoras y correcciones</small></div><button class="btn" id="vng">Actualizar</button><button class="ib upx" id="vnx" aria-label="Ahora no"><svg class="i"><use href="#x"/></svg></button></div>
 <div class="undo" id="undo" hidden><span></span><button>Deshacer</button></div>
 <nav class="bb" id="bb" aria-label="Acciones">
   <button id="b-rf" aria-label="Actualizar"><svg class="i"><use href="#r"/></svg><span class="rft">Actualizar</span></button>
@@ -688,7 +698,7 @@ async function pool(items,n,fn){let i=0;await Promise.all(Array.from({length:Mat
 function timed(fn,ms=10000){const c=new AbortController();const id=setTimeout(()=>c.abort(),ms);return fn(c.signal).finally(()=>clearTimeout(id))}
 
 // Proxy propio: /p/<host>/... lo atiende _worker.js (Cloudflare Pages)
-const VER='2026-10-21-2.1';
+const VER='2026-10-21-2.2';
 if(!ls.get('nz_fu',0))ls.set('nz_fu',Date.now());
 const PX=[{f:u=>{const x=new URL(u);return '/p/'+x.host+x.pathname+x.search},can:u=>/^https?:\/\//i.test(u),own:1,n:'propio',ok:0,bad:0,until:0}];
 const addParam=(u,k,v)=>u+(u.includes('?')?'&':'?')+k+'='+v;
@@ -1048,8 +1058,8 @@ let tx=0,ty=0,ly=0;
 $('#dr').addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY},{passive:true});
 $('#dr').addEventListener('touchend',e=>{const t=e.changedTouches[0],dx=t.clientX-tx,dy=t.clientY-ty;if(Math.abs(dx)>90&&Math.abs(dy)<45)go(dx<0?1:-1)},{passive:true});
 // Aviso de versión nueva: compara VER con version.txt (lo genera la publicación); archivo estático, no gasta cuota
-{let last=0;const chk=()=>{if(document.hidden||Date.now()-last<6e5)return;last=Date.now();fetch('version.txt?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.text():'').then(v=>{v=(v||'').trim();if(/^\d{4}-\d\d-\d\d-[\d.]+$/.test(v)&&v!==VER){$('#vnb').hidden=false;$('#vnb span').textContent=`Hay una versión nueva de la app (${v}).`}}).catch(()=>{})};
- setTimeout(chk,2500);document.addEventListener('visibilitychange',chk);setInterval(chk,18e5);$('#vng').onclick=async()=>{const b=$('#vng');b.disabled=true;b.textContent='Actualizando…';window.__upd=1;
+{let last=0;const chk=()=>{if(document.hidden||Date.now()-last<6e5)return;last=Date.now();fetch('version.txt?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.text():'').then(v=>{v=(v||'').trim();if(/^\d{4}-\d\d-\d\d-[\d.]+$/.test(v)&&v!==VER&&v!==window.__vnx){$('#vnv').textContent=`Versión ${v}`;$('#vnb').hidden=false}}).catch(()=>{})};
+ setTimeout(chk,2500);document.addEventListener('visibilitychange',chk);$('#vnx').onclick=()=>{const m=$('#vnv').textContent.match(/\d{4}-\d\d-\d\d-[\d.]+/);window.__vnx=m?m[0]:1;$('#vnb').hidden=true};setInterval(chk,18e5);$('#vng').onclick=async()=>{const b=$('#vng');b.disabled=true;b.classList.add('spin');b.innerHTML='<svg class="i"><use href="#r"/></svg>Actualizando';$('#vnx').hidden=true;window.__upd=1;
   // 1) instala el service worker nuevo si lo hay (como en Caravanahz); 2) guarda la página nueva en la caché; 3) recarga una sola vez
   try{const reg=navigator.serviceWorker&&(await navigator.serviceWorker.getRegistration());if(reg)await reg.update()}catch(e){}
   try{const r=await fetch('./?u='+Date.now(),{cache:'no-store'});if(r.ok&&window.caches){for(const k of (await caches.keys()).filter(k=>/^nz-v/.test(k)))await (await caches.open(k)).put('index.html',r.clone())}}catch(e){}
