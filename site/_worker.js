@@ -49,7 +49,11 @@ async function proxy(req, url, env) {
   try {
     r = await fetch(target, {
       method: req.method,
-      headers: { 'User-Agent': UA, 'Accept': 'application/rss+xml, application/atom+xml, application/xml;q=0.9, text/xml;q=0.9, text/html;q=0.5, */*;q=0.1', 'Accept-Language': 'es,en;q=0.8' },
+      headers: {
+        'User-Agent': UA, 'Accept': 'application/rss+xml, application/atom+xml, application/xml;q=0.9, text/xml;q=0.9, text/html;q=0.5, */*;q=0.1', 'Accept-Language': 'es,en;q=0.8',
+        // Google redirige a su página de consentimiento de cookies (UE) a quien no trae esta cookie; con ella sirve el RSS
+        ...(/(^|\.)google\.com$/.test(host) ? { Cookie: 'CONSENT=YES+cb; SOCS=CAI' } : {}),
+      },
       redirect: 'follow',
       signal: AbortSignal.timeout(TIMEOUT_MS),
       cf: { cacheEverything: true, cacheTtlByStatus: { '200-299': TTL, '300-599': 0 } },

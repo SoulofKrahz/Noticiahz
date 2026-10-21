@@ -733,7 +733,7 @@ async function pool(items,n,fn){let i=0;await Promise.all(Array.from({length:Mat
 function timed(fn,ms=10000){const c=new AbortController();const id=setTimeout(()=>c.abort(),ms);return fn(c.signal).finally(()=>clearTimeout(id))}
 
 // Proxy propio: /p/<host>/… lo atiende _worker.js (Cloudflare Pages). Ningún servicio de terceros ve qué lees.
-const VER='2026-10-21-10';
+const VER='2026-10-21-10.1';
 if(!ls.get('nz_fu',0))ls.set('nz_fu',Date.now());
 const px=u=>{const x=new URL(u);return '/p/'+x.host+x.pathname+x.search};
 // Si la respuesta de error no lleva la marca X-Nz, no la dio nuestro proxy sino Cloudflare (límite diario gratuito o caída): se anota como 'cf'
@@ -1505,15 +1505,19 @@ function dsCat(t){const k=n2(t),syn={mallorca:'local',baleares:'local',palma:'lo
  const w=[k,...Object.keys(syn).filter(x=>k.includes(x)).map(x=>syn[x])];for(const q of w){const c=S.cats.find(c=>{const m=n2(c);return m===q||m.includes(q)||q.includes(m)});if(c)return c}return defCat()}
 async function dsSearch(){if(DS.busy)return;const qs=DS.q.slice(0,8);if(!qs.length)return dsMsg('Añade al menos un tema.','err');
  DS.busy=1;const b=$('#dsb');b.disabled=true;b.classList.add('spin');dsMsg(`Buscando en Google News (${qs.length} ${qs.length===1?'tema':'temas'})…`);
- const M=new Map();let okq=0,cf=0;
- await Promise.all(qs.map(async t=>{try{const x=await fetchTxt(`https://news.google.com/rss/search?q=${encodeURIComponent(t)}+when:7d&hl=es&gl=ES&ceid=ES:es`,12000);
-   const d=new DOMParser().parseFromString(x,'text/xml');if(d.querySelector('parsererror'))throw Error('xml');okq++;
+ const M=new Map(),why=[];let okq=0,cf=0;
+ // De una en una y con un reintento: varias búsquedas a la vez desde el mismo servidor hacen que Google las corte
+ const one=async t=>{const x=await fetchTxt(`https://news.google.com/rss/search?q=${encodeURIComponent(t)}+when:7d&hl=es&gl=ES&ceid=ES:es`,12000);
+   if(!/<rss|<feed/i.test(x.slice(0,600)))throw Error(/consent\.google|consentimiento|before you continue/i.test(x)?'Google pide aceptar cookies':'no devolvió RSS');return x};
+ for(const t of qs){try{let x;try{x=await one(t)}catch(e){if(e.st==='cf')throw e;await new Promise(r=>setTimeout(r,900));x=await one(t)}
+   dsMsg(`Buscando en Google News… ${okq+1}/${qs.length}`);
+   const d=new DOMParser().parseFromString(x,'text/xml');if(d.querySelector('parsererror'))throw Error('RSS ilegible');okq++;
    [...d.getElementsByTagName('item')].forEach(it=>{const se=it.getElementsByTagName('source')[0];if(!se)return;const h=baseHost(se.getAttribute('url')||''),name=(se.textContent||'').trim();if(!h||!name)return;
     let r=M.get(h);if(!r)M.set(h,r={h,name,n:0,t:new Set(),ex:[]});r.n++;r.t.add(t);
     const ti=(it.getElementsByTagName('title')[0]||{}).textContent||'',li=(it.getElementsByTagName('link')[0]||{}).textContent||'';if(r.ex.length<2&&ti)r.ex.push({ti:ti.replace(/\s+-\s+[^-]{2,80}$/,''),li})})}
-  catch(e){if(e.st==='cf')cf=1}}));
- DS.busy=0;b.disabled=false;b.classList.remove('spin');
- if(!okq)return dsMsg(cf?`El proxy no responde: posible límite diario de Cloudflare (vuelve a las ${cfReset()}).`:'Google News no ha respondido. Inténtalo en un rato.','err');
+  catch(e){if(e.st==='cf'){cf=1;break}why.push(t+': '+(e.st?'HTTP '+e.st:e.name==='AbortError'?'tardó demasiado':e.message))}}
+ DS.busy=0;if(why.length)log('Descubrir: '+why.join(' · '),okq?'':'err');b.disabled=false;b.classList.remove('spin');
+ if(!okq)return dsMsg(cf?`El proxy no responde: posible límite diario de Cloudflare (vuelve a las ${cfReset()}).`:`Google News no ha respondido (${why[0]||'sin detalle'}). Inténtalo en un rato; el detalle completo está en el registro.`,'err');
  DS.res=[...M.values()].sort((a,b)=>b.t.size-a.t.size||b.n-a.n);DS.at=Date.now();dsMsg('');dsUi()}
 function dsMsg(m,c=''){const e=$('#dsm');e.hidden=!m;e.className='fm '+c;e.textContent=m||''}
 function dsUi(){
