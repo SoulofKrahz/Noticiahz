@@ -30,7 +30,7 @@ window.nzApply=function(h,s){var st=document.getElementById('acs');if(h==null||i
 try{var q=JSON.parse(localStorage.getItem('nz_pf'))||{};if(q.ah!=null)nzApply(q.ah,q.as)}catch(e){}</script>
 <script>try{var p=JSON.parse(localStorage.getItem('nz_pf'))||{},t=p.th||JSON.parse(localStorage.getItem('nz_theme'));if(t!=='dark'&&t!=='light')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t;document.documentElement.style.setProperty('--fs',p.fs||1)}catch(e){}</script>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='15' fill='%230a9d5c'/><path d='M21.5 17.5V50M21.5 34C21.5 25 27 22 33 22C40 22 44 26.5 44 33V50' fill='none' stroke='%2306150f' stroke-width='9'/><path d='M7 41H25L29 29L34 51L38 36L41 41H57' fill='none' stroke='white' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'/></svg>">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400..700&family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..700&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#f4f6fa;--card:#fff;--bd:#e1e6ee;--tx:#101827;--mu:#5a6578;--em:#047857;--em2:#059669;--tint:#e7f5ee;--onem:#fff;--sh:0 1px 2px #0f172a0d,0 14px 32px -22px #0f172a66}
 [data-theme=dark]{--bg:#0d1523;--card:#152033;--bd:#243249;--tx:#e8eef7;--mu:#98a8bd;--em:#3ddc9a;--em2:#18c488;--tint:#18c48826;--onem:#05140e;--sh:none}
@@ -381,7 +381,7 @@ main .card .ph{border-radius:0;background:var(--tint);aspect-ratio:16/9}.card .p
 
 <header><div class="wrap"><div class="bar">
   <div class="logo" role="img" aria-label="Noticiahz"><svg class="lgi" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="15" fill="#0a9d5c"/><path d="M21.5 17.5V50M21.5 34C21.5 25 27 22 33 22C40 22 44 26.5 44 33V50" fill="none" stroke="#06150f" stroke-width="9"/><path d="M7 41H25L29 29L34 51L38 36L41 41H57" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="lw" aria-hidden="true">noticia<em>hz</em></span><svg class="lp" viewBox="0 0 44 24" aria-hidden="true"><path d="M1 13H13L17 2L23 21L27 8L30 13H43"/></svg></div>
-  <label class="search"><svg class="i"><use href="#s"/></svg><input id="q" type="search" placeholder="Buscar en las noticias" aria-label="Buscar"></label>
+  <label class="search"><svg class="i"><use href="#s"/></svg><input id="q" type="search" placeholder="Buscar en las noticias" aria-label="Buscar" autocomplete="off" enterkeyhint="search"></label>
   <button class="ib sb" id="sb" title="Buscar" aria-label="Buscar"><svg class="i"><use href="#s"/></svg></button>
   <button class="ib" id="th" title="Cambiar tema" aria-label="Cambiar tema"><svg class="i"><use href="#m"/></svg></button>
   <button class="ib" id="st" title="Ajustes" aria-label="Ajustes"><svg class="i"><use href="#cog"/></svg></button>
@@ -431,15 +431,15 @@ main .card .ph{border-radius:0;background:var(--tint);aspect-ratio:16/9}.card .p
       <div id="pF">
         <div class="stk"><div class="seg" id="sgF"><button class="on" data-s="l">Lista</button><button data-s="r">Revisión</button><button data-s="c">Categorías</button></div></div>
       <div id="p1">
-        <div class="ssr"><div class="ssi"><svg class="i"><use href="#s"/></svg><input id="sq" type="search" placeholder="Buscar fuente por nombre, web o categoría" aria-label="Buscar fuente" autocomplete="off"></div></div>
+        <div class="ssr"><div class="ssi"><svg class="i"><use href="#s"/></svg><input id="sq" type="search" placeholder="Buscar fuente por nombre, web o categoría" aria-label="Buscar fuente" autocomplete="off" enterkeyhint="search"></div></div>
         <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin:6px 0 8px"><p class="hint" id="ssum" style="margin:0 4px"></p><button class="tb" id="ordb">Ordenar</button></div>
         <div id="gall" style="display:flex;gap:8px;margin:0 0 12px"><button class="btn o" id="gon" style="flex:1;justify-content:center">Activar todas</button><button class="btn o" id="gof" style="flex:1;justify-content:center">Desactivar todas</button></div>
         <button class="btn" id="adb" style="width:100%;justify-content:center;margin:0 0 16px"><svg class="i"><use href="#pl"/></svg>Añadir fuente</button>
         <div class="add" id="fr" hidden>
           <h3 class="w" id="ft">Añadir fuente</h3>
-          <input id="an" placeholder="Nombre (ej. El Diario)" aria-label="Nombre" autocomplete="off">
+          <input id="an" placeholder="Nombre (ej. El Diario)" aria-label="Nombre" autocomplete="off" enterkeyhint="next">
           <select id="ac" aria-label="Categoría"></select>
-          <input id="au" class="w" type="url" placeholder="https://sitio.com/feed.xml" aria-label="URL del feed RSS" autocapitalize="off" autocorrect="off">
+          <input id="au" class="w" type="url" inputmode="url" placeholder="Web o feed (ej. https://sitio.com)" aria-label="Dirección de la web o del feed" autocapitalize="off" autocorrect="off" enterkeyhint="go">
           <p id="fm" class="w fm" hidden></p>
           <button class="btn w" id="aa" style="justify-content:center;margin:0">Comprobar y añadir</button>
           <button class="btn o w" id="ak" hidden style="justify-content:center">Guardar igualmente</button>
@@ -451,7 +451,7 @@ main .card .ph{border-radius:0;background:var(--tint);aspect-ratio:16/9}.card .p
       <div id="p4" hidden>
         <div class="add" style="grid-template-columns:minmax(0,1fr) auto">
           <h3 class="w">Nueva categoría</h3>
-          <input id="cn" placeholder="Ej. Nacional, Local, Ciencia" maxlength="24" aria-label="Nombre de la categoría" autocomplete="off">
+          <input id="cn" placeholder="Ej. Nacional, Local, Ciencia" maxlength="24" aria-label="Nombre de la categoría" autocomplete="off" enterkeyhint="done">
           <button class="btn" id="cadd" style="margin:0">Añadir</button>
         </div>
         <p class="hint">Para asignar fuentes a una categoría, edítalas en la lista de fuentes.</p>
@@ -504,7 +504,7 @@ main .card .ph{border-radius:0;background:var(--tint);aspect-ratio:16/9}.card .p
   <button id="b-fb" aria-label="Filtros"><svg class="i"><use href="#g"/></svg><span>Filtros</span><b id="fn2" hidden></b></button>
   <button id="b-st" aria-label="Ajustes"><svg class="i"><use href="#cog"/></svg><span>Ajustes</span></button>
 </nav>
-<div class="qd" id="qd"><input id="q2" type="search" placeholder="Buscar en las noticias" aria-label="Buscar" autocomplete="off"><button class="ib" id="qx" aria-label="Cerrar búsqueda"><svg class="i"><use href="#x"/></svg></button></div>
+<div class="qd" id="qd"><input id="q2" type="search" placeholder="Buscar en las noticias" aria-label="Buscar" autocomplete="off" enterkeyhint="search"><button class="ib" id="qx" aria-label="Cerrar búsqueda"><svg class="i"><use href="#x"/></svg></button></div>
 <div class="ov" id="fov"></div>
 <div class="ov" id="aov"></div>
 <div class="ov" id="sov" style="z-index:44"></div>
@@ -817,7 +817,7 @@ async function load(){
  const keep=S.news.filter(a=>S.src.some(s=>s.name===a.src)&&Date.now()-a.date<120*864e5);
  const seen=new Set();
  S.news=[...fresh,...keep].filter(a=>!seen.has(a.id)&&seen.add(a.id)).sort((a,b)=>b.date-a.date).slice(0,4000);
- let added=0;S.news.forEach(a=>{const o=old.get(a.id);if(o)a.nw=o.nw;else if(old.size){a.nw=1;added++}});if(added)S.nwPending=1;S.nw=S.news.filter(a=>a.nw).length;badge();
+ let added=0;const nowG=Date.now();S.news.forEach(a=>{const o=old.get(a.id);if(o){a.nw=o.nw;if(o.got)a.got=o.got}else{a.got=a.got||nowG;if(old.size){a.nw=1;added++}}});if(added)S.nwPending=1;S.nw=S.news.filter(a=>a.nw).length;badge();
  const bad=on.filter(x=>S.hl[x.id]===0).length;
  if(LG.run){const r=LG.run;r.ok=todo.filter(x=>S.hl[x.id]>0).length;r.items=fresh.length;r.added=added;r.dur=Date.now()-r.t;
   r.fails=todo.filter(x=>!(S.hl[x.id]>0)).map(x=>({n:x.name,h:host(x.url),r:why(host(x.url))}));
@@ -826,7 +826,7 @@ async function load(){
  saveNews();
  $('#upd').textContent='Actualizado a las '+new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
  S.loading=false;S.last=Date.now();spinAll(false);loadAlerts();setTimeout(()=>{const r=LG.runs[0];if(r&&Date.now()-r.t<6e4){r.tech=`Técnico: v${VER} · ${S.news.length} noticias en memoria · pintado ${S.rt} ms · arranque ${S.t0} ms`;lgSave();lgDraw()}},700);
- if(!todo.length)toast('Ya estás al día');else if(!fresh.length)toast(navigator.onLine?'No se pudo conectar. Revisa el registro.':'Sin conexión');else if(bad)toast(`${bad} ${bad===1?'fuente no ha respondido':'fuentes no han respondido'}`);
+ if(!todo.length)toast('Ya estás al día');else if(!fresh.length)toast(navigator.onLine?'No se pudo conectar. Revisa el registro.':'Sin conexión');else if(bad)toast(`${added?added+' nuevas · ':''}${bad} ${bad===1?'fuente no ha respondido':'fuentes no han respondido'}`);else if(man)toast(added?`${added} ${added===1?'noticia nueva':'noticias nuevas'}`:'Sin noticias nuevas');
  render();
 }
 
@@ -884,7 +884,7 @@ S.lv=ls.get('nz_lv',0);{let hid=0;document.addEventListener('visibilitychange',(
 function card(a,i,hero){
  const bm=S.fav[a.id]?'on':'';
  return`<article class="card ${hero?'hero':''} ${topicOf(a)?'tp':''} ${S.rd.has(a.id)?'rd':''} ${a.alert?'al al-'+a.alert:''} ${!hero&&a.img&&i%9===4?'feat':''}" data-k="${i}" tabindex="0">
- <div class="ph ${a.img?'':'noimg'}">${esc((a.src||'N')[0])}${a.img?`<img src="${esc(a.img)}" alt="" loading="lazy" referrerpolicy="no-referrer" onload="this.classList.add('ld')" onerror="this.parentNode.classList.add('noimg');this.remove()">`:''}${vid(a)&&a.img?'<span class="pl"></span>':''}</div>
+ <div class="ph ${a.img?'':'noimg'}">${esc((a.src||'N')[0])}${a.img?`<img src="${esc(a.img)}" alt="" ${i<2?'fetchpriority="high"':'loading="lazy"'} decoding="async" referrerpolicy="no-referrer" onload="this.classList.add('ld')" onerror="this.parentNode.classList.add('noimg');this.remove()">`:''}${vid(a)&&a.img?'<span class="pl"></span>':''}</div>
  <div class="cb"><div class="meta"><button class="chip" data-sf="${esc(a.src)}" title="Ver solo ${esc(a.src)}"><i class="mg" style="--h:${hue(a.src)}">${esc((a.src||'N')[0])}</i>${esc(a.src)}</button>${a.nw?'<span class="dot" title="Nueva"></span>':''}<span>${ago(a.date)}</span>${tpx(a)}${S.rd.has(a.id)?'<span class="rdm"><svg class="i"><use href="#ck"/></svg>Leída</span>':''}${bm&&S.cat!=='Guardadas'?'<svg class="i fvm" aria-label="Guardada"><use href="#b"/></svg>':''}</div>
  <h3>${esc(a.title)}</h3><p>${esc(a.snip)}</p>
  <div class="foot">${a.also&&a.also.length?`<button class="also" data-also aria-label="Ver la misma noticia en otros medios">También en ${esc(a.also.slice(0,2).map(x=>x.src).join(', '))}${a.also.length>2?' y '+(a.also.length-2)+' más':''}</button>`:`<span class="meta">${esc(catOf(a))}</span>`}<span class="acts">${S.cat==='Guardadas'?'':`<button class="bm dsk" data-ds="${i}" aria-label="Descartar" title="Descartar (Supr)"><svg class="i"><use href="#x"/></svg></button>`}${a.alert?'':`<button class="bm dsk ${bm}" data-bm="${i}" aria-label="Guardar" title="Guardar"><svg class="i"><use href="#b"/></svg></button>`}<a class="bm" data-go href="${esc(a.link)}" target="_blank" rel="noopener noreferrer" aria-label="${act(a).s}" title="${act(a).s}"><svg class="i"><use href="#${act(a).i}"/></svg></a><button class="bm" data-sh aria-label="Compartir" title="Compartir"><svg class="i"><use href="#h"/></svg></button></span></div></div></article>`;
@@ -1127,7 +1127,9 @@ $('#rs').onclick=()=>{resetForm();S.src=DEFAULTS.map(d=>({...d}));S.news=[];save
 $('#sh').onclick=()=>{reseed();render();scrollTo({top:0,behavior:'smooth'});toast('Noticias mezcladas de nuevo')};
 $('#so').onchange=e=>{S.so=e.target.value;render()};
 $('#pe').onchange=e=>{S.pe=+e.target.value;render()};
-function saveNews(){const full=n=>S.news.slice(0,n).map(a=>({...a,_t:undefined,also:undefined,nw:undefined}));
+// Texto completo de todo lo descargado en los últimos 30 días. Solo de lo descargado hace más tiempo se guarda el principio
+// (el lector sigue enlazando al original): menos datos que leer al abrir la app y menos memoria en el móvil.
+function saveNews(){const now=Date.now(),full=n=>S.news.slice(0,n).map(a=>({...a,_t:undefined,also:undefined,nw:undefined,html:(!a.html||now-(a.got||a.date)<2592e6)?a.html:a.html.slice(0,1500)}));
  DB.set('nz_news',full(4000)).catch(()=>{[[1500,600],[900,600],[500,600],[250,1500],[120,1500]].some(([n,h])=>ls.set('nz_news',full(n).map(a=>({...a,html:a.html.slice(0,h)}))))})}
 // "Buscar noticias más antiguas": pide la siguiente página de cada fuente visible
 async function deepen(){
@@ -1170,7 +1172,8 @@ setTheme(S.pf.th==='dark'||S.pf.th==='light'?S.pf.th:(sysDark()?'dark':'light'))
 render(true);
 (async()=>{try{navigator.storage.persist()}catch(e){}
  const tI=performance.now();const [n,f,r,dd,sn]=await Promise.all([bigGet('nz_news',[]),bigGet('nz_fav',{}),bigGet('nz_rd',[]),bigGet('nz_dis',[]),bigGet('nz_seen',[])]);S.tdb=Math.round(performance.now()-tI);
- S.news=Array.isArray(n)?n:[];S.news.forEach(a=>{if(MOJ.test(a.title||'')){a.title=fixMoj(a.title);a.snip=fixMoj(a.snip);a.html=fixMoj(a.html)}});S.fav=f&&typeof f==='object'?f:{};S.rd=new Set(Array.isArray(r)?r:[]);S.dis=new Map(Array.isArray(dd)?dd:[]);S.seen=new Map(Array.isArray(sn)?sn:[]);S.ready=1;snapUp();urlFix();S.t0=Math.round(performance.now());
+ S.news=Array.isArray(n)?n:[];{const g=Date.now();S.news.forEach(a=>{if(!a.got)a.got=g})} // noticias de antes de este cambio: cuentan como descargadas hoy, no se recorta nada aún
+ S.news.forEach(a=>{if(MOJ.test(a.title||'')){a.title=fixMoj(a.title);a.snip=fixMoj(a.snip);a.html=fixMoj(a.html)}});S.fav=f&&typeof f==='object'?f:{};S.rd=new Set(Array.isArray(r)?r:[]);S.dis=new Map(Array.isArray(dd)?dd:[]);S.seen=new Map(Array.isArray(sn)?sn:[]);S.ready=1;snapUp();urlFix();S.t0=Math.round(performance.now());
  render(!S.news.length);if(S.news.length)render();shareIn();if(FIRST)obOpen();else load()})();
 // Accesos directos del icono (?a=…) y «Compartir» desde otras apps (share_target: ?st=&sx=&su=)
 let SH=null;
@@ -1294,6 +1297,8 @@ $('#b-q').onclick=()=>qOpen(true);
 $('#qx').onclick=()=>{S.q='';$('#q').value='';$('#q2').value='';qOpen(false);render()};
 let q2t;$('#q2').addEventListener('input',e=>{S.q=e.target.value;$('#q').value=e.target.value;clearTimeout(q2t);q2t=setTimeout(render,160)});
 $('#q2').addEventListener('keydown',e=>{if(e.key==='Enter')e.target.blur()});
+// Formulario de fuente: Intro en el nombre pasa a la dirección; Intro en la dirección comprueba y guarda
+$('#an').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('#au').focus()}});$('#au').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('#aa').click()}});
 // App instalable: service worker (solo con https)
 if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){const had=!!navigator.serviceWorker.controller;
  navigator.serviceWorker.addEventListener('controllerchange',()=>{if(!had)return;if(window.__upd===1){window.__upd=2;location.reload()}else if(window.__chk)window.__chk()});
