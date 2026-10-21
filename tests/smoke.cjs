@@ -25,6 +25,7 @@ async function run(browser, label, viewport, mobile) {
     if (rel.startsWith('p/')) {
       const host = rel.split('/')[1];
       if (/aemet|news\.google/.test(host)) return r.fulfill({ status: 404, body: 'no' });
+      if (/mondosonoro/.test(host)) return r.fulfill({ status: 403, body: 'no' });
       return r.fulfill({ status: 200, contentType: 'application/rss+xml', body: rss(host) });
     }
     const f = path.join(SITE, rel || 'index.html');
@@ -43,6 +44,11 @@ async function run(browser, label, viewport, mobile) {
   const n = await p.evaluate(() => document.querySelectorAll('#grid .card').length);
   ok(n > 10, `carga noticias de los feeds (${n} tarjetas)`);
   ok(await p.evaluate(() => /^\d{4}-\d\d-\d\d-[\d.]+$/.test(VER)), 'VER tiene el formato fecha-N');
+
+  // 2b) Registro: una tarjeta por actualización con los fallos explicados
+  const lg = await p.evaluate(() => { tabInit(); const c = document.querySelector('#p2 .lgr'); return { card: !!c, txt: c ? c.textContent : '', copy: lgText() } });
+  ok(lg.card && /Mondosonoro/.test(lg.txt) && /bloquea al proxy/.test(lg.txt), 'el registro muestra la tarjeta y explica por qué falla una fuente');
+  ok(/Mondosonoro \(mondosonoro\.com\): el sitio bloquea/.test(lg.copy), 'el registro se copia como texto ordenado');
 
   // 3) Categorías y fila de fuentes
   const cats = await p.evaluate(() => [...document.querySelectorAll('#tabs .tab')].map(t => t.dataset.c));

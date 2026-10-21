@@ -166,7 +166,15 @@ pre .ok{color:var(--em)}pre .err{color:#e5484d}
 .gb{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;color:var(--mu);flex:none}.gb:hover{background:var(--tint);color:var(--em)}.gb.dg:hover{background:#e5484d1f;color:#d23c41}
 .lrs{margin-top:4px}.lr{display:flex;align-items:center;gap:12px;width:100%;padding:13px 0;border-top:1px solid var(--bd);text-align:left;cursor:pointer;color:var(--tx)}.lrs .lr:first-child{border-top:0}
 .lr svg{color:var(--em)}.lr div{min-width:0}.lr b{display:block;font-size:14.5px;font-weight:600}.lr small{color:var(--mu);font-size:12.5px}.lr.dg svg,.lr.dg b{color:#d23c41}
-#p2{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px}
+#p2{display:flex;flex-direction:column;gap:10px}
+.lgh{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.lgh .seg{flex:1;min-width:200px}
+.lgr{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:0 14px}.lgr[open]{padding-bottom:12px}
+.lgr summary{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 0;cursor:pointer;list-style:none;font-size:14px}.lgr summary::-webkit-details-marker{display:none}
+.lgb{font-size:12.5px;font-weight:700;padding:2px 9px;border-radius:99px;white-space:nowrap}.lgb.k{background:var(--tint);color:var(--em)}.lgb.w{background:#e5484d1f;color:#d23c41}
+.lgs{font-size:13px;color:var(--mu);margin:0 0 6px}.lgok{font-size:13px;color:var(--em);margin:6px 0 0}.lgx{font-size:11.5px;color:var(--mu);margin:10px 0 0;opacity:.8}
+#p2 h5{font:600 12.5px Inter,sans-serif;text-transform:uppercase;letter-spacing:.04em;color:var(--mu);margin:12px 0 4px}#p2 h5 em{font-style:normal;opacity:.7}#p2 h5.e{color:#d23c41}#p2 h5.k{color:var(--em)}
+#p2 ul{list-style:none;margin:0;padding:0}#p2 li{display:flex;flex-wrap:wrap;gap:2px 8px;font-size:13.5px;padding:5px 0;border-top:1px solid color-mix(in srgb,var(--bd) 60%,transparent)}#p2 li:first-child{border-top:0}#p2 li b{font-weight:600}#p2 li span{color:var(--mu);overflow-wrap:anywhere}
+.lgev{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:4px 14px!important}
 .af{display:flex;gap:6px;flex-wrap:wrap;padding-bottom:14px}
 .ac{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:99px;background:var(--tint);color:var(--em);font-size:12.5px;font-weight:600}.ac svg{width:12px;height:12px;stroke-width:2.5}.ac.cl{background:none;color:var(--mu)}
 .more .btn{margin:0;padding:12px 22px}.btn small{font-weight:500;opacity:.85}.more.end{color:var(--mu);font-size:13px;padding:6px 0 10px}
@@ -457,7 +465,7 @@ main .card .ph{border-radius:0;background:var(--tint);aspect-ratio:16/9}.card .p
         <section class="set"><h3>Actualización automática</h3><p>Cada cuánto se buscan noticias nuevas.</p>
           <div class="seg" id="sg-rf"><button data-v="30">30 min</button><button data-v="60">1 hora</button><button data-v="0">Nunca</button></div></section><section class="set"><h3>Noticias por fuente</h3><p>Cuántas páginas de cada fuente se descargan. Más páginas = más noticias, pero tarda más. Si una web no permite páginas, solo se cargan sus últimas.</p>
           <div class="seg" id="sg-dp"><button data-v="1">Últimas</button><button data-v="3">Amplio</button><button data-v="8">Máximo</button></div></section><div class="abt"><div class="logo" style="margin:0" role="img" aria-label="Noticiahz"><svg class="lgi" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="15" fill="#0a9d5c"/><path d="M21.5 17.5V50M21.5 34C21.5 25 27 22 33 22C40 22 44 26.5 44 33V50" fill="none" stroke="#06150f" stroke-width="9"/><path d="M7 41H25L29 29L34 51L38 36L41 41H57" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="lw" aria-hidden="true">noticia<em>hz</em></span><svg class="lp" viewBox="0 0 44 24" aria-hidden="true"><path d="M1 13H13L17 2L23 21L27 8L30 13H43"/></svg></div><span>Diseñado y creado por <strong>Krahz</strong></span><p class="hint" id="ver"></p></div>
-        <details id="lgd" class="set" style="margin-top:4px"><summary style="font:600 15px Inter,sans-serif;cursor:pointer">Registro de actividad</summary><p style="margin:6px 0 10px">Qué ha hecho la app al actualizar: útil para diagnosticar fallos.</p><pre id="p2"></pre></details>
+        <details id="lgd" class="set" style="margin-top:4px"><summary style="font:600 15px Inter,sans-serif;cursor:pointer">Registro de actividad</summary><p style="margin:6px 0 10px">Qué pasó en cada actualización y qué fuentes fallaron y por qué. «Copiar» lo prepara en texto para enviarlo.</p><div id="p2"></div></details>
       </div>
     </div>
   </div>
@@ -595,7 +603,38 @@ const bigSet=(k,v)=>DB.set(k,v).catch(()=>ls.set(k,v));
 let FIRST=false;try{FIRST=localStorage.getItem('nz_src')===null&&localStorage.getItem('nz_pf')===null&&localStorage.getItem('nz_ob')===null}catch(e){}
 const S={src:ls.get('nz_src',DEFAULTS),news:[],fav:{},cat:'Todas',q:'',logs:[],V:[],cur:null,loading:false,rd:new Set(),dis:new Map(),seed:Math.random(),seen:new Map(),snap:{rd:new Set(),seen:new Set(),sw:new Map(),st:{}},so:'mix',pe:0,hl:{},rj:{},ft:{},fb:0,lm:{},dp:ls.get('nz_dp',{}),deep:0,sq:'',edit:null,pend:null,sf:'Todas',un:false};
 
-function log(m,c=''){S.logs.push(`<span class="${c}">${new Date().toLocaleTimeString('es-ES')}  ${esc(m)}</span>`);$('#p2').innerHTML=S.logs.slice(-200).join('\n')}
+// ---- Registro de actividad: una tarjeta por actualización (resumen + problemas agrupados) y eventos sueltos ----
+const LG={runs:ls.get('nz_lg',[]),evs:ls.get('nz_lge',[]),run:null,only:false};
+const lgSave=()=>{ls.set('nz_lg',LG.runs.slice(0,15));ls.set('nz_lge',LG.evs.slice(0,30))};
+function log(m,c=''){if(LG.run)LG.run.notes.push({m,c});else{LG.evs.unshift({t:Date.now(),m,c});LG.evs=LG.evs.slice(0,30);lgSave();lgDraw()}}
+function why(h){const f=S.nf&&S.nf[h],s=f&&f.s;if(s===undefined)return'no respondió';
+ const T={402:'pide pago o ha superado su límite (402)',403:'el sitio bloquea al proxy (403)',404:'esa dirección ya no existe (404)',410:'esa dirección ya no existe (410)',429:'demasiadas peticiones, lo limita el sitio (429)',500:'error del propio sitio (500)',502:'el sitio no respondió bien (502)',503:'sitio caído o en mantenimiento (503)',504:'el sitio tardó demasiado (504)'};
+ if(T[s])return T[s];if(typeof s==='number')return`error HTTP ${s}`;
+ if(/abort/i.test(s))return'tardó más de 8 s';if(s==='Failed to fetch')return'no se pudo conectar';if(/XML no válido/.test(s))return'la dirección no devuelve un feed válido';if(/Sin artículos|sin titulares/i.test(s))return'no devuelve noticias (puede que la dirección sea una web y no un feed)';return s}
+const lgWhen=t=>{const d=new Date(t),h=d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}),n=new Date(),y=new Date(n-864e5),same=(a,b)=>a.toDateString()===b.toDateString();return same(d,n)?`Hoy ${h}`:same(d,y)?`Ayer ${h}`:d.toLocaleDateString('es-ES',{day:'numeric',month:'short'})+' '+h};
+const lgProb=r=>r.fails.length+r.paused.length+r.enc.length+(r.aemet&&!r.aemet.ok?1:0);
+function lgDraw(){const el=$('#p2');if(!el)return;const nf=n=>n.toLocaleString('es-ES'),runs=LG.runs.filter(r=>!LG.only||lgProb(r));
+ const sec=(t,items,c='')=>items.length?`<h5 class="${c}">${t} <em>${items.length}</em></h5><ul>${items.join('')}</ul>`:'';
+ el.innerHTML=`<div class="lgh"><div class="seg" id="lgf"><button data-o="0" class="${LG.only?'':'on'}">Todo</button><button data-o="1" class="${LG.only?'on':''}">Problemas</button></div><button class="tb" id="lgc">Copiar</button><button class="tb" id="lgx">Borrar</button></div>`+
+ (runs.length?runs.map((r,i)=>{const p=lgProb(r),bad=r.todo-r.ok;return`<details class="lgr"${i===0?' open':''}><summary><span><b>${lgWhen(r.t)}</b> · ${esc(r.scope)}</span><span class="lgb ${bad?'w':'k'}">${r.ok}/${r.todo} ${bad?'⚠':'✓'}</span></summary>
+  <p class="lgs">${nf(r.items)} noticias recibidas · ${nf(r.added)} nuevas · ${(r.dur/1000).toFixed(1).replace('.',',')} s${r.skip?` · ${r.skip} ${r.skip===1?'fuente omitida':'fuentes omitidas'} (estaban al día)`:''}</p>`+
+  sec('No cargan',r.fails.map(f=>`<li><b>${esc(f.n)}</b><span>${esc(f.r)}</span></li>`),'e')+
+  sec('Corregidas automáticamente',r.fixed.map(f=>`<li><b>${esc(f.n)}</b><span>nueva dirección: ${esc(f.u)}</span></li>`),'k')+
+  sec('En pausa 6 horas',r.paused.map(n=>`<li><b>${esc(n)}</b><span>pide pago o limita las peticiones; se reintentará sola</span></li>`),'e')+
+  sec('Títulos con símbolos raros',r.enc.map(n=>`<li><b>${esc(n)}</b><span>problema de codificación del sitio</span></li>`))+
+  (r.aemet?`<h5 class="${r.aemet.ok?'k':'e'}">Avisos AEMET</h5><ul><li><span>${esc(r.aemet.t)}</span></li></ul>`:'')+
+  sec('Otros',r.notes.map(x=>`<li><span class="${x.c}">${esc(x.m)}</span></li>`))+
+  (!p&&!r.fixed.length?'<p class="lgok">Todo cargó correctamente.</p>':'')+
+  (r.tech?`<p class="lgx">${esc(r.tech)}</p>`:'')+`</details>`}).join(''):`<p class="hint">${LG.only?'Ninguna actualización con problemas.':'Aún no hay actualizaciones registradas.'}</p>`)+
+ (LG.evs.length&&!LG.only?`<h5 class="lge">Otros eventos</h5><ul class="lgev">${LG.evs.slice(0,10).map(e=>`<li><b>${lgWhen(e.t)}</b><span class="${e.c}">${esc(e.m)}</span></li>`).join('')}</ul>`:'');
+ $('#lgf').onclick=e=>{const b=e.target.closest('[data-o]');if(b){LG.only=b.dataset.o==='1';lgDraw()}};
+ $('#lgc').onclick=async()=>{const t=lgText();try{await navigator.clipboard.writeText(t);toast('Registro copiado')}catch(e){const a=document.createElement('textarea');a.value=t;document.body.append(a);a.select();try{document.execCommand('copy');toast('Registro copiado')}catch(x){}a.remove()}};
+ $('#lgx').onclick=async()=>{if(!await ask('Se borra solo el historial del registro, no tus noticias ni ajustes.',{title:'¿Borrar el registro?',ok:'Borrar'}))return;LG.runs=[];LG.evs=[];lgSave();lgDraw()}}
+function lgText(){const L=[`Noticiahz ${VER} · registro copiado ${new Date().toLocaleString('es-ES')}`];
+ LG.runs.slice(0,8).forEach(r=>{L.push('',`${lgWhen(r.t)} · ${r.scope}: ${r.ok}/${r.todo} fuentes · ${r.items} recibidas · ${r.added} nuevas · ${(r.dur/1000).toFixed(1)} s`);
+  r.fails.forEach(f=>L.push(`  ✗ ${f.n} (${f.h}): ${f.r}`));r.fixed.forEach(f=>L.push(`  ↻ ${f.n}: ${f.u}`));r.paused.forEach(n=>L.push(`  ⏸ ${n}: en pausa 6 h`));r.enc.forEach(n=>L.push(`  ? ${n}: símbolos raros`));
+  if(r.aemet)L.push(`  AEMET: ${r.aemet.t}`);r.notes.forEach(x=>L.push('  · '+x.m));if(r.tech)L.push('  '+r.tech)});
+ if(LG.evs.length){L.push('','Otros eventos:');LG.evs.slice(0,10).forEach(e=>L.push(`  ${lgWhen(e.t)} ${e.m}`))}return L.join('\n')}
 function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)}
 const txt=h=>{if(!h)return'';let t=new DOMParser().parseFromString(h,'text/html').body.textContent||'';if(/<[a-zA-Z\/!][^>]*>/.test(t))t=new DOMParser().parseFromString(t,'text/html').body.textContent||'';return t.replace(/\s+/g,' ').trim()};
 const https=u=>u?u.replace(/^http:\/\//,'https://'):null;
@@ -649,7 +688,7 @@ async function pool(items,n,fn){let i=0;await Promise.all(Array.from({length:Mat
 function timed(fn,ms=10000){const c=new AbortController();const id=setTimeout(()=>c.abort(),ms);return fn(c.signal).finally(()=>clearTimeout(id))}
 
 // Proxy propio: /p/<host>/... lo atiende _worker.js (Cloudflare Pages)
-const VER='2026-10-21-1.1';
+const VER='2026-10-21-2';
 if(!ls.get('nz_fu',0))ls.set('nz_fu',Date.now());
 const PX=[{f:u=>{const x=new URL(u);return '/p/'+x.host+x.pathname+x.search},can:u=>/^https?:\/\//i.test(u),own:1,n:'propio',ok:0,bad:0,until:0}];
 const addParam=(u,k,v)=>u+(u.includes('?')?'&':'?')+k+'='+v;
@@ -737,34 +776,34 @@ async function load(){
  const sc=S.man&&S.rsc;S.rsc=null;const on=S.src.filter(s=>s.on&&(!sc||((sc.cat==='Todas'||sc.cat==='Guardadas'||s.cat===sc.cat)&&(sc.sf==='Todas'||s.name===sc.sf))));
  if(!S.news.length)render(true);
  const man=S.man;S.man=false;S.nf={};const nw={};S.news.forEach(a=>{if(!(a.date<=nw[a.src]))nw[a.src]=a.date});const gap=x=>{if(man)return 3e5;const a=Date.now()-(nw[x.name]||0);return a<108e5?3e5:a<864e5?12e5:a<2592e5?36e5:108e5},todo=on.filter(x=>!(S.bo&&S.bo[x.id]>Date.now())&&!(S.ft[x.id]&&Date.now()-S.ft[x.id]<gap(x)&&S.hl[x.id]>0)),res=[],rl=rlp;let done=0;
- if(todo.length)log(`Actualizando ${todo.length} de ${on.length} fuentes${sc&&sc.sf!=='Todas'?' ('+sc.sf+')':sc&&sc.cat!=='Todas'&&sc.cat!=='Guardadas'?' ('+sc.cat+')':''}… (v${VER})`);
+ if(todo.length)LG.run={t:Date.now(),scope:sc&&sc.sf!=='Todas'?sc.sf:sc&&sc.cat!=='Todas'&&sc.cat!=='Guardadas'?sc.cat:(man?'Todas':'Automática'),todo:todo.length,skip:on.length-todo.length,ok:0,items:0,added:0,dur:0,fails:[],fixed:[],paused:[],enc:[],notes:[],tech:''};
  await pool(todo,10,async x=>{
   let a=await getFeed(x);
   if(a&&a.length>=8&&S.pf.dp>1&&S.dp[x.id]!==99){
    const known=new Set(a.map(i=>i.id));
    for(let pg=(S.dp[x.id]||1)+1;pg<=S.pf.dp;pg++){const m=await viaProxies(addParam(x.url,'paged',pg),x).catch(()=>null),nw=(m||[]).filter(i=>i.link&&!known.has(i.id));if(!nw.length){S.dp[x.id]=99;break}nw.forEach(i=>known.add(i.id));a=a.concat(nw);S.dp[x.id]=pg}
   }
-  S.hl[x.id]=a?a.length:0;if(a)S.ft[x.id]=Date.now();else log(`${x.name}: sin respuesta`,'err');{const f=S.nf&&S.nf[host(x.url)];if(f&&(f.s===402||f.s===429))(S.bo=S.bo||{})[x.id]=Date.now()+216e5}res.push(a||[]);rl.textContent=`${++done}/${todo.length}`});
+  S.hl[x.id]=a?a.length:0;if(a)S.ft[x.id]=Date.now();{const f=S.nf&&S.nf[host(x.url)];if(f&&(f.s===402||f.s===429))(S.bo=S.bo||{})[x.id]=Date.now()+216e5}res.push(a||[]);rl.textContent=`${++done}/${todo.length}`});
  rl.textContent='Actualizar';ls.set('nz_dp',S.dp);
  const det=x=>{const f=S.nf&&S.nf[host(x.url)];return f&&(f.s==='Failed to fetch'||f.s===403||f.s===404)};
  const sick=todo.filter(x=>S.hl[x.id]===0);
- if(sick.length){await pool(sick,3,async x=>{const h=await heal(x);if(h&&!S.src.some(o=>o!==x&&o.url===h.url)){log(`${x.name}: feed corregido → ${h.url}`,'ok');x.url=h.url;S.hl[x.id]=h.items.length;S.ft[x.id]=Date.now();res.push(h.items)}});
+ if(sick.length){await pool(sick,3,async x=>{const h=await heal(x);if(h&&!S.src.some(o=>o!==x&&o.url===h.url)){if(LG.run)LG.run.fixed.push({n:x.name,u:h.url});x.url=h.url;S.hl[x.id]=h.items.length;S.ft[x.id]=Date.now();res.push(h.items)}});
   ls.set('nz_src',S.src)}
- if(todo.length)log(`Listo: ${todo.filter(x=>S.hl[x.id]>0).length} de ${todo.length} fuentes correctas`,'ok');
- if(todo.length)log('Proxy: '+PX.map(p=>`${p.n} ${p.ok} ok/${p.bad} fallos${p.hs?' HTTP '+Object.entries(p.hs).map(([k,v])=>k+'×'+v).join(' '):''}${p.last?' (último: '+p.last+')':''}`).join(' · '));
- {const bo=S.bo?S.src.filter(x=>S.bo[x.id]>Date.now()).map(x=>x.name):[];if(bo.length)log('En pausa 6 h (el sitio pide pago o limita las peticiones): '+bo.join(', '),'err')}
- if(todo.length&&S.nf&&Object.keys(S.nf).length)log('Fallos del proxy por sitio: '+Object.entries(S.nf).sort((a,b)=>b[1].n-a[1].n).slice(0,12).map(([h,o])=>`${h} ×${o.n} (${o.s}${SN[o.s]?' · '+SN[o.s]:''})`).join(' · '),'err');
  const old=new Map(S.news.map(a=>[a.id,a]));
  const fresh=res.flat().filter(a=>a.link&&Date.now()-a.date<120*864e5),got=new Set(fresh.map(a=>a.src));
- {const rar=[...new Set(fresh.filter(a=>/\uFFFD|Ã[\u0080-\u00BF]|Â[\u00A0-\u00BF]/.test(a.title)).map(a=>a.src))];if(rar.length)log('Símbolos raros en el título (revisar codificación): '+rar.slice(0,12).join(', '),'err')}
+ {const rar=[...new Set(fresh.filter(a=>/\uFFFD|Ã[\u0080-\u00BF]|Â[\u00A0-\u00BF]/.test(a.title)).map(a=>a.src))];if(rar.length&&LG.run)LG.run.enc=rar.slice(0,12)}
  const keep=S.news.filter(a=>S.src.some(s=>s.name===a.src)&&Date.now()-a.date<120*864e5);
  const seen=new Set();
  S.news=[...fresh,...keep].filter(a=>!seen.has(a.id)&&seen.add(a.id)).sort((a,b)=>b.date-a.date).slice(0,4000);
  let added=0;S.news.forEach(a=>{const o=old.get(a.id);if(o)a.nw=o.nw;else if(old.size){a.nw=1;added++}});if(added)S.nwPending=1;S.nw=S.news.filter(a=>a.nw).length;badge();
  const bad=on.filter(x=>S.hl[x.id]===0).length;
+ if(LG.run){const r=LG.run;r.ok=todo.filter(x=>S.hl[x.id]>0).length;r.items=fresh.length;r.added=added;r.dur=Date.now()-r.t;
+  r.fails=todo.filter(x=>!(S.hl[x.id]>0)).map(x=>({n:x.name,h:host(x.url),r:why(host(x.url))}));
+  r.paused=S.bo?S.src.filter(x=>S.bo[x.id]>Date.now()&&!r.fails.some(f=>f.n===x.name)).map(x=>x.name):[];r.fails.forEach(f=>{const x=S.src.find(z=>z.name===f.n);if(x&&S.bo&&S.bo[x.id]>Date.now())f.r+=' · en pausa 6 h'});
+  LG.runs.unshift(r);LG.runs=LG.runs.slice(0,15);LG.run=null;lgSave();lgDraw()}
  saveNews();
  $('#upd').textContent='Actualizado a las '+new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
- S.loading=false;S.last=Date.now();spinAll(false);loadAlerts();setTimeout(()=>log(`Rendimiento: ${S.news.length} noticias en memoria · último pintado ${S.rt} ms (pestañas ${S.pt?.t??'-'}, agrupar ${S.pt?.d??'-'}, mezclar ${S.pt?.m??'-'}, resto ${S.pt?S.rt-S.pt.t-(S.pt.d||0)-(S.pt.m||0):'-'}) · arranque ${S.t0} ms (lectura de datos ${S.tdb} ms)`),700);
+ S.loading=false;S.last=Date.now();spinAll(false);loadAlerts();setTimeout(()=>{const r=LG.runs[0];if(r&&Date.now()-r.t<6e4){r.tech=`Técnico: v${VER} · ${S.news.length} noticias en memoria · pintado ${S.rt} ms · arranque ${S.t0} ms`;lgSave();lgDraw()}},700);
  if(!todo.length)toast('Ya estás al día');else if(!fresh.length)toast(navigator.onLine?'No se pudo conectar. Revisa el registro.':'Sin conexión');else if(bad)toast(`${bad} ${bad===1?'fuente no ha respondido':'fuentes no han respondido'}`);
  render();
 }
@@ -931,7 +970,7 @@ async function delCat(c){const k=S.src.filter(x=>x.cat===c).length;if(!await ask
 const saveSrc=nr=>{if(!nr)S.dirty=1;fixNames();syncCats();ls.set('nz_src',S.src);srcs()};
 const PN={1:'F',6:'A',7:'C',8:'V',9:'B'};
 function tab(n){[1,6,7,8,9].forEach(k=>{$('#t'+k).classList.toggle('on',n===k);$('#p'+PN[k]).hidden=n!==k});if(n>1)tabInit();try{$('#t'+n).scrollIntoView({block:'nearest',inline:'center'})}catch(e){}}
-const tabInit=()=>{$('#ver').textContent='Versión '+VER;segs();cdTxt();syncPf();mwUi();syncAz();bkTxt();tpUi();lsUi();csnTxt();swUi()};
+const tabInit=()=>{lgDraw();$('#ver').textContent='Versión '+VER;segs();cdTxt();syncPf();mwUi();syncAz();bkTxt();tpUi();lsUi();csnTxt();swUi()};
 function sub(k){const M={l:'p1',r:'p5',c:'p4'};for(const x in M){$('#'+M[x]).hidden=k!==x;const b=$('#sgF [data-s="'+x+'"]');if(b)b.classList.toggle('on',k===x)}if(k==='r')revUi();else if(k==='c')renderCats();else srcs()}
 
 $('#grid').addEventListener('click',e=>{
@@ -1188,11 +1227,12 @@ const AZP=/de (\d\d):(\d\d) (\d\d)-(\d\d)-(\d{4}) [A-Z]+ \(UTC([+-]\d+)\) a (\d\
 function azParse(a){const t=/^Aviso\.\s*Nivel\s+(\S+?)\.\s*(.+?)\.\s*(.+)$/.exec(a.title),d=AZP.exec(a.snip);if(!t||!d)return null;
  const ts=(H,M,dd,mm,yy,o)=>Date.parse(`${yy}-${mm}-${dd}T${H}:${M}:00${o[0]}${String(Math.abs(+o)).padStart(2,'0')}:00`);
  return{lv:n2(t[1]),ph:t[2],zone:t[3],s:ts(d[1],d[2],d[3],d[4],d[5],d[6]),e:ts(d[7],d[8],d[9],d[10],d[11],d[12])}}
+function azLog(o){const r=LG.runs[0];if(r&&Date.now()-r.t<12e4){r.aemet=o;lgSave();lgDraw()}else log('Avisos AEMET: '+o.t,o.ok?'ok':'err')}
 async function loadAlerts(force){const c=S.pf.az;if(!c){S.alerts=[];return}if(!force&&Date.now()-(S.alT||0)<6e5)return;S.alT=Date.now();
  try{const it=await viaProxies(`https://www.aemet.es/documentos_d/eltiempo/prediccion/avisos/rss/CAP_AFAC${c}_RSS.xml`,{id:'aemet',name:'AEMET',cat:'Avisos'});
   const raw=it.filter(a=>/^Aviso\./.test(a.title)),ok=raw.map(azParse).filter(Boolean);S.alerts=ok;S.alOk=Date.now();
-  log(`Avisos AEMET: ${ok.length} mensajes`+(raw.length>ok.length?` (${raw.length-ok.length} con formato no reconocido)`:''),raw.length>ok.length?'err':'ok')}
- catch(e){log('Avisos AEMET: sin respuesta','err')}
+  azLog({ok:raw.length===ok.length,t:`${ok.length} ${ok.length===1?'aviso':'avisos'} para tu zona`+(raw.length>ok.length?` (${raw.length-ok.length} con formato no reconocido)`:'')})}
+ catch(e){azLog({ok:false,t:'no se pudieron consultar'})}
  render()}
 function alertList(){const now=Date.now();if(!S.alerts||!S.alerts.length||now-(S.alOk||0)>108e5)return{pin:[],mixed:[]};
  const zs=(S.pf.azz||'').split(',').map(x=>n2(x).trim()).filter(Boolean),g=new Map(),pin=[],mixed=[];
