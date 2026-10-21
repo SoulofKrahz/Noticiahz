@@ -25,9 +25,10 @@ async function run(browser, label, viewport, mobile) {
     const rel = decodeURIComponent(new URL(u).pathname.slice(1));
     if (rel.startsWith('p/')) {
       const host = rel.split('/')[1];
-      if (/aemet|news\.google/.test(host)) return r.fulfill({ status: 404, body: 'no' });
+      if (/aemet|news\.google/.test(host)) return r.fulfill({ status: 404, headers: { 'X-Nz': '1' }, body: 'no' });
       HITS[host] = (HITS[host] || 0) + 1;
-      if (/mondosonoro|roto\.test/.test(host)) return r.fulfill({ status: 403, body: 'no' });
+      if (/mondosonoro|roto\.test/.test(host)) return r.fulfill({ status: 403, headers: { 'X-Nz': '1' }, body: 'no' });
+      if (/cuota\.test/.test(host)) return r.fulfill({ status: 429, body: 'error code: 1027' });
       if (/viejo\.test/.test(host)) return r.fulfill({ status: 200, contentType: 'application/rss+xml', body: rss(host).replace(/<pubDate>[^<]*/g, '<pubDate>' + new Date(Date.now() - 400 * 864e5).toUTCString()) });
       return r.fulfill({ status: 200, contentType: 'application/rss+xml', body: rss(host) });
     }
@@ -127,6 +128,19 @@ async function run(browser, label, viewport, mobile) {
   ok(await p.evaluate(() => /nuevas|Sin noticias nuevas|no ha|no han/.test(document.querySelector('.toast')?.textContent || '')), 'al actualizar a mano avisa del resultado');
   ok(sc[0] <= sc[1] + 1, `actualizar en una categoría solo pide sus fuentes (${sc[0]} sitios para ${sc[1]} fuentes)`);
 
+  // 9) A prueba de fallos: cancelar una comprobación, una actualización que revienta y datos guardados dañados
+  const cx = await p.evaluate(async () => { const o = window.check; window.check = () => new Promise(r => setTimeout(() => r({ items: [{ id: 'https://x.test/1', link: 'https://x.test/1', title: 'x', date: Date.now(), src: 'Tardía', cat: 'General' }], url: 'https://tardia.test/feed/', via: 'feed' }), 600));
+    document.querySelector('#adb').click(); document.querySelector('#an').value = 'Tardía'; document.querySelector('#au').value = 'https://tardia.test/feed/'; document.querySelector('#aa').click();
+    await new Promise(r => setTimeout(r, 100)); document.querySelector('#ac2').click(); await new Promise(r => setTimeout(r, 900)); window.check = o; return S.src.some(x => x.name === 'Tardía') });
+  ok(!cx, 'cancelar mientras se comprueba no añade la fuente');
+  const lf = await p.evaluate(async () => { const o = window.pool; window.pool = () => { throw Error('fallo simulado') }; S.ft = {}; await load(); window.pool = o; return { loading: S.loading, spin: document.body.classList.contains('ld'), log: LG.evs.some(e => /fallo simulado/.test(e.m)) } });
+  ok(!lf.loading && !lf.spin && lf.log, `si una actualización revienta no se queda colgada y queda en el registro (${JSON.stringify(lf)})`);
+  await p.evaluate(async () => { await DB.set('nz_dis', [1, 2, ['a', 5]]); await DB.set('nz_news', [...S.news.slice(0, 20), null, { id: 7 }, { id: 'z', title: 'z', date: 'nope' }]); await DB.set('nz_seen', 'roto') });
+  await p.reload(); await idle();
+  const cr = await p.evaluate(() => ({ cards: document.querySelectorAll('#grid .card').length, dis: S.dis.size }));
+  ok(cr.cards > 5 && cr.dis === 1, `arranca con datos guardados dañados (${cr.cards} tarjetas, ${cr.dis} descartadas válidas)`);
+  const cq = await p.evaluate(async () => { try { await viaProxy('https://cuota.test/feed/', { name: 'q', cat: 'q' }) } catch (e) { } return why('cuota.test') });
+  ok(/límite diario gratuito de Cloudflare/.test(cq), `distingue el límite de Cloudflare de un fallo de la web (${cq.slice(0, 50)})`);
   ok(errs.length === 0, 'sin errores de JavaScript' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));
   await ctx.close();
 }

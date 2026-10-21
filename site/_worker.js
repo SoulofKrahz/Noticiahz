@@ -15,7 +15,7 @@ const TIMEOUT_MS = 15000;   // webs lentas (WordPress en hosting barato) tardan 
 const UA = 'Mozilla/5.0 (compatible; Noticiahz/1.0)';
 
 const txt = (s, status, extra = {}) =>
-  new Response(s, { status, headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store', ...extra } });
+  new Response(s, { status, headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store', 'X-Nz': '1', ...extra } });
 
 // Hosts no públicos o IP literales: fuera
 function hostOk(h) {
@@ -71,6 +71,7 @@ async function proxy(req, url, env) {
       'Content-Type': r.headers.get('Content-Type') || 'application/xml',
       'Cache-Control': 'private, max-age=60',
       'X-Content-Type-Options': 'nosniff',
+      'X-Nz': '1', // marca de «respondió nuestro proxy»: sin ella, la app sabe que el fallo es de Cloudflare (p. ej. límite diario)
     },
   });
 }
@@ -78,7 +79,9 @@ async function proxy(req, url, env) {
 export default {
   async fetch(req, env) {
     const url = new URL(req.url);
-    if (url.pathname.startsWith('/p/')) return proxy(req, url, env);
+    if (url.pathname.startsWith('/p/')) {
+      try { return await proxy(req, url, env); } catch (e) { return txt('Error interno del proxy', 502); }
+    }
     return env.ASSETS.fetch(req);
   },
 };

@@ -490,7 +490,7 @@ main .card .ph{border-radius:0;background:var(--tint);aspect-ratio:16/9}.card .p
         <section class="set" id="ins" hidden><h3>Instalar la app</h3><p>Ábrela como una app más: a pantalla completa y desde el icono.</p><div class="lrs"><button class="lr" id="insb"><svg class="i"><use href="#dl"/></svg><div><b>Instalar Noticiahz</b><small>Se añade a tu pantalla de inicio</small></div></button></div></section>
         <section class="set"><h3>Actualización automática</h3><p>Cada cuánto se buscan noticias nuevas.</p>
           <div class="seg" id="sg-rf"><button data-v="30">30 min</button><button data-v="60">1 hora</button><button data-v="0">Nunca</button></div></section><section class="set"><h3>Noticias por fuente</h3><p>Cuántas páginas de cada fuente se descargan. Más páginas = más noticias, pero tarda más. Si una web no permite páginas, solo se cargan sus últimas.</p>
-          <div class="seg" id="sg-dp"><button data-v="1">Últimas</button><button data-v="3">Amplio</button><button data-v="8">Máximo</button></div></section>
+          <div class="seg" id="sg-dp"><button data-v="1">Últimas</button><button data-v="3">Amplio</button><button data-v="8">Máximo</button></div></section><section class="set"><h3>Almacenamiento</h3><p id="stg">Calculando…</p></section>
         <details id="lgd" class="set" style="margin-top:4px"><summary style="font:600 15px Inter,sans-serif;cursor:pointer">Registro de actividad</summary><p style="margin:6px 0 10px">Qué pasó en cada actualización y qué fuentes fallaron y por qué. «Copiar» lo prepara en texto para enviarlo.</p><div id="p2"></div></details>
         <div class="abt"><div class="logo" style="margin:0" role="img" aria-label="Noticiahz"><svg class="lgi" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="15" fill="#0a9d5c"/><path class="n" d="M21.5 17.5V50M21.5 34C21.5 25 27 22 33 22C40 22 44 26.5 44 33V50" fill="none" stroke="#06150f" stroke-width="9"/><path class="h" d="M7 41H25L29 29L34 51L38 36L41 41H57" fill="none" stroke="none" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 41H25L29 29L34 51L38 36L41 41H57" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="lw" aria-hidden="true">noticia<em>hz</em></span><svg class="lp" viewBox="0 0 44 24" aria-hidden="true"><path d="M1 13H13L17 2L23 21L27 8L30 13H43"/></svg></div><span>Diseñado y creado por <strong>Krahz</strong></span><p class="hint" id="ver"></p></div>
       </div>
@@ -634,8 +634,17 @@ const S={src:ls.get('nz_src',DEFAULTS),news:[],fav:{},cat:'Todas',q:'',V:[],cur:
 // ---- Registro de actividad: una tarjeta por actualización (resumen + problemas agrupados) y eventos sueltos ----
 const LG={runs:ls.get('nz_lg',[]),evs:ls.get('nz_lge',[]),run:null,only:false};
 const lgSave=()=>{ls.set('nz_lg',LG.runs.slice(0,15));ls.set('nz_lge',LG.evs.slice(0,30))};
+const ERRS=new Set();
+function errLog(m){m=String(m||'').slice(0,160);if(!m||/ResizeObserver|Script error/i.test(m)||ERRS.has(m)||ERRS.size>=5)return;ERRS.add(m);try{log('Error interno: '+m,'err')}catch(e){}}
+addEventListener('error',e=>errLog(e.message+(e.lineno?' (línea '+e.lineno+')':'')));
+addEventListener('unhandledrejection',e=>errLog(e.reason&&e.reason.message||e.reason));
+// Cuánto ocupa la app en este dispositivo y si el navegador puede borrarlo solo cuando falta espacio
+async function stUi(){const el=$('#stg');if(!el)return;try{const st=navigator.storage,[e,p]=await Promise.all([st.estimate(),st.persisted()]);const mb=(e.usage||0)/1048576;
+ el.textContent=`${mb<1?'Menos de 1 MB':mb.toFixed(1).replace('.',',')+' MB'} en este dispositivo · `+(p?'protegido: el navegador no lo borrará por falta de espacio.':'el navegador podría borrarlo si se queda sin espacio. Instalar la app suele protegerlo; aun así, haz copias de seguridad.')}
+ catch(x){el.textContent='Este navegador no informa del almacenamiento.'}}
 function log(m,c=''){if(LG.run)LG.run.notes.push({m,c});else{LG.evs.unshift({t:Date.now(),m,c});LG.evs=LG.evs.slice(0,30);lgSave();lgDraw()}}
-function why(h){const f=S.nf&&S.nf[h],s=f&&f.s;if(s===undefined)return'no respondió';
+const cfReset=()=>{const d=new Date();d.setUTCHours(24,0,0,0);return d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})};
+function why(h){const f=S.nf&&S.nf[h],s=f&&f.s;if(s===undefined)return'no respondió';if(s==='cf')return`el proxy no está disponible (posible límite diario gratuito de Cloudflare; se restablece a las ${cfReset()})`;
  const T={402:'pide pago o ha superado su límite (402)',403:'el sitio bloquea al proxy (403)',404:'esa dirección ya no existe (404)',410:'esa dirección ya no existe (410)',429:'demasiadas peticiones, lo limita el sitio (429)',500:'error del propio sitio (500)',502:'el sitio no respondió bien (502)',503:'sitio caído o en mantenimiento (503)',504:'el sitio tardó demasiado (504)'};
  if(T[s])return T[s];if(typeof s==='number')return`error HTTP ${s}`;
  if(/abort/i.test(s))return'tardó demasiado en responder';if(s==='Failed to fetch')return'no se pudo conectar';if(/XML no válido/.test(s))return'la dirección no devuelve un feed válido';if(/Sin artículos|sin titulares/i.test(s))return'no devuelve noticias (puede que la dirección sea una web y no un feed)';return s}
@@ -719,7 +728,8 @@ function timed(fn,ms=10000){const c=new AbortController();const id=setTimeout(()
 const VER='2026-10-21-6';
 if(!ls.get('nz_fu',0))ls.set('nz_fu',Date.now());
 const px=u=>{const x=new URL(u);return '/p/'+x.host+x.pathname+x.search};
-const pget=(u,ms=10000)=>timed(async sg=>{const r=await fetch(px(u),{signal:sg});if(!r.ok){const e=Error('HTTP '+r.status);e.st=r.status;throw e}return r},ms);
+// Si la respuesta de error no lleva la marca X-Nz, no la dio nuestro proxy sino Cloudflare (límite diario gratuito o caída): se anota como 'cf'
+const pget=(u,ms=10000)=>timed(async sg=>{const r=await fetch(px(u),{signal:sg});if(!r.ok){const e=Error('HTTP '+r.status);e.st=r.headers.get('X-Nz')?r.status:'cf';throw e}return r},ms);
 const addParam=(u,k,v)=>u+(u.includes('?')?'&':'?')+k+'='+v;
 const pe=m=>{const e=Error(m);e.name='ParseError';return e};
 // Rutas donde suelen estar los feeds (WordPress, Blogger, Ghost, Substack, periódicos…)
@@ -797,8 +807,10 @@ async function getFeed(src){
 
 const spinAll=on=>{['#rf','#b-rf'].forEach(q=>$(q).classList.toggle('spin',on));document.body.classList.toggle('ld',on)};
 const rlp={set textContent(v){document.querySelectorAll('.rft').forEach(e=>e.textContent=v)}};
-async function load(){
- if(S.loading||!S.ready||S.ob)return;S.loading=true;spinAll(true);
+// Si algo falla a mitad de una actualización, la app no se queda «actualizando» para siempre
+async function load(){if(S.loading||!S.ready||S.ob)return;try{await loadRun()}catch(e){LG.run=null;errLog('Actualización: '+(e&&e.message||e));S.loading=false;spinAll(false);toast('La actualización falló. Detalle en el registro.')}}
+async function loadRun(){
+ S.loading=true;spinAll(true);
  const sc=S.man&&S.rsc;S.rsc=null;const on=S.src.filter(s=>s.on&&(!sc||((sc.cat==='Todas'||sc.cat==='Guardadas'||s.cat===sc.cat)&&(sc.sf==='Todas'||s.name===sc.sf))));
  if(!S.news.length)render(true);
  const man=S.man;S.man=false;S.nf={};const nw={};S.news.forEach(a=>{if(!(a.date<=nw[a.src]))nw[a.src]=a.date});const gap=x=>{if(man)return 3e5;const a=Date.now()-(nw[x.name]||0);return a<108e5?3e5:a<864e5?12e5:a<2592e5?36e5:108e5},todo=on.filter(x=>!(S.bo&&S.bo[x.id]>Date.now())&&!(S.ft[x.id]&&Date.now()-S.ft[x.id]<gap(x)&&S.hl[x.id]>0)),res=[],rl=rlp;let done=0;
@@ -832,7 +844,7 @@ async function load(){
  saveNews();
  $('#upd').textContent='Actualizado a las '+new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
  S.loading=false;S.last=Date.now();spinAll(false);loadAlerts();setTimeout(()=>{const r=LG.runs[0];if(r&&Date.now()-r.t<6e4){r.tech=`Técnico: v${VER} · ${S.news.length} noticias en memoria · pintado ${S.rt} ms · arranque ${S.t0} ms`;lgSave();lgDraw()}},700);
- if(!todo.length)toast('Ya estás al día');else if(!fresh.length)toast(navigator.onLine?'No se pudo conectar. Revisa el registro.':'Sin conexión');else if(bad)toast(`${added?added+' nuevas · ':''}${bad} ${bad===1?'fuente no ha respondido':'fuentes no han respondido'}`);else if(man)toast(added?`${added} ${added===1?'noticia nueva':'noticias nuevas'}`:'Sin noticias nuevas');
+ if(!todo.length)toast('Ya estás al día');else if(Object.values(S.nf||{}).some(f=>f.s==='cf'))toast(`El proxy no responde: posible límite diario de Cloudflare (vuelve a las ${cfReset()})`);else if(!fresh.length)toast(navigator.onLine?'No se pudo conectar. Revisa el registro.':'Sin conexión');else if(bad)toast(`${added?added+' nuevas · ':''}${bad} ${bad===1?'fuente no ha respondido':'fuentes no han respondido'}`);else if(man)toast(added?`${added} ${added===1?'noticia nueva':'noticias nuevas'}`:'Sin noticias nuevas');
  render();
 }
 
@@ -887,7 +899,8 @@ const hue=t=>{let h=0;for(const c of String(t||''))h=(h*31+c.charCodeAt(0))%360;
 const lvSep=i=>i===S.lvI?`<div class="lvs" role="separator"><span>Tu última visita · ${esc(ago(S.lv).toLowerCase())}</span></div>`:'';
 // Última visita: cuando la app pasa a segundo plano se guarda la hora; al volver tras más de 30 min, eso pasa a ser «tu última visita»
 S.lv=ls.get('nz_lv',0);{let hid=0;document.addEventListener('visibilitychange',()=>{if(document.hidden){hid=Date.now();ls.set('nz_lv',hid)}else if(hid&&Date.now()-hid>18e5){S.lv=hid;hid=0;render()}});addEventListener('pagehide',()=>ls.set('nz_lv',Date.now()))}
-function card(a,i,hero){
+function card(a,i,hero){try{return cardRaw(a,i,hero)}catch(e){errLog('Tarjeta «'+String(a&&a.title).slice(0,40)+'»: '+e.message);return''}}
+function cardRaw(a,i,hero){
  const bm=S.fav[a.id]?'on':'';
  return`<article class="card ${hero?'hero':''} ${topicOf(a)?'tp':''} ${S.rd.has(a.id)?'rd':''} ${a.alert?'al al-'+a.alert:''} ${!hero&&a.img&&i%9===4?'feat':''}" data-k="${i}" tabindex="0">
  <div class="ph ${a.img?'':'noimg'}">${esc((a.src||'N')[0])}${a.img?`<img src="${esc(a.img)}" alt="" ${i<2?'fetchpriority="high"':'loading="lazy"'} decoding="async" referrerpolicy="no-referrer" onload="this.classList.add('ld')" onerror="this.parentNode.classList.add('noimg');this.remove()">`:''}${vid(a)&&a.img?'<span class="pl"></span>':''}</div>
@@ -994,10 +1007,10 @@ function ask(msg,o={}){return new Promise(res=>{const ov=document.createElement(
  ov.onclick=()=>end(false);d.onclick=e=>{const b=e.target.closest('[data-a]');if(b)end(b.dataset.a==='1')};addEventListener('keydown',kd,true);document.body.append(ov,d);d.querySelector(o.danger?'[data-a="0"]':'[data-a="1"]').focus()})}
 async function delCat(c){const k=S.src.filter(x=>x.cat===c).length;if(!await ask(k?`Sus ${k} fuentes pasarán a «General».`:'La categoría está vacía.',{title:`¿Eliminar «${c}»?`,ok:'Eliminar',danger:1}))return;
  S.src.forEach(x=>{if(x.cat===c)x.cat='General'});Object.values(S.fav).forEach(a=>{if(a.cat===c)a.cat='General'});bigSet('nz_fav',S.fav);S.cats=S.cats.filter(x=>x!==c);if(S.cat===c)S.cat='Todas';saveSrc(1);renderCats()}
-const saveSrc=nr=>{if(!nr)S.dirty=1;syncCats();ls.set('nz_src',S.src);srcs()};
+const saveSrc=nr=>{if(!nr)S.dirty=1;syncCats();if(!ls.set('nz_src',S.src))toast('No se pudieron guardar las fuentes: el almacenamiento del navegador está lleno');srcs()};
 const PN={1:'F',6:'A',7:'C',8:'V',9:'B'};
 function tab(n){[1,6,7,8,9].forEach(k=>{$('#t'+k).classList.toggle('on',n===k);$('#p'+PN[k]).hidden=n!==k});if(n>1)tabInit();try{$('#t'+n).scrollIntoView({block:'nearest',inline:'center'})}catch(e){}}
-const tabInit=()=>{lgDraw();$('#ver').textContent='Versión '+VER;segs();cdTxt();syncPf();mwUi();syncAz();bkTxt();tpUi();lsUi();csnTxt();swUi()};
+const tabInit=()=>{lgDraw();stUi();$('#ver').textContent='Versión '+VER;segs();cdTxt();syncPf();mwUi();syncAz();bkTxt();tpUi();lsUi();csnTxt();swUi()};
 function sub(k){const M={l:'p1',r:'p5',c:'p4'};for(const x in M){$('#'+M[x]).hidden=k!==x;const b=$('#sgF [data-s="'+x+'"]');if(b)b.classList.toggle('on',k===x)}if(k==='r')revUi();else if(k==='c')renderCats();else srcs()}
 
 $('#grid').addEventListener('click',e=>{
@@ -1101,7 +1114,7 @@ $('#sl').addEventListener('click',async e=>{
 });
 const fm=(m,c='')=>{const e=$('#fm');e.hidden=!m;e.className='w fm '+c;e.textContent=m||''};
 function editSrc(i){const f=S.src[i];if(!f)return;resetForm();S.edit=i;$('#an').value=f.name;$('#au').value=f.url;$('#ac').value=f.cat;$('#ft').textContent='Editar fuente';$('#aa').textContent='Comprobar y guardar';$('#fr').hidden=false}
-function resetForm(){S.edit=null;S.pend=null;$('#ak').textContent='Guardar igualmente';$('#an').value=$('#au').value='';fillCats(defCat());$('#ft').textContent='Añadir fuente';$('#aa').textContent='Comprobar y añadir';$('#ak').hidden=true;$('#fr').hidden=true;fm('')}
+function resetForm(){S.edit=null;S.pend=null;S.ck=(S.ck||0)+1;$('#aa').disabled=false;$('#ak').textContent='Guardar igualmente';$('#an').value=$('#au').value='';fillCats(defCat());$('#ft').textContent='Añadir fuente';$('#aa').textContent='Comprobar y añadir';$('#ak').hidden=true;$('#fr').hidden=true;fm('')}
 function commit(f,items){
  const ed=S.edit!==null;let x;
  if(ed){S.news=S.news.filter(a=>a.src!==S.src[S.edit].name);x=S.src[S.edit]={...S.src[S.edit],...f}}else{x={id:'u'+Date.now(),on:true,...f};S.src.push(x)}
@@ -1116,8 +1129,9 @@ $('#aa').onclick=async()=>{
  if(!/^https?:\/\//i.test(f.url))return fm('La dirección debe empezar por http:// o https://','err');
  if(o.some(x=>x.url===f.url))return fm('Esa fuente ya está en tu lista.','err');
  if(o.some(x=>srcKey(x)===srcKey(f)))return fm('Ya tienes una fuente con ese nombre.','err');
- const b=$('#aa'),lbl=b.textContent;b.disabled=true;b.textContent='Comprobando…';akSet(0);S.pend=null;
- const r=await check(f,m=>fm(m));
+ const b=$('#aa'),lbl=b.textContent;b.disabled=true;b.textContent='Comprobando…';akSet(0);S.pend=null;const tk=S.ck=(S.ck||0)+1;
+ const r=await check(f,m=>{if(tk===S.ck)fm(m)});
+ if(tk!==S.ck)return; // se canceló o se abrió otra fuente mientras tanto
  b.disabled=false;b.textContent=lbl;
  if(r.fail){S.pend={f};akSet('Guardar igualmente');return fm(`No carga: ${r.why}. He probado también las rutas de feed habituales, los enlaces de la web, el sitemap de noticias y Google News, sin éxito. Revisa la dirección; si sabes que es correcta, puedes guardarla igualmente.`,'err')}
  if(r.url!==f.url&&o.some(x=>x.url===r.url))return fm(`El feed de esa web ya está en tu lista (${o.find(x=>x.url===r.url).name}).`,'err');
@@ -1188,8 +1202,9 @@ setTheme(S.pf.th==='dark'||S.pf.th==='light'?S.pf.th:(sysDark()?'dark':'light'))
 render(true);
 (async()=>{try{navigator.storage.persist()}catch(e){}
  const tI=performance.now();const [n,f,r,dd,sn]=await Promise.all([bigGet('nz_news',[]),bigGet('nz_fav',{}),bigGet('nz_rd',[]),bigGet('nz_dis',[]),bigGet('nz_seen',[])]);S.tdb=Math.round(performance.now()-tI);
- S.news=Array.isArray(n)?n:[];{const g=Date.now();S.news.forEach(a=>{if(!a.got)a.got=g})} // noticias de antes de este cambio: cuentan como descargadas hoy, no se recorta nada aún
- S.news.forEach(a=>{if(MOJ.test(a.title||'')){a.title=fixMoj(a.title);a.snip=fixMoj(a.snip);a.html=fixMoj(a.html)}});S.fav=f&&typeof f==='object'?f:{};S.rd=new Set(Array.isArray(r)?r:[]);S.dis=new Map(Array.isArray(dd)?dd:[]);S.seen=new Map(Array.isArray(sn)?sn:[]);S.ready=1;snapUp();S.t0=Math.round(performance.now());
+ const safe=(f,d)=>{try{return f()}catch(e){errLog('Datos guardados: '+e.message);return d}};
+ S.news=(Array.isArray(n)?n:[]).filter(a=>a&&typeof a.id==='string'&&a.id&&typeof a.title==='string'&&isFinite(a.date));{const g=Date.now();S.news.forEach(a=>{if(!a.got)a.got=g})} // noticias de antes de este cambio: cuentan como descargadas hoy, no se recorta nada aún
+ S.news.forEach(a=>{if(MOJ.test(a.title||'')){a.title=fixMoj(a.title);a.snip=fixMoj(a.snip);a.html=fixMoj(a.html)}});S.fav=f&&typeof f==='object'&&!Array.isArray(f)?f:{};S.rd=new Set(Array.isArray(r)?r:[]);S.dis=safe(()=>new Map((Array.isArray(dd)?dd:[]).filter(x=>Array.isArray(x)&&x.length===2)),new Map());S.seen=safe(()=>new Map((Array.isArray(sn)?sn:[]).filter(x=>Array.isArray(x)&&x.length===2)),new Map());S.ready=1;snapUp();S.t0=Math.round(performance.now());
  render(!S.news.length);if(S.news.length)render();shareIn();if(FIRST)obOpen();else load()})();
 // Accesos directos del icono (?a=…) y «Compartir» desde otras apps (share_target: ?st=&sx=&su=)
 let SH=null;
