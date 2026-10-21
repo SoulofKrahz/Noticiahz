@@ -84,6 +84,9 @@ async function run(browser, label, viewport, mobile) {
   await p.keyboard.press('Escape'); await p.waitForTimeout(250);
   ok(await p.evaluate(() => document.querySelector('#fr').hidden && document.querySelector('#md').classList.contains('show')), 'Esc cierra la ventana y deja Ajustes abierto');
 
+  // 6b) El color elegido cambia el manifest (icono de la app instalada); un color libre usa el más parecido
+  const ico = await p.evaluate(async () => { const m = () => document.querySelector('link[rel=manifest]').getAttribute('href'); const r = []; document.querySelector('#sws .swc[data-i="2"]').click(); r.push(m()); const ok = (await fetch(m())).ok && (await fetch('ic/azul-mask.png')).ok; r.push(nzIco(200, .9), nzIco(10, .1), nzIco(150, .8)); document.querySelector('#sws .swc[data-i="0"]').click(); r.push(m(), ok); return r });
+  ok(ico[0] === 'manifest-azul.webmanifest' && ico[1] === 'azul' && ico[2] === 'grafito' && ico[3] === '' && ico[4] === 'manifest.webmanifest' && ico[5], `el icono de la app sigue al color (${ico.join(', ')})`);
   // 7) Copia de seguridad: exportar y restaurar sin duplicar
   const bk = await p.evaluate(() => new Promise(res => { const o = URL.createObjectURL; URL.createObjectURL = b => { b.text().then(t => res(t)); URL.createObjectURL = o; return o.call(URL, b) }; document.querySelector('#bx').click() }));
   const j = JSON.parse(bk);
