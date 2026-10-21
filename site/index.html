@@ -348,6 +348,9 @@ main .card .ph{border-radius:0;background:var(--tint);aspect-ratio:16/9}.card .p
 /* Cabecera de Ajustes: icono + título + subtítulo */
 .mht{display:flex;align-items:center;gap:12px;min-width:0}.mhi{flex:none;display:grid;place-items:center;width:42px;height:42px;border-radius:13px;background:var(--tint);color:var(--em)}.mhi svg{width:22px;height:22px}
 .mh h2{font:650 20px/1.15 Inter,system-ui,sans-serif;letter-spacing:-.02em;margin:0}.mht small{display:block;font-size:12.5px;color:var(--mu);margin-top:2px}
+
+.dvb{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:10px 14px;flex-wrap:wrap;padding:12px 14px;border:1px solid var(--bd);border-radius:14px;background:var(--card);font-size:13.5px;color:var(--mu)}.dvbb{display:flex;gap:8px;margin-left:auto}.dvb .btn{margin:0;padding:8px 14px;font-size:13px}
+.bm.rsb{color:var(--em)}
 </style>
 </head>
 <body>
@@ -710,7 +713,7 @@ async function pool(items,n,fn){let i=0;await Promise.all(Array.from({length:Mat
 function timed(fn,ms=10000){const c=new AbortController();const id=setTimeout(()=>c.abort(),ms);return fn(c.signal).finally(()=>clearTimeout(id))}
 
 // Proxy propio: /p/<host>/... lo atiende _worker.js (Cloudflare Pages)
-const VER='2026-10-21-3';
+const VER='2026-10-21-4';
 if(!ls.get('nz_fu',0))ls.set('nz_fu',Date.now());
 const PX=[{f:u=>{const x=new URL(u);return '/p/'+x.host+x.pathname+x.search},can:u=>/^https?:\/\//i.test(u),own:1,n:'propio',ok:0,bad:0,until:0}];
 const addParam=(u,k,v)=>u+(u.includes('?')?'&':'?')+k+'='+v;
@@ -861,16 +864,16 @@ function mix(list){const c={},now=Date.now();
 const saveRd=()=>{if(!S.ready)return;if(S.last&&S.news.length){const k=new Set(S.news.map(a=>a.id));Object.keys(S.fav).forEach(i=>k.add(i));S.rd.forEach(i=>k.has(i)||S.rd.delete(i))}bigSet('nz_rd',[...S.rd])};
 const markRead=a=>{if(!S.rd.has(a.id))lrAdd(a.src,'p',1);S.rd.add(a.id);saveRd()};
 function tabs(){
- mapCats();const cats=['Todas',...S.cats.filter(c=>S.src.some(x=>x.on&&x.cat===c)),'Guardadas'];
+ mapCats();const nDis=disList().length,cats=['Todas',...S.cats.filter(c=>S.src.some(x=>x.on&&x.cat===c)),'Guardadas',...(nDis||S.cat==='Descartadas'?['Descartadas']:[])];
  if(!cats.includes(S.cat))S.cat='Todas';
  const ci=c=>{const k=S.cats.indexOf(c);return k<0?999:k};
- const nm=S.cat==='Guardadas'?[...new Set(Object.values(S.fav).map(a=>a.src))]:S.src.filter(s=>s.on&&(S.cat==='Todas'||s.cat===S.cat)).sort((a,b)=>(b.fav?1:0)-(a.fav?1:0)||(S.cat==='Todas'?ci(a.cat)-ci(b.cat):0)).map(s=>s.name);
+ const nm=S.cat==='Guardadas'?[...new Set(Object.values(S.fav).map(a=>a.src))]:S.cat==='Descartadas'?[...new Set(disList().map(a=>a.src))]:S.src.filter(s=>s.on&&(S.cat==='Todas'||s.cat===S.cat)).sort((a,b)=>(b.fav?1:0)-(a.fav?1:0)||(S.cat==='Todas'?ci(a.cat)-ci(b.cat):0)).map(s=>s.name);
  if(S.sf!=='Todas'&&!nm.includes(S.sf))S.sf='Todas';
  const sr=$('#srcs');sr.hidden=!nm.length; // siempre visible si hay al menos una fuente
- const cn={};(S.cat==='Guardadas'?Object.values(S.fav):S.news.filter(a=>!S.dis.has(a.id)&&!isMuted(a)&&!smOn(a.src))).forEach(a=>{if(S.cat==='Todas'||S.cat==='Guardadas'||catOf(a)===S.cat)cn[a.src]=(cn[a.src]||0)+1});
+ const cn={};(S.cat==='Guardadas'?Object.values(S.fav):S.cat==='Descartadas'?disList():S.news.filter(a=>!S.dis.has(a.id)&&!isMuted(a)&&!smOn(a.src))).forEach(a=>{if(S.cat==='Todas'||S.cat==='Guardadas'||S.cat==='Descartadas'||catOf(a)===S.cat)cn[a.src]=(cn[a.src]||0)+1});
  sr.innerHTML=`<button class="sc ${S.sf==='Todas'?'on':''}" data-sf="Todas">Todas <em>${nm.reduce((t,n)=>t+(cn[n]||0),0)}</em></button>`+nm.map(n=>`<button class="sc ${n===S.sf?'on':''}" data-sf="${esc(n)}"><i style="--h:${hue(n)}">${esc(n[0])}</i>${esc(n)} <em>${cn[n]||0}</em></button>`).join('');
  const fc=(S.so!=='mix')+(S.pe>0)+S.un+!!S.fo,fn=$('#fn');fn.hidden=!fc;fn.textContent=fc;const f2=$('#fn2');f2.hidden=!fc;f2.textContent=fc;
- $('#tabs').innerHTML=cats.map(c=>`<button class="tab ${c===S.cat?'on':''}" data-c="${esc(c)}">${esc(c)}${c==='Guardadas'&&Object.keys(S.fav).length?` <small class="cnt">${Object.keys(S.fav).length}</small>`:''}</button>`).join('');
+ $('#tabs').innerHTML=cats.map(c=>`<button class="tab ${c===S.cat?'on':''}" data-c="${esc(c)}">${esc(c)}${c==='Descartadas'&&nDis?` <small class="cnt">${nDis}</small>`:''}${c==='Guardadas'&&Object.keys(S.fav).length?` <small class="cnt">${Object.keys(S.fav).length}</small>`:''}</button>`).join('');
  const ta=$('.tab.on'),tb=$('#tabs');if(ta)tb.scrollLeft=ta.offsetLeft-tb.offsetLeft-(tb.clientWidth-ta.offsetWidth)/2;
 }
 const vid=a=>/^https?:\/\/(www\.|m\.)?(youtube\.com|youtu\.be|vimeo\.com)\//i.test(a.link||'');
@@ -887,7 +890,7 @@ function card(a,i,hero){
  <div class="ph ${a.img?'':'noimg'}">${esc((a.src||'N')[0])}${a.img?`<img src="${esc(a.img)}" alt="" ${i<2?'fetchpriority="high"':'loading="lazy"'} decoding="async" referrerpolicy="no-referrer" onload="this.classList.add('ld')" onerror="this.parentNode.classList.add('noimg');this.remove()">`:''}${vid(a)&&a.img?'<span class="pl"></span>':''}</div>
  <div class="cb"><div class="meta"><button class="chip" data-sf="${esc(a.src)}" title="Ver solo ${esc(a.src)}"><i class="mg" style="--h:${hue(a.src)}">${esc((a.src||'N')[0])}</i>${esc(a.src)}</button>${a.nw?'<span class="dot" title="Nueva"></span>':''}<span>${ago(a.date)}</span>${tpx(a)}${S.rd.has(a.id)?'<span class="rdm"><svg class="i"><use href="#ck"/></svg>Leída</span>':''}${bm&&S.cat!=='Guardadas'?'<svg class="i fvm" aria-label="Guardada"><use href="#b"/></svg>':''}</div>
  <h3>${esc(a.title)}</h3><p>${esc(a.snip)}</p>
- <div class="foot">${a.also&&a.also.length?`<button class="also" data-also aria-label="Ver la misma noticia en otros medios">También en ${esc(a.also.slice(0,2).map(x=>x.src).join(', '))}${a.also.length>2?' y '+(a.also.length-2)+' más':''}</button>`:`<span class="meta">${esc(catOf(a))}</span>`}<span class="acts">${S.cat==='Guardadas'?'':`<button class="bm dsk" data-ds="${i}" aria-label="Descartar" title="Descartar (Supr)"><svg class="i"><use href="#x"/></svg></button>`}${a.alert?'':`<button class="bm dsk ${bm}" data-bm="${i}" aria-label="Guardar" title="Guardar"><svg class="i"><use href="#b"/></svg></button>`}<a class="bm" data-go href="${esc(a.link)}" target="_blank" rel="noopener noreferrer" aria-label="${act(a).s}" title="${act(a).s}"><svg class="i"><use href="#${act(a).i}"/></svg></a><button class="bm" data-sh aria-label="Compartir" title="Compartir"><svg class="i"><use href="#h"/></svg></button></span></div></div></article>`;
+ <div class="foot">${a.also&&a.also.length?`<button class="also" data-also aria-label="Ver la misma noticia en otros medios">También en ${esc(a.also.slice(0,2).map(x=>x.src).join(', '))}${a.also.length>2?' y '+(a.also.length-2)+' más':''}</button>`:`<span class="meta">${esc(catOf(a))}</span>`}<span class="acts">${S.cat==='Descartadas'?`<button class="bm rsb" data-rs="${i}" aria-label="Restaurar" title="Restaurar"><svg class="i"><use href="#r"/></svg></button>`:S.cat==='Guardadas'?'':`<button class="bm dsk" data-ds="${i}" aria-label="Descartar" title="Descartar (Supr)"><svg class="i"><use href="#x"/></svg></button>`}${a.alert||S.cat==='Descartadas'?'':`<button class="bm dsk ${bm}" data-bm="${i}" aria-label="Guardar" title="Guardar"><svg class="i"><use href="#b"/></svg></button>`}<a class="bm" data-go href="${esc(a.link)}" target="_blank" rel="noopener noreferrer" aria-label="${act(a).s}" title="${act(a).s}"><svg class="i"><use href="#${act(a).i}"/></svg></a><button class="bm" data-sh aria-label="Compartir" title="Compartir"><svg class="i"><use href="#h"/></svg></button></span></div></div></article>`;
 }
 const moreHtml=()=>{const n=S.V.length,v=Math.min(S.lim,n);return n>v?`<div class="more"><button class="btn" id="more">Cargar más noticias <small>(${n-v} restantes)</small></button></div>`:S.deepOk?`<div class="more"><button class="btn" id="more" data-deep="1">Buscar noticias más antiguas</button></div>`:n>20?`<div class="more end">Has llegado al final · ${n} noticias</div>`:''};
 let mio;function watchMore(){if(mio)mio.disconnect();const m=$('#more');if(!m||m.dataset.deep||!('IntersectionObserver' in window))return;mio=new IntersectionObserver(es=>{if(es[0].isIntersecting)appendMore()},{rootMargin:'800px'});mio.observe(m)}
@@ -897,8 +900,8 @@ function render(skel){
  const T0=performance.now();tabs();saveUI();S.pt={t:Math.round(performance.now()-T0)};$('#so').value=S.so;$('#pe').value=S.pe;$('#un').checked=S.un;$('#fo').checked=!!S.fo;$('#sh').hidden=S.so!=='mix';$('#azb').hidden=S.pf.az!==undefined;instBanner();if(document.activeElement!==$('#q2'))$('#q2').value=S.q;const g=$('#grid');
  if(skel){g.innerHTML='<div class="sk"></div>'.repeat(6);return}
  const q=S.q.toLowerCase(),on=new Set(S.src.filter(s=>s.on).map(s=>s.name));
- const sv=S.cat==='Guardadas';
- let list=sv?Object.values(S.fav).sort((a,b)=>b.date-a.date):S.news.filter(a=>on.has(a.src)&&!S.dis.has(a.id)&&!isMuted(a)&&!smOn(a.src)&&(S.cat==='Todas'||catOf(a)===S.cat));
+ const dv=S.cat==='Descartadas',sv=S.cat==='Guardadas'||dv;
+ let list=dv?disList().map(a=>{a.also=[];return a}):sv?Object.values(S.fav).sort((a,b)=>b.date-a.date):S.news.filter(a=>on.has(a.src)&&!S.dis.has(a.id)&&!isMuted(a)&&!smOn(a.src)&&(S.cat==='Todas'||catOf(a)===S.cat));
  if(S.sf!=='Todas')list=list.filter(a=>a.src===S.sf);
  if(S.pe)list=list.filter(a=>Date.now()-a.date<S.pe*864e5);
  if(S.so==='cov'&&!S.pe&&!sv)list=list.filter(a=>Date.now()-a.date<2*864e5);
@@ -916,13 +919,13 @@ function render(skel){
  const key=[S.cat,S.sf,S.so,S.pe,S.un,S.q].join('|');if(key!==S.key){S.key=key;S.lim=40}
  S.V=list;
  S.lvI=(S.so==='new'&&!sv&&S.lv)?list.findIndex(a=>!a.alert&&a.date<S.lv):-1;if(S.lvI<1)S.lvI=-1;
- S.nwV=S.cat==='Guardadas'?0:list.filter(a=>a.nw).length;$('#cnt').textContent=S.cat==='Guardadas'?`${list.length} guardadas`:`${list.length} ${list.length===1?'noticia':'noticias'}`+(S.nwV?` · ${S.nwV} ${S.nwV===1?'nueva':'nuevas'}`:'');badge();
+ S.nwV=S.cat==='Guardadas'?0:list.filter(a=>a.nw).length;$('#cnt').textContent=S.cat==='Guardadas'?`${list.length} guardadas`:S.cat==='Descartadas'?`${list.length} ${list.length===1?'descartada':'descartadas'}`:`${list.length} ${list.length===1?'noticia':'noticias'}`+(S.nwV?` · ${S.nwV} ${S.nwV===1?'nueva':'nuevas'}`:'');badge();
  if(!list.length&&S.cat!=='Guardadas'&&!S.src.some(x=>x.on)){g.innerHTML='<div class="empty"><h3>No tienes fuentes activas</h3><p>Activa alguna fuente para ver noticias.</p><button class="btn" id="opn">Abrir fuentes</button></div>';return}
  if(!list.length){
-  g.innerHTML=`<div class="empty"><h3>${S.cat==='Guardadas'?'Aún no has guardado nada':S.news.length?'Sin resultados':'No hemos podido cargar noticias'}</h3><p>${S.cat==='Guardadas'?'Pulsa el marcador de cualquier noticia para guardarla.':S.news.length?'Prueba con otra búsqueda o categoría.':'Comprueba tu conexión o consulta el registro para ver qué falló.'}</p>${S.news.length||S.cat==='Guardadas'?(hasF?'<button class="btn" id="clr">Quitar filtros</button>':''):'<button class="btn" id="retry">Reintentar</button>'}</div>`;return}
- const hero=!q&&S.cat!=='Guardadas'&&list.length>3&&!list[0].alert;
+  g.innerHTML=`<div class="empty"><h3>${S.cat==='Guardadas'?'Aún no has guardado nada':S.news.length?'Sin resultados':'No hemos podido cargar noticias'}</h3><p>${S.cat==='Descartadas'?'No hay noticias descartadas.':S.cat==='Guardadas'?'Pulsa el marcador de cualquier noticia para guardarla.':S.news.length?'Prueba con otra búsqueda o categoría.':'Comprueba tu conexión o consulta el registro para ver qué falló.'}</p>${S.news.length||S.cat==='Guardadas'?(hasF?'<button class="btn" id="clr">Quitar filtros</button>':''):'<button class="btn" id="retry">Reintentar</button>'}</div>`;return}
+ const hero=!q&&!sv&&list.length>3&&!list[0].alert;
  const vis=list.slice(0,S.lim);
- S.deepOk=deep;g.innerHTML=vis.map((a,i)=>lvSep(i)+card(a,i,hero&&i===0)).join('')+moreHtml();watchMore();watchSeen();
+ S.deepOk=deep;g.innerHTML=(dv&&list.length?`<div class="dvb"><span>Están ocultas en el resto de la app. Restaura las que quieras recuperar.</span><span class="dvbb"><button class="btn o" id="dvr">Restaurar todas</button><button class="btn dg" id="dve">Eliminar todas</button></span></div>`:'')+vis.map((a,i)=>lvSep(i)+card(a,i,hero&&i===0)).join('')+moreHtml();watchMore();watchSeen();
 }
 
 const pos=()=>S.V.findIndex(x=>x.id===S.cur.id);
@@ -1005,7 +1008,7 @@ $('#grid').addEventListener('click',e=>{
  if(e.target.closest('#more')){if(e.target.closest('#more').dataset.deep)return deepen();return appendMore()}
  if(e.target.id==='clr')return clearF();
  const sf=e.target.closest('[data-sf]');if(sf)return setSrc(sf.dataset.sf,1);
- const ds=e.target.closest('[data-ds]');if(ds){e.stopPropagation();const c=ds.closest('.card'),a=S.V[ds.dataset.ds];return swipeOut(c,-1,()=>dismiss(a))}
+ const ds=e.target.closest('[data-ds]'),rs=e.target.closest('[data-rs]');if(rs){e.stopPropagation();const c=rs.closest('.card'),a=S.V[rs.dataset.rs];return swipeOut(c,1,()=>{undismiss(a);toast('Noticia restaurada');setTimeout(render,450)})}if(ds){e.stopPropagation();const c=ds.closest('.card'),a=S.V[ds.dataset.ds];return swipeOut(c,-1,()=>dismiss(a))}
  const b=e.target.closest('[data-bm]');
  if(b){e.stopPropagation();fav(S.V[b.dataset.bm]);return render()}
  const c=e.target.closest('[data-k]');if(c)open(S.V[c.dataset.k]);
@@ -1204,6 +1207,9 @@ $('#shn').onclick=()=>{const s=SH;shClose();if(!s)return;$('#st').click();
  setTimeout(()=>{resetForm();$('#fr').hidden=false;$('#au').value=new URL(s.url).origin+'/';$('#an').value=s.host.split('.').slice(-2,-1)[0].replace(/^./,c=>c.toUpperCase());$('#an').focus();fm('Revisa el nombre y pulsa «Comprobar y añadir»: buscaré el feed de esa web.')},250)};
 // Descartar noticias: arrastrar la tarjeta a un lado, botón ✕ o tecla Supr
 const saveDis=()=>{if(!S.ready)return;const cut=Date.now()-130*864e5;S.dis.forEach((t,i)=>Math.abs(t)<cut&&S.dis.delete(i));bigSet('nz_dis',[...S.dis])};
+// Descartadas: solo las que descartaste tú (valor positivo); las iguales de otros medios se ocultan con el mismo instante en negativo
+function disList(){return S.news.filter(a=>S.dis.get(a.id)>0).sort((a,b)=>S.dis.get(b.id)-S.dis.get(a.id))}
+function undismiss(a){const t=S.dis.get(a.id);if(t===undefined)return;S.dis.delete(a.id);if(t>0)S.dis.forEach((v,i)=>{if(v===-t)S.dis.delete(i)});saveDis()}
 function dismiss(a){if(!a)return;const t=a._t instanceof Set?a._t:(a._t=norm(a.title)),ids=[a.id],now=Date.now();
  S.news.forEach(o=>{if(o.id!==a.id&&o.src!==a.src&&!S.dis.has(o.id)&&Math.abs(o.date-a.date)<1728e5&&similar(t,o._t instanceof Set?o._t:(o._t=norm(o.title))))ids.push(o.id)});
  ids.forEach((i,j)=>S.dis.set(i,j?-now:now));saveDis();showUndo(ids);lrAdd(a.src,'n',1);$('#undo')._src=a.src}
@@ -1211,8 +1217,12 @@ let ut;function showUndo(ids){const u=$('#undo');u.querySelector('span').textCon
 function undoFn(txt,fn){const u=$('#undo');u._src=null;u.querySelector('span').textContent=txt;u._ids=null;u._fn=fn;u.hidden=false;clearTimeout(ut);ut=setTimeout(()=>u.hidden=true,6000)}
 $('#undo button').onclick=()=>{const u=$('#undo');if(u._src){lrAdd(u._src,'n',-1);u._src=null}if(u._fn){const f=u._fn;u._fn=null;u.hidden=true;f();return}(u._ids||[]).forEach(i=>S.dis.delete(i));saveDis();u.hidden=true;render()};
 const cdTxt=()=>{$('#cd small').textContent=`${S.dis.size} ${S.dis.size===1?'descartada':'descartadas'}`};
+$('#grid').addEventListener('click',async e=>{
+ if(e.target.closest('#dvr')){if(!await ask(`Las ${disList().length} noticias volverán a aparecer en sus categorías.`,{title:'¿Restaurar todas?',ok:'Restaurar'}))return;S.dis.clear();saveDis();S.cat='Todas';render();cdTxt();toast('Noticias restauradas');return}
+ if(e.target.closest('#dve')){const n=disList().length;if(!await ask(`Se borrarán ${n} noticias de la app. Seguirán ocultas aunque las fuentes las vuelvan a publicar.`,{title:'¿Eliminar las descartadas?',ok:'Eliminar',danger:1}))return;
+  S.news=S.news.filter(a=>!S.dis.has(a.id));saveNews();S.cat='Todas';render();toast(`${n} ${n===1?'noticia eliminada':'noticias eliminadas'}`)}});
 $('#cd').onclick=()=>{const n=S.dis.size;S.dis.clear();saveDis();render();cdTxt();toast(n?'Noticias restauradas':'No hay descartadas')};
-const cntTxt=()=>{const n=S.V.length;S.nwV=S.cat==='Guardadas'?0:S.V.filter(a=>a.nw).length;$('#cnt').textContent=S.cat==='Guardadas'?`${n} guardadas`:`${n} ${n===1?'noticia':'noticias'}`+(S.nwV?` · ${S.nwV} ${S.nwV===1?'nueva':'nuevas'}`:'');badge()};
+const cntTxt=()=>{const n=S.V.length;S.nwV=S.cat==='Guardadas'?0:S.V.filter(a=>a.nw).length;$('#cnt').textContent=S.cat==='Guardadas'?`${n} guardadas`:S.cat==='Descartadas'?`${n} ${n===1?'descartada':'descartadas'}`:`${n} ${n===1?'noticia':'noticias'}`+(S.nwV?` · ${S.nwV} ${S.nwV===1?'nueva':'nuevas'}`:'');badge()};
 const favCnt=()=>{const n=Object.keys(S.fav).length,t=document.querySelector('.tab[data-c="Guardadas"]');if(t)t.innerHTML='Guardadas'+(n?` <small class="cnt">${n}</small>`:'')};
 // La tarjeta se quita y las demás fluyen a su nuevo sitio (técnica FLIP)
 function flowOut(c,hero){const g=$('#grid'),cs=[...g.querySelectorAll('.card')].filter(x=>x!==c),f=new Map(cs.map(x=>[x,x.getBoundingClientRect()]));
@@ -1228,16 +1238,16 @@ function swipeOut(c,dir,after){c.style.transition='transform .2s,opacity .2s';c.
 (()=>{const g=$('#grid');let st=null,lp;
  g.addEventListener('dragstart',e=>e.preventDefault());
  g.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse'||e.button>0||e.target.closest('button,a'))return;const c=e.target.closest('.card');if(!c)return;g.querySelectorAll('.und').forEach(x=>x.remove());
-  st={c,x:e.clientX,y:e.clientY,id:e.pointerId,dx:0,on:0,w:c.offsetWidth,th:Math.max(90,c.offsetWidth*.3),sv:S.cat==='Guardadas',a:S.V[+c.dataset.k],dir:0,go:0};clearTimeout(lp);lp=setTimeout(()=>{if(st&&st.c===c&&!st.on){st=null;S.sw=Date.now();S.lp1=1;S.lpT=Date.now();if(navigator.vibrate)try{navigator.vibrate(14)}catch(x){}amOpen(c)}},480)});
+  st={c,x:e.clientX,y:e.clientY,id:e.pointerId,dx:0,on:0,w:c.offsetWidth,th:Math.max(90,c.offsetWidth*.3),sv:S.cat==='Guardadas',dv:S.cat==='Descartadas',a:S.V[+c.dataset.k],dir:0,go:0};clearTimeout(lp);lp=setTimeout(()=>{if(st&&st.c===c&&!st.on){st=null;S.sw=Date.now();S.lp1=1;S.lpT=Date.now();if(navigator.vibrate)try{navigator.vibrate(14)}catch(x){}amOpen(c)}},480)});
  g.addEventListener('pointermove',e=>{if(!st||e.pointerId!==st.id)return;const dx=e.clientX-st.x,dy=e.clientY-st.y;
   if(!st.on){if(Math.abs(dx)>14&&Math.abs(dx)>Math.abs(dy)*1.6){st.on=1;clearTimeout(lp);try{st.c.setPointerCapture(e.pointerId)}catch(x){}const c=st.c,u=document.createElement('div');c.classList.add('swp');u.style.cssText=`left:${c.offsetLeft}px;top:${c.offsetTop}px;width:${c.offsetWidth}px;height:${c.offsetHeight}px`;st.u=u;g.appendChild(u)}else{if(Math.abs(dy)>14)st=null;return}}
-  const dir=dx<0?-1:1,save=(S.pf.sw?dir<0:dir>0)&&!st.sv&&!(st.a&&st.a.alert),go=Math.abs(dx)>=st.th;
-  if(st.dir!==dir){st.dir=dir;st.u.innerHTML=`<svg class="i"><use href="#${save?'b':'x'}"/></svg><span>${st.sv?'Quitar':save?(S.fav[st.a.id]?'Quitar':'Guardar'):'Descartar'}</span>`}
+  const dir=dx<0?-1:1,save=(S.pf.sw?dir<0:dir>0)&&!st.sv&&!st.dv&&!(st.a&&st.a.alert),go=Math.abs(dx)>=st.th;
+  if(st.dir!==dir){st.dir=dir;st.u.innerHTML=`<svg class="i"><use href="#${save?'b':'x'}"/></svg><span>${st.dv?'Restaurar':st.sv?'Quitar':save?(S.fav[st.a.id]?'Quitar':'Guardar'):'Descartar'}</span>`}
   if(go!==st.go){st.go=go;if(go&&navigator.vibrate)try{navigator.vibrate(8)}catch(x){}}
   st.dx=dx;st.c.style.transform=`translateX(${dx}px)`;st.c.style.opacity=1-Math.min(.5,Math.abs(dx)/st.w);st.u.className='und '+(dir<0?'l':'r')+(save?' sv':'')+(go?' go':'')});
  const end=(e,cancel)=>{if(!st||e.pointerId!==st.id)return;const s=st;st=null;if(!s.on)return;S.sw=Date.now();
-  const c=s.c,a=s.a,big=!cancel&&Math.abs(s.dx)>=s.th&&a,save=(S.pf.sw?s.dx<0:s.dx>0)&&!s.sv&&!(a&&a.alert);
-  if(big&&!save){swipeOut(c,s.dx<0?-1:1,()=>{s.u.remove();s.sv?fav(a):dismiss(a)});return}
+  const c=s.c,a=s.a,big=!cancel&&Math.abs(s.dx)>=s.th&&a,save=(S.pf.sw?s.dx<0:s.dx>0)&&!s.sv&&!s.dv&&!(a&&a.alert);
+  if(big&&!save){swipeOut(c,s.dx<0?-1:1,()=>{s.u.remove();if(s.dv){undismiss(a);toast('Noticia restaurada');setTimeout(render,450)}else s.sv?fav(a):dismiss(a)});return}
   c.style.transition='transform .22s cubic-bezier(.2,.8,.2,1),opacity .22s';c.style.transform='';c.style.opacity='';
   if(big&&save){const was=!!S.fav[a.id];fav(a);favCnt();favMark(c,!was)}
   setTimeout(()=>{s.u.remove();c.classList.remove('swp');c.style.transition=''},230)};

@@ -57,6 +57,11 @@ async function run(browser, label, viewport, mobile) {
   ok(await p.evaluate(() => !document.querySelector('#srcs').hidden && S.V.length > 0), 'la categoría muestra su fila de fuentes y noticias');
   await p.evaluate(() => document.querySelector('#tabs [data-c="Todas"]').click());
 
+  // 3b) Descartadas: aparece la pestaña, se ven y se pueden restaurar
+  const dv = await p.evaluate(async () => { dismiss(S.V[0]); dismiss(S.V[1]); render(); const t = document.querySelector('#tabs [data-c="Descartadas"]'); if (!t) return { tab: false }; t.click();
+    const n = document.querySelectorAll('#grid .card').length; document.querySelector('[data-rs]').click(); await new Promise(r => setTimeout(r, 900)); const n2 = document.querySelectorAll('#grid .card').length; $('#dvr').click(); await new Promise(r => setTimeout(r, 300)); document.querySelector('.askd [data-a="1"]').click(); await new Promise(r => setTimeout(r, 300)); return { tab: true, n, n2, left: disList().length, cat: S.cat } });
+  ok(dv.tab && dv.n === 2 && dv.n2 === 1 && dv.left === 0 && dv.cat === 'Todas', `Descartadas: pestaña, restaurar una y todas (${JSON.stringify(dv)})`);
+
   // 4) Búsqueda
   const q = await p.evaluate(() => { S.q = 'IA'; S.key = ''; render(); const a = S.V.length; S.q = 'zzzxq'; S.key = ''; render(); const b = S.V.length; S.q = ''; S.key = ''; render(); return [a, b] });
   ok(q[0] > 0 && q[1] === 0, `la búsqueda filtra (IA: ${q[0]}, sin resultados: ${q[1]})`);
