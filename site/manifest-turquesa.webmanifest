@@ -1,0 +1,85 @@
+{
+  "id": "./",
+  "name": "Noticiahz",
+  "short_name": "Noticiahz",
+  "description": "Lector de noticias RSS personal: todas tus fuentes en un solo sitio.",
+  "lang": "es",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "background_color": "#f4f6fa",
+  "theme_color": "#0d909c",
+  "categories": [
+    "news"
+  ],
+  "icons": [
+    {
+      "src": "ic/turquesa-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "ic/turquesa-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "ic/turquesa-mask.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "share_target": {
+    "action": "./",
+    "method": "GET",
+    "params": {
+      "title": "st",
+      "text": "sx",
+      "url": "su"
+    }
+  },
+  "shortcuts": [
+    {
+      "name": "Guardadas",
+      "short_name": "Guardadas",
+      "description": "Noticias guardadas para leer",
+      "url": "./?a=saved",
+      "icons": [
+        {
+          "src": "ic/turquesa-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Actualizar noticias",
+      "short_name": "Actualizar",
+      "description": "Buscar noticias nuevas ahora",
+      "url": "./?a=rf",
+      "icons": [
+        {
+          "src": "ic/turquesa-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Buscar",
+      "short_name": "Buscar",
+      "description": "Buscar en las noticias",
+      "url": "./?a=q",
+      "icons": [
+        {
+          "src": "ic/turquesa-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ]
+}
