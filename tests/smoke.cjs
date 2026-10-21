@@ -145,6 +145,9 @@ async function run(browser, label, viewport, mobile) {
   const off = await p.evaluate(async () => { const h = JSON.stringify(S.hl); refresh(); await new Promise(r => setTimeout(r, 300)); return { same: JSON.stringify(S.hl) === h, loading: S.loading, t: document.querySelector('.toast')?.textContent || '' } });
   await ctx.setOffline(false);
   ok(off.same && !off.loading && /Sin conexión/.test(off.t), 'sin red no intenta actualizar ni marca fuentes como rotas');
+  const fn = await p.evaluate(() => { const now = Date.now(), L = []; for (let i = 0; i < 5000; i++) L.push({ id: 'g' + i, src: 'Agencia', date: now - i * 6e4 }); for (let i = 0; i < 10; i++) L.push({ id: 's' + i, src: 'Blog', date: now - (5 + i * 3) * 864e5 });
+    L.sort((a, b) => b.date - a.date); const r = fairNews(L); return { n: r.length, blog: r.filter(a => a.src === 'Blog').length } });
+  ok(fn.n === 4000 && fn.blog === 10, `el cupo de noticias no echa a las fuentes que publican poco (${JSON.stringify(fn)})`);
   ok(errs.length === 0, 'sin errores de JavaScript' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));
   await ctx.close();
 }

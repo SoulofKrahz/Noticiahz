@@ -725,7 +725,7 @@ async function pool(items,n,fn){let i=0;await Promise.all(Array.from({length:Mat
 function timed(fn,ms=10000){const c=new AbortController();const id=setTimeout(()=>c.abort(),ms);return fn(c.signal).finally(()=>clearTimeout(id))}
 
 // Proxy propio: /p/<host>/… lo atiende _worker.js (Cloudflare Pages). Ningún servicio de terceros ve qué lees.
-const VER='2026-10-21-6';
+const VER='2026-10-21-7';
 if(!ls.get('nz_fu',0))ls.set('nz_fu',Date.now());
 const px=u=>{const x=new URL(u);return '/p/'+x.host+x.pathname+x.search};
 // Si la respuesta de error no lleva la marca X-Nz, no la dio nuestro proxy sino Cloudflare (límite diario gratuito o caída): se anota como 'cf'
@@ -834,7 +834,7 @@ async function loadRun(){
  {const rar=[...new Set(fresh.filter(a=>/\uFFFD|Ã[\u0080-\u00BF]|Â[\u00A0-\u00BF]/.test(a.title)).map(a=>a.src))];if(rar.length&&LG.run)LG.run.enc=rar.slice(0,12)}
  const keep=S.news.filter(a=>S.src.some(s=>s.name===a.src)&&Date.now()-a.date<120*864e5);
  const seen=new Set();
- S.news=[...fresh,...keep].filter(a=>!seen.has(a.id)&&seen.add(a.id)).sort((a,b)=>b.date-a.date).slice(0,4000);
+ S.news=fairNews([...fresh,...keep].filter(a=>!seen.has(a.id)&&seen.add(a.id)).sort((a,b)=>b.date-a.date));
  let added=0;const nowG=Date.now();S.news.forEach(a=>{const o=old.get(a.id);if(o){a.nw=o.nw;if(o.got)a.got=o.got}else{a.got=a.got||nowG;if(old.size){a.nw=1;added++}}});if(added)S.nwPending=1;S.nw=S.news.filter(a=>a.nw).length;badge();
  S.hr=S.hr||{};todo.forEach(x=>{if(S.hl[x.id]===0)S.hr[x.id]=why(host(x.url));else delete S.hr[x.id]});
  const bad=on.filter(x=>S.hl[x.id]===0).length;
@@ -1121,7 +1121,7 @@ function commit(f,items){
  if(ed){S.news=S.news.filter(a=>a.src!==S.src[S.edit].name);x=S.src[S.edit]={...S.src[S.edit],...f}}else{x={id:'u'+Date.now(),on:true,...f};S.src.push(x)}
  // Lo que ya se descargó al comprobar se usa tal cual: no hace falta pedirlo otra vez
  if(items&&items.length){const now=Date.now(),have=new Set(S.news.map(a=>a.id)),add=items.filter(a=>a.link&&now-a.date<120*864e5&&!have.has(a.id)).map(a=>({...a,got:now}));
-  S.news=[...add,...S.news].sort((a,b)=>b.date-a.date);S.hl[x.id]=items.length;S.ft[x.id]=now;if(S.hr)delete S.hr[x.id];saveNews()}
+  S.news=fairNews([...add,...S.news].sort((a,b)=>b.date-a.date));S.hl[x.id]=items.length;S.ft[x.id]=now;if(S.hr)delete S.hr[x.id];saveNews()}
  const msg=ed?'Fuente actualizada':'Fuente añadida';resetForm();saveSrc();revUi();if(!items)toast(msg);load();S.dirty=0;
 }
 $('#aa').onclick=async()=>{
@@ -1160,8 +1160,14 @@ $('#so').onchange=e=>{S.so=e.target.value;render()};
 $('#pe').onchange=e=>{S.pe=+e.target.value;render()};
 // Texto completo de todo lo descargado en los últimos 30 días. Solo de lo descargado hace más tiempo se guarda el principio
 // (el lector sigue enlazando al original): menos datos que leer al abrir la app y menos memoria en el móvil.
+// Cupo de noticias guardadas repartido con justicia: cada fuente conserva siempre sus últimas (hasta 30, según cuántas fuentes
+// haya) y el resto del cupo se llena por fecha. Así las que publican muchísimo no echan a las que publican poco.
+const NMAX=4000;
+function fairNews(list){if(list.length<=NMAX)return list;const by=new Map();list.forEach(a=>{const g=by.get(a.src);g?g.push(a):by.set(a.src,[a])});
+ const per=Math.max(5,Math.min(30,Math.floor(NMAX*.6/by.size))),keep=new Set();by.forEach(g=>g.slice(0,per).forEach(a=>keep.add(a)));
+ let room=NMAX-keep.size;for(const a of list){if(room<=0)break;if(!keep.has(a)){keep.add(a);room--}}return list.filter(a=>keep.has(a))}
 function saveNews(){const now=Date.now(),full=n=>S.news.slice(0,n).map(a=>({...a,_t:undefined,also:undefined,nw:undefined,html:(!a.html||now-(a.got||a.date)<2592e6)?a.html:a.html.slice(0,1500)}));
- DB.set('nz_news',full(4000)).catch(()=>{[[1500,600],[900,600],[500,600],[250,1500],[120,1500]].some(([n,h])=>ls.set('nz_news',full(n).map(a=>({...a,html:a.html.slice(0,h)}))))})}
+ DB.set('nz_news',full(NMAX)).catch(()=>{[[1500,600],[900,600],[500,600],[250,1500],[120,1500]].some(([n,h])=>ls.set('nz_news',full(n).map(a=>({...a,html:a.html.slice(0,h)}))))})}
 // "Buscar noticias más antiguas": pide la siguiente página de cada fuente visible
 async function deepen(){
  if(S.deep)return;S.deep=1;const b=$('#more');if(b){b.disabled=true;b.textContent='Buscando noticias más antiguas…'}
