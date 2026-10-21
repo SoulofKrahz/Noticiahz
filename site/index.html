@@ -240,11 +240,11 @@ html{overscroll-behavior-y:contain}.more{grid-column:1/-1;text-align:center}
 .bm{padding:8px;margin:-8px -4px -8px 0;border-radius:8px;transition:color .15s,background .15s}.bm:hover{color:var(--em);background:var(--tint)}.bm[data-ds]:hover{color:#d23c41;background:#e5484d1f}
 @keyframes pop{40%{transform:scale(1.5)}}.bm.pop svg{animation:pop .35s}
 @keyframes rise{from{opacity:0;transform:translate(-50%,14px)}}.undo{animation:rise .22s}
-.upd{position:fixed;z-index:58;left:16px;right:16px;bottom:calc(20px + env(safe-area-inset-bottom));display:flex;align-items:center;gap:12px;padding:12px 10px 12px 12px;background:var(--card);color:var(--tx);border:1px solid color-mix(in srgb,var(--em) 35%,var(--bd));border-radius:18px;box-shadow:0 18px 40px -18px #0009,0 2px 6px -2px #0002;animation:updin .32s cubic-bezier(.2,.8,.2,1)}
+.upd{position:fixed;z-index:58;left:16px;right:16px;bottom:calc(20px + env(safe-area-inset-bottom));display:grid;grid-template-columns:auto 1fr auto;align-items:start;gap:10px 12px;padding:12px 10px 12px 12px;background:var(--card);color:var(--tx);border:1px solid color-mix(in srgb,var(--em) 35%,var(--bd));border-radius:18px;box-shadow:0 18px 40px -18px #0009,0 2px 6px -2px #0002;animation:updin .32s cubic-bezier(.2,.8,.2,1)}
 .upd[hidden]{display:none}
 .upi{flex:none;display:grid;place-items:center;width:40px;height:40px;border-radius:12px;background:var(--tint);color:var(--em)}.upi svg{width:20px;height:20px}
-.upt{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.25}.upt b{font-size:14.5px;font-weight:650;letter-spacing:-.01em}.upt small{font-size:12.5px;color:var(--mu);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.upd .btn{flex:none;margin:0;padding:9px 16px;border-radius:12px;font-size:13.5px;gap:6px}.upd .btn svg{width:15px;height:15px}.upd .btn:disabled{opacity:.85}
+.upt{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.25}.upt b{font-size:15px;font-weight:650;letter-spacing:-.01em}.upt{align-self:center}.upt .nw{white-space:nowrap;font-weight:600;color:var(--tx)}.upt small{font-size:12.5px;color:var(--mu);margin-top:3px;line-height:1.35}
+.upd .btn{grid-column:1/-1;justify-content:center;margin:2px 0 0;padding:11px 16px;border-radius:12px;font-size:14px;gap:8px}.upd .btn svg{width:15px;height:15px}.upd .btn:disabled{opacity:.85}
 .upx{flex:none;width:34px;height:34px;color:var(--mu)}
 body:has(#undo:not([hidden])) .upd{transform:translateY(-64px)}
 @keyframes updin{from{opacity:0;transform:translateY(18px) scale(.98)}}
@@ -501,7 +501,7 @@ main .card .ph{border-radius:0;background:var(--tint);aspect-ratio:16/9}.card .p
 <div class="np off" id="of" hidden>Sin conexión. Mostrando las últimas noticias descargadas.</div>
 <div class="ptr" id="ptr"><svg class="i"><use href="#r"/></svg></div>
 <button class="ib top" id="up" aria-label="Volver arriba"><svg class="i"><use href="#u"/></svg></button>
-<div class="upd" id="vnb" hidden role="status" aria-live="polite"><span class="upi"><svg class="i"><use href="#r"/></svg></span><div class="upt"><b>Nueva versión lista</b><small id="vnv">Mejoras y correcciones</small></div><button class="btn" id="vng">Actualizar</button><button class="ib upx" id="vnx" aria-label="Ahora no"><svg class="i"><use href="#x"/></svg></button></div>
+<div class="upd" id="vnb" hidden role="status" aria-live="polite"><span class="upi"><svg class="i"><use href="#r"/></svg></span><div class="upt"><b>Hay una versión nueva</b><small id="vnv">Tarda un segundo y no pierdes nada.</small></div><button class="ib upx" id="vnx" aria-label="Ahora no"><svg class="i"><use href="#x"/></svg></button><button class="btn" id="vng"><svg class="i"><use href="#r"/></svg>Actualizar ahora</button></div>
 <div class="undo" id="undo" hidden><span></span><button>Deshacer</button></div>
 <nav class="bb" id="bb" aria-label="Acciones">
   <button id="b-rf" aria-label="Actualizar"><svg class="i"><use href="#r"/></svg><span class="rft">Actualizar</span></button>
@@ -724,7 +724,7 @@ async function pool(items,n,fn){let i=0;await Promise.all(Array.from({length:Mat
 function timed(fn,ms=10000){const c=new AbortController();const id=setTimeout(()=>c.abort(),ms);return fn(c.signal).finally(()=>clearTimeout(id))}
 
 // Proxy propio: /p/<host>/… lo atiende _worker.js (Cloudflare Pages). Ningún servicio de terceros ve qué lees.
-const VER='2026-10-21-8';
+const VER='2026-10-21-9';
 if(!ls.get('nz_fu',0))ls.set('nz_fu',Date.now());
 const px=u=>{const x=new URL(u);return '/p/'+x.host+x.pathname+x.search};
 // Si la respuesta de error no lleva la marca X-Nz, no la dio nuestro proxy sino Cloudflare (límite diario gratuito o caída): se anota como 'cf'
@@ -1093,7 +1093,7 @@ let tx=0,ty=0,ly=0;
 $('#dr').addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY},{passive:true});
 $('#dr').addEventListener('touchend',e=>{const t=e.changedTouches[0],dx=t.clientX-tx,dy=t.clientY-ty;if(Math.abs(dx)>90&&Math.abs(dy)<45)go(dx<0?1:-1)},{passive:true});
 // Aviso de versión nueva: compara VER con version.txt (lo genera la publicación); archivo estático, no gasta cuota
-{let last=0;const chk=f=>{if(f!==true&&(document.hidden||Date.now()-last<6e5))return;last=Date.now();fetch('version.txt?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.text():'').then(v=>{v=(v||'').trim();if(/^\d{4}-\d\d-\d\d-[\d.]+$/.test(v)&&v!==VER&&v!==window.__vnx){$('#vnv').textContent=`Versión ${v}`;$('#vnb').hidden=false}}).catch(()=>{})};
+{let last=0;const chk=f=>{if(f!==true&&(document.hidden||Date.now()-last<6e5))return;last=Date.now();fetch('version.txt?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.text():'').then(v=>{v=(v||'').trim();if(/^\d{4}-\d\d-\d\d-[\d.]+$/.test(v)&&v!==VER&&v!==window.__vnx){$('#vnv').innerHTML=`Versión <span class="nw">${v}</span> · ahora tienes la <span class="nw">${VER}</span><br>Tarda un segundo y no pierdes nada.`;$('#vnb').hidden=false}}).catch(()=>{})};
  window.__chk=()=>chk(true);setTimeout(chk,2500);document.addEventListener('visibilitychange',chk);$('#vnx').onclick=()=>{const m=$('#vnv').textContent.match(/\d{4}-\d\d-\d\d-[\d.]+/);window.__vnx=m?m[0]:1;$('#vnb').hidden=true};setInterval(chk,18e5);$('#vng').onclick=async()=>{const b=$('#vng');b.disabled=true;b.classList.add('spin');b.innerHTML='<svg class="i"><use href="#r"/></svg>Actualizando';$('#vnx').hidden=true;window.__upd=1;
   // 1) instala el service worker nuevo si lo hay (como en Caravanahz); 2) guarda la página nueva en la caché; 3) recarga una sola vez
   try{const reg=navigator.serviceWorker&&(await navigator.serviceWorker.getRegistration());if(reg)await reg.update()}catch(e){}
