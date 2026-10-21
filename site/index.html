@@ -32,7 +32,7 @@ window.nzApply=function(h,s){var st=document.getElementById('acs');if(h==null||i
 window.nzIco=function(h,s){if(h==null||isNaN(h))return'';h=+h;s=s==null?.85:+s;if(s<.3)return'grafito';var P=[['',152],['turquesa',185],['azul',214],['indigo',243],['violeta',272],['rosa',328],['coral',6],['naranja',27],['ambar',42]],b=P[0],d=1e9;P.forEach(function(x){var e=Math.abs(h-x[1])%360;e=Math.min(e,360-e);if(e<d){d=e;b=x}});return b[0]};
 window.nzMan=function(h,s){var k=nzIco(h,s),m=document.querySelector('link[rel=manifest]'),a=document.querySelector('link[rel=apple-touch-icon]'),f=k?'manifest-'+k+'.webmanifest':'manifest.webmanifest';if(m&&m.getAttribute('href')!==f)m.setAttribute('href',f);if(a)a.setAttribute('href',k?'ic/'+k+'-apple.png':'apple-touch-icon.png');return k};
 try{var q=JSON.parse(localStorage.getItem('nz_pf'))||{};if(q.ah!=null){nzApply(q.ah,q.as);nzMan(q.ah,q.as)}}catch(e){}</script>
-<script>try{var p=JSON.parse(localStorage.getItem('nz_pf'))||{},t=p.th||JSON.parse(localStorage.getItem('nz_theme'));if(t!=='dark'&&t!=='light')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t;document.documentElement.style.setProperty('--fs',p.fs||1)}catch(e){}</script>
+<script>try{var p=JSON.parse(localStorage.getItem('nz_pf'))||{},t=p.th;if(t!=='dark'&&t!=='light')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t;document.documentElement.style.setProperty('--fs',p.fs||1)}catch(e){}</script>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='15' fill='%230a9d5c'/><path d='M21.5 17.5V50M21.5 34C21.5 25 27 22 33 22C40 22 44 26.5 44 33V50' fill='none' stroke='%2306150f' stroke-width='9'/><path d='M7 41H25L29 29L34 51L38 36L41 41H57' fill='none' stroke='white' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'/></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400..700&family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..700&display=swap" rel="stylesheet">
 <style>
@@ -143,7 +143,7 @@ header{transition:transform .25s}header.hd{transform:translateY(-100%)}
 #frov{z-index:55}
 @keyframes popin{from{opacity:0;transform:translate(-50%,-46%)}}
 @media(max-width:760px){.add.pop{top:auto;bottom:0;left:0;right:0;width:auto;transform:none;border-radius:20px 20px 0 0;padding:20px 16px calc(16px + env(safe-area-inset-bottom));max-height:88dvh;animation:sheet .22s cubic-bezier(.2,.8,.2,1)}}.add h3{font:600 19px Newsreader,serif;margin-top:4px}
-.fm{font-size:13.5px;line-height:1.45;padding:10px 12px;border-radius:10px;background:var(--tint)}.fm.err{background:#e5484d1f;color:#d23c41}.fm.warn{background:#f5a5241f;color:#a8640a}html[data-theme=dark] .fm.warn{color:#f0b452}.rsn{display:block;color:#d23c41;font-size:12px;margin-top:2px}.chip.bad{background:#e5484d22;color:#d23c41}
+.fm{font-size:13.5px;line-height:1.45;padding:10px 12px;border-radius:10px;background:var(--tint)}.fm.err{background:#e5484d1f;color:#d23c41}.fm.warn{background:#f5a5241f;color:#a8640a}html[data-theme=dark] .fm.warn{color:#f0b452}.rsn{display:block;color:#d23c41;font-size:12px;margin-top:2px;white-space:normal;overflow:visible}.chip.bad{background:#e5484d22;color:#d23c41}
 pre{font:12.5px/1.6 ui-monospace,Menlo,monospace;white-space:pre-wrap;color:var(--mu)}
 pre .ok{color:var(--em)}pre .err{color:#e5484d}
 .seg{display:flex;background:var(--bg);border:1px solid var(--bd);border-radius:12px;padding:3px;gap:2px}
@@ -156,7 +156,6 @@ pre .ok{color:var(--em)}pre .err{color:#e5484d}
 .ssi input{width:100%;padding:11px 12px 11px 36px;border:1px solid var(--bd);border-radius:12px;background:var(--card);font-size:16px}
 .row small.sm{display:flex;gap:4px;overflow:visible}.sm span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sm span:last-child{flex:none;white-space:nowrap}
 .tg{font-size:12px;font-weight:600;color:var(--em)}.gh>span{font-weight:600}.row small strong{color:var(--tx);font-weight:600}.nl{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px}
-.num{font-size:11.5px;font-weight:600;color:var(--mu);background:var(--bg);border:1px solid var(--bd);border-radius:99px;padding:1px 8px;white-space:nowrap}
 .sc em{font-style:normal;font-weight:500;font-size:12px;opacity:.7}.hint{font-size:13px;color:var(--mu);margin:-4px 4px 14px}
 .mt{overflow-x:auto;scrollbar-width:none}.mt button{white-space:nowrap;font-size:14px}
 .gc,.set{background:var(--card);border:1px solid var(--bd);border-radius:14px}.gc{padding:0 14px}
@@ -294,7 +293,7 @@ body.qs .qd{display:flex}.qd input{flex:1;min-width:0;padding:10px 12px;border:1
 .amh{padding:2px 2px 12px}.amh b{font:600 17px/1.3 Newsreader,Georgia,serif;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}.amh small{color:var(--mu);font-size:13px}
 .amr{display:flex;gap:8px;margin-bottom:14px}.amr button{flex:1;padding:12px 6px;border:1px solid var(--bd);border-radius:12px;background:var(--bg);font-weight:600;font-size:13.5px}.amr button:active{background:var(--tint);color:var(--em)}
 .amt{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:12.5px;font-weight:600;color:var(--mu);padding:2px 2px 8px}.am .seg button{flex:none;padding:6px 12px;font-size:12.5px}.am .af{padding-bottom:4px}
-#rvf{overflow-x:auto;scrollbar-width:none}#rvf button{flex:none;white-space:nowrap;padding:9px 12px}.row small.rvm{white-space:normal}.rvb{font-size:12.5px;font-weight:600;color:var(--em);padding:6px 10px;border:1px solid var(--em2);border-radius:99px;white-space:nowrap}
+#rvf{overflow-x:auto;scrollbar-width:none}#rvf button{flex:none;white-space:nowrap;padding:9px 12px}.row small.rvm{white-space:normal}.row small.rsn{color:#d23c41;white-space:normal}.rvb{font-size:12.5px;font-weight:600;color:var(--em);padding:6px 10px;border:1px solid var(--em2);border-radius:99px;white-space:nowrap}
 .lgi rect{fill:var(--em2)}.lgi .n{stroke:var(--lgn,#06150f)}.lgi .h{stroke:var(--lgh,none)}
 .sws{display:flex;flex-wrap:wrap;gap:12px;margin-top:14px}.swc{width:40px;height:40px;border-radius:50%;border:2px solid var(--card);box-shadow:0 0 0 1px var(--bd);flex:none}.swc.on{box-shadow:0 0 0 2px var(--card),0 0 0 4px var(--em2)}
 .gb.on{color:#e3a008}.gb.on svg{fill:currentColor}
@@ -473,7 +472,7 @@ main .card .ph{border-radius:0;background:var(--tint);aspect-ratio:16/9}.card .p
           <div class="seg" id="sg-fs"><button data-v="0.9">Pequeño</button><button data-v="1">Normal</button><button data-v="1.15">Grande</button></div></section><section class="set"><h3>Tarjetas</h3><p>Cómo se ven y cómo se manejan las noticias.</p><div class="gc"><div class="row"><div><b>Ocultar imágenes</b><small style="white-space:normal">Lista más compacta y menos datos.</small></div><label class="sw"><input type="checkbox" data-pf="np" aria-label="Ocultar imágenes"><span></span></label></div><div class="row"><div><b>Atenuar noticias leídas</b><small style="white-space:normal">Las ya abiertas se ven más apagadas.</small></div><label class="sw"><input type="checkbox" data-pf="dr" aria-label="Atenuar leídas"><span></span></label></div><div class="row"><div><b>Invertir el deslizamiento</b><small style="white-space:normal">Izquierda guarda y derecha descarta.</small></div><label class="sw"><input type="checkbox" data-pf="sw" aria-label="Invertir deslizamiento"><span></span></label></div></div></section>
       </div>
       <div id="pC" hidden>
-        <section class="set"><h3>Temas a destacar</h3><p>Las noticias cuyo título contenga estos temas salen arriba del todo en «Mezcladas» (las primeras sin leer ocupan puestos fijos), pesan mucho más en la mezcla y se marcan con borde y etiqueta ★ en color. No cambian el orden de «Recientes». Si coincide con una palabra silenciada, gana el silencio.</p>
+        <section class="set"><h3>Temas a destacar</h3><p>Las noticias cuyo título contenga uno de estos temas suben al principio de «Mezcladas» y se marcan con ★. No cambian el orden de «Recientes». Si coincide con una palabra silenciada, gana el silencio.</p>
           <div style="display:flex;gap:8px"><input id="tpi" placeholder="Ej. Mallorca, Python, Real Madrid" maxlength="40" aria-label="Tema a destacar" autocomplete="off" style="flex:1;min-width:0;padding:11px 12px;border:1px solid var(--bd);border-radius:10px;background:var(--bg);font-size:16px"><button class="btn" id="tpa" style="margin:0">Añadir</button></div>
           <div class="af" id="tpl" style="padding:12px 0 0"></div><p id="tps" style="margin:8px 0 0"></p></section><section class="set"><h3>Palabras silenciadas</h3><p>Oculta las noticias cuyo título contenga estas palabras o frases, sin distinguir mayúsculas ni tildes. Con * al final cubres variantes: horóscop*.</p>
           <div style="display:flex;gap:8px"><input id="mwi" placeholder="Ej. horóscopo, quiniela" maxlength="40" aria-label="Palabra a silenciar" autocomplete="off" style="flex:1;min-width:0;padding:11px 12px;border:1px solid var(--bd);border-radius:10px;background:var(--bg);font-size:16px"><button class="btn" id="mwa" style="margin:0">Añadir</button></div>
@@ -552,7 +551,6 @@ const DEFAULTS=[
  {id:"applesfera",name:"Applesfera",cat:"Tecnología",on:true,url:"https://www.applesfera.com/feedburner.xml"},
  {id:"adslzone",name:"AdslZone",cat:"Tecnología",on:true,url:"https://www.adslzone.net/feed/"},
  {id:"muycomputer",name:"MuyComputer",cat:"Tecnología",on:true,url:"https://www.muycomputer.com/feed/"},
- {id:"rinconingenieril",name:"Rincón Ingenieril",cat:"Domótica",on:true,url:"https://www.rinconingenieril.es/feed/"},
  {id:"raspberrypinews",name:"Raspberry Pi News",cat:"Domótica",on:true,url:"https://www.raspberrypi.com/news/feed/"},
  {id:"cnxsoftwarespanish",name:"CNX Software Spanish",cat:"Domótica",on:true,url:"https://www.cnx-software.es/feed/"},
  {id:"xatakasmarthome",name:"Xataka Smart Home",cat:"Domótica",on:true,url:"https://www.xatakahome.com/feedburner.xml"},
@@ -598,6 +596,7 @@ const DEFAULTS=[
 // Proxies CORS: se consultan a la vez y gana el primero que devuelva un RSS válido
 const $=s=>document.querySelector(s);
 const ls={get:(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}},set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));return 1}catch{return 0}}};
+const pl=(n,w)=>`${n.toLocaleString('es-ES')} ${n===1?w:w+'s'}`;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 // Palabras silenciadas: coincidencia por palabra completa, sin mayúsculas ni tildes; "*" final = variantes
 const MW={list:ls.get('nz_mw',[]),re:[],cache:new WeakMap()};
@@ -630,7 +629,7 @@ set:(k,v)=>open().then(db=>new Promise((res,rej)=>{const t=db.transaction('kv','
 async function bigGet(k,d){try{const v=await DB.get(k);if(v!==undefined)return v;const o=ls.get(k,undefined);if(o!==undefined){await DB.set(k,o);try{localStorage.removeItem(k)}catch{}return o}}catch(e){return ls.get(k,d)}return d}
 const bigSet=(k,v)=>DB.set(k,v).catch(()=>ls.set(k,v));
 let FIRST=false;try{FIRST=localStorage.getItem('nz_src')===null&&localStorage.getItem('nz_pf')===null&&localStorage.getItem('nz_ob')===null}catch(e){}
-const S={src:ls.get('nz_src',DEFAULTS),news:[],fav:{},cat:'Todas',q:'',logs:[],V:[],cur:null,loading:false,rd:new Set(),dis:new Map(),seed:Math.random(),seen:new Map(),snap:{rd:new Set(),seen:new Set(),sw:new Map(),st:{}},so:'mix',pe:0,hl:{},rj:{},ft:{},fb:0,lm:{},dp:ls.get('nz_dp',{}),deep:0,sq:'',edit:null,pend:null,sf:'Todas',un:false};
+const S={src:ls.get('nz_src',DEFAULTS),news:[],fav:{},cat:'Todas',q:'',V:[],cur:null,loading:false,rd:new Set(),dis:new Map(),seed:Math.random(),seen:new Map(),snap:{rd:new Set(),seen:new Set(),sw:new Map(),st:{}},so:'mix',pe:0,hl:{},ft:{},dp:ls.get('nz_dp',{}),deep:0,sq:'',edit:null,pend:null,sf:'Todas',un:false};
 
 // ---- Registro de actividad: una tarjeta por actualización (resumen + problemas agrupados) y eventos sueltos ----
 const LG={runs:ls.get('nz_lg',[]),evs:ls.get('nz_lge',[]),run:null,only:false};
@@ -716,35 +715,30 @@ function parseSitemap(d,src){const L=(n,k)=>{const e=n.getElementsByTagNameNS('*
 async function pool(items,n,fn){let i=0;await Promise.all(Array.from({length:Math.min(n,items.length)},async()=>{while(i<items.length)await fn(items[i++])}))}
 function timed(fn,ms=10000){const c=new AbortController();const id=setTimeout(()=>c.abort(),ms);return fn(c.signal).finally(()=>clearTimeout(id))}
 
-// Proxy propio: /p/<host>/... lo atiende _worker.js (Cloudflare Pages)
-const VER='2026-10-21-5';
+// Proxy propio: /p/<host>/… lo atiende _worker.js (Cloudflare Pages). Ningún servicio de terceros ve qué lees.
+const VER='2026-10-21-6';
 if(!ls.get('nz_fu',0))ls.set('nz_fu',Date.now());
-const PX=[{f:u=>{const x=new URL(u);return '/p/'+x.host+x.pathname+x.search},can:u=>/^https?:\/\//i.test(u),own:1,n:'propio',ok:0,bad:0,until:0}];
+const px=u=>{const x=new URL(u);return '/p/'+x.host+x.pathname+x.search};
+const pget=(u,ms=10000)=>timed(async sg=>{const r=await fetch(px(u),{signal:sg});if(!r.ok){const e=Error('HTTP '+r.status);e.st=r.status;throw e}return r},ms);
 const addParam=(u,k,v)=>u+(u.includes('?')?'&':'?')+k+'='+v;
 const pe=m=>{const e=Error(m);e.name='ParseError';return e};
-// Descarga a través del proxy propio (/p/… en _worker.js). Sin servicios públicos de terceros.
-function viaProxies(url,src,ms=10000){
- const t=Date.now(),order=PX.filter(p=>p.until<=t&&(!p.can||p.can(url))).sort((a,b)=>(b.ok-b.bad)-(a.ok-a.bad));
- if(!order.length)return Promise.reject(Error('sin proxies disponibles'));
- return new Promise((res,rej)=>{
-  let i=0,fails=0,done=false,tm;
-  const next=()=>{if(done||i>=order.length)return;const p=order[i++];clearTimeout(tm);if(i<order.length)tm=setTimeout(next,3000);
-   timed(async sg=>{const r=await fetch(p.f(url),{signal:sg});if(!r.ok){const e=Error('HTTP '+r.status);e.st=r.status;throw e}return parse(await readXml(r),src)},ms)
-   .then(v=>{p.ok++;if(!done){done=true;clearTimeout(tm);res(v)}})
-   .catch(e=>{p.last=e.message;if(e.st)(p.hs=p.hs||{})[e.st]=(p.hs[e.st]||0)+1;if(p.own)try{const h=new URL(url).host,o=((S.nf=S.nf||{})[h]=S.nf[h]||{n:0});o.n++;o.s=e.st||e.message}catch(x){}if(e.name!=='ParseError')p.bad++;if(++fails>=order.length&&!done){done=true;clearTimeout(tm);rej(e)}else next()})};
-  next();
- })}
+// Rutas donde suelen estar los feeds (WordPress, Blogger, Ghost, Substack, periódicos…)
+const FEEDP=['/feed','/feed/','/rss','/rss/','/feed.xml','/rss.xml','/index.xml','/atom.xml','/feeds/posts/default','/?feed=rss2','/feed/rss','/feedburner.xml','/rss/portada.xml','/rss/home.xml'];
+// Descarga y lee un feed. Si falla, apunta el motivo por sitio (S.nf) para explicarlo en el registro y en Fuentes.
+async function viaProxy(url,src,ms=10000,note=true){
+ try{return parse(await readXml(await pget(url,ms)),src)}
+ catch(e){if(note)try{const h=new URL(url).host,o=((S.nf=S.nf||{})[h]=S.nf[h]||{n:0});o.n++;o.s=e.st||e.message}catch(x){}throw e}}
 // Comprueba una fuente; si la URL es una web (no un feed), intenta detectar el feed en rutas habituales
 async function check(src,step=()=>{}){
  const T=15000;step('Probando la dirección…');
- try{const items=await viaProxies(src.url,src,T);if(items.length)return{items,url:src.url,via:'feed'}}catch(e){}
+ try{const items=await viaProxy(src.url,src,T);if(items.length)return{items,url:src.url,via:'feed'}}catch(e){}
  let u;try{u=new URL(src.url)}catch{return{fail:1,why:'la dirección no es válida'}}
  const why0=why(u.host);
- const any=async(list,via)=>{list=[...new Set(list)].filter(x=>x&&x!==src.url);if(!list.length)return null;const rs=await Promise.allSettled(list.map(async x=>({items:await viaProxies(x,src,T),url:x,via})));const ok=rs.find(x=>x.status==='fulfilled'&&x.value.items.length);return ok?ok.value:null};
+ const any=async(list,via)=>{list=[...new Set(list)].filter(x=>x&&x!==src.url);if(!list.length)return null;const rs=await Promise.allSettled(list.map(async x=>({items:await viaProxy(x,src,T),url:x,via})));const ok=rs.find(x=>x.status==='fulfilled'&&x.value.items.length);return ok?ok.value:null};
  const o=u.origin;let r;
  // 1) Rutas habituales de feed (WordPress, Blogger, Ghost, Substack, periódicos…)
  step('Buscando el feed en las rutas habituales…');
- if(r=await any(['/feed','/rss','/feed/','/rss/','/feed.xml','/rss.xml','/index.xml','/atom.xml','/feeds/posts/default','/?feed=rss2','/feed/rss','/rss/portada.xml','/rss/home.xml'].map(x=>o+x),'feed'))return r;
+ if(r=await any(FEEDP.map(x=>o+x),'feed'))return r;
  // 2) Feeds enlazados en la página o en la portada (<link rel=alternate> y enlaces que parecen feeds)
  step('Buscando enlaces a feeds dentro de la web…');
  if(r=await any((await discover(u,true)).slice(0,8),'feed'))return r;
@@ -757,7 +751,7 @@ async function check(src,step=()=>{}){
  if(r=await any([`https://news.google.com/rss/search?q=site:${h}+when:7d&hl=es&gl=ES&ceid=ES:es`],'google'))return r;
  return{fail:1,why:why0};
 }
-async function fetchTxt(x,ms=8000){return timed(async sg=>{const r=await fetch(PX[0].f(x),{signal:sg});if(!r.ok)throw Error('HTTP '+r.status);return(await r.text()).slice(0,6e6)},ms)}
+async function fetchTxt(x,ms=8000){return(await(await pget(x,ms)).text()).slice(0,6e6)}
 async function sitemapFeed(u,src){const o=u.origin,isNews=x=>/news|noticia|ultim|actualidad/i.test(x);let c=[];
  try{(await fetchTxt(o+'/robots.txt',6000)).split(/\r?\n/).forEach(l=>{const m=l.match(/^\s*sitemap:\s*(\S+)/i);if(m)c.push(m[1].trim())})}catch(e){}
  c=[...c.filter(isNews),...['/sitemap_news.xml','/news-sitemap.xml','/sitemap-news.xml','/news_sitemap.xml','/sitemaps/news.xml','/sitemap/news.xml'].map(x=>o+x),...c.filter(x=>!isNews(x))].filter((x,i,a)=>/^https?:/.test(x)&&a.indexOf(x)===i).slice(0,8);
@@ -781,10 +775,9 @@ async function readXml(r){const buf=await r.arrayBuffer(),head=new TextDecoder('
  if(/^utf-?8$/.test(enc)&&t.includes('\uFFFD')){try{t=new TextDecoder('windows-1252').decode(buf)}catch(e){}}
  else if(!/^utf-?8$/.test(enc)){try{const u=new TextDecoder('utf-8',{fatal:true}).decode(buf);if(/[^\x00-\x7F]/.test(u))t=u}catch(e){}}
  return t.replace(/^\uFEFF/,'')}
-async function viaOwn(url,src){const p=PX[0];if(!p.can(url))throw Error('sin regla');return timed(async sg=>{const r=await fetch(p.f(url),{signal:sg});if(!r.ok)throw Error('HTTP '+r.status);return parse(await readXml(r),src)},8000)}
 // Autocorrección: si una fuente falla, prueba rutas de feed habituales en su mismo sitio (máx. 1 intento al día por fuente)
 async function discover(u,deep){const pages=[u.origin+'/'];if(deep&&u.pathname.length>1)pages.unshift(u.href);const out=[],base=u.hostname.replace(/^www\./,'');
- for(const pg of pages){try{const r=await timed(sg=>fetch(PX[0].f(pg),{signal:sg}),8000);if(!r.ok)continue;
+ for(const pg of pages){try{const r=await pget(pg,8000);
   const d=new DOMParser().parseFromString((await r.text()).slice(0,400000),'text/html'),abs=h=>{try{return new URL(h,pg).href.replace(/^http:/,'https:')}catch(e){return''}};
   d.querySelectorAll('link[rel~=alternate][type*=xml],link[rel~=alternate][type*=rss],link[rel~=alternate][type*=atom]').forEach(l=>out.push(abs(l.getAttribute('href'))));
   if(deep){const P=/portada|home|inicio|ultim|principal|general|todas|todo/i;const a=[...d.querySelectorAll('a[href]')].map(x=>({h:abs(x.getAttribute('href')),t:(x.textContent||'')+' '+(x.getAttribute('title')||'')})).filter(o=>{try{const k=new URL(o.h);return k.hostname.replace(/^www\./,'').endsWith(base)&&/(\/rss|\/feed|atom|\.xml)(\/|\?|$|\.)/i.test(k.pathname+k.search)}catch(e){return false}});
@@ -792,16 +785,14 @@ async function discover(u,deep){const pages=[u.origin+'/'];if(deep&&u.pathname.l
  }catch(e){}}
  return[...new Set(out)].filter(h=>/^https:/.test(h)&&!/comment|comentario/i.test(h))}
 async function heal(x){const hh=ls.get('nz_hh3',{});if(Date.now()-(hh[x.id]||0)<864e5)return null;hh[x.id]=Date.now();ls.set('nz_hh3',hh);
- let u;try{u=new URL(x.url)}catch{return null}if(!PX[0].can(x.url))return null;
+ let u;try{u=new URL(x.url)}catch{return null}
  const disc=await discover(u);
- if(disc.length){const fh=ls.get('nz_fdh',[]);disc.forEach(h=>{try{const k=new URL(h).host;if(!fh.includes(k))fh.push(k)}catch(e){}});ls.set('nz_fdh',fh.slice(-60))}
  const alt=u.pathname.length>1?(u.pathname.endsWith('/')?u.pathname.slice(0,-1):u.pathname+'/')+u.search:'',
-  paths=[alt,'/feedburner.xml','/feed','/feed/','/rss','/rss/','/rss.xml','/index.xml','/atom.xml','/feed.xml','/?feed=rss2','/feeds/posts/default?alt=rss'].filter(Boolean).map(q=>u.origin+q),
+  paths=[alt,...FEEDP].filter(Boolean).map(q=>u.origin+q),
   c=[...new Set([...disc,...paths])].filter(y=>y!==x.url);
- try{return await Promise.any(c.map(async y=>({url:y,items:await viaOwn(y,x)})))}catch{return null}}
-// Todas las descargas pasan por el proxy propio; ningún servicio de terceros ve qué lees
+ try{return await Promise.any(c.map(async y=>({url:y,items:await viaProxy(y,x,8000,false)})))}catch{return null}}
 async function getFeed(src){
- try{return await viaProxies(src.url,src)}catch(e){return null}
+ try{return await viaProxy(src.url,src)}catch(e){return null}
 }
 
 const spinAll=on=>{['#rf','#b-rf'].forEach(q=>$(q).classList.toggle('spin',on));document.body.classList.toggle('ld',on)};
@@ -816,13 +807,12 @@ async function load(){
   let a=await getFeed(x);
   if(a&&a.length>=8&&S.pf.dp>1&&S.dp[x.id]!==99){
    const known=new Set(a.map(i=>i.id));
-   for(let pg=(S.dp[x.id]||1)+1;pg<=S.pf.dp;pg++){const m=await viaProxies(addParam(x.url,'paged',pg),x).catch(()=>null),nw=(m||[]).filter(i=>i.link&&!known.has(i.id));if(!nw.length){S.dp[x.id]=99;break}nw.forEach(i=>known.add(i.id));a=a.concat(nw);S.dp[x.id]=pg}
+   for(let pg=(S.dp[x.id]||1)+1;pg<=S.pf.dp;pg++){const m=await viaProxy(addParam(x.url,'paged',pg),x).catch(()=>null),nw=(m||[]).filter(i=>i.link&&!known.has(i.id));if(!nw.length){S.dp[x.id]=99;break}nw.forEach(i=>known.add(i.id));a=a.concat(nw);S.dp[x.id]=pg}
   }
   S.hl[x.id]=a?a.length:0;if(a)S.ft[x.id]=Date.now();{const f=S.nf&&S.nf[host(x.url)];if(f&&(f.s===402||f.s===429))(S.bo=S.bo||{})[x.id]=Date.now()+216e5}res.push(a||[]);rl.textContent=`${++done}/${todo.length}`});
  rl.textContent='Actualizar';ls.set('nz_dp',S.dp);
- const det=x=>{const f=S.nf&&S.nf[host(x.url)];return f&&(f.s==='Failed to fetch'||f.s===403||f.s===404)};
  const slow=todo.filter(x=>S.hl[x.id]===0&&/abort|^50[24]$/i.test(String((S.nf[host(x.url)]||{}).s)));
- if(slow.length)await pool(slow,4,async x=>{try{const a=await viaProxies(x.url,x,16000);if(a&&a.length){S.hl[x.id]=a.length;S.ft[x.id]=Date.now();res.push(a)}}catch(e){}});
+ if(slow.length)await pool(slow,4,async x=>{try{const a=await viaProxy(x.url,x,16000);if(a&&a.length){S.hl[x.id]=a.length;S.ft[x.id]=Date.now();res.push(a)}}catch(e){}});
  const sick=todo.filter(x=>S.hl[x.id]===0);
  if(sick.length){await pool(sick,3,async x=>{const h=await heal(x);if(h&&!S.src.some(o=>o!==x&&o.url===h.url)){if(LG.run)LG.run.fixed.push({n:x.name,u:h.url});x.url=h.url;S.hl[x.id]=h.items.length;S.ft[x.id]=Date.now();res.push(h.items)}});
   ls.set('nz_src',S.src)}
@@ -884,7 +874,7 @@ function tabs(){
  if(S.sf!=='Todas'&&!nm.includes(S.sf))S.sf='Todas';
  const sr=$('#srcs');sr.hidden=!nm.length; // siempre visible si hay al menos una fuente
  const cn={};(S.cat==='Guardadas'?Object.values(S.fav):S.cat==='Descartadas'?disList():S.news.filter(a=>!S.dis.has(a.id)&&!isMuted(a)&&!smOn(a.src))).forEach(a=>{if(S.cat==='Todas'||S.cat==='Guardadas'||S.cat==='Descartadas'||catOf(a)===S.cat)cn[a.src]=(cn[a.src]||0)+1});
- sr.innerHTML=`<button class="sc ${S.sf==='Todas'?'on':''}" data-sf="Todas">Todas <em>${nm.reduce((t,n)=>t+(cn[n]||0),0)}</em></button>`+nm.map(n=>`<button class="sc ${n===S.sf?'on':''}" data-sf="${esc(n)}"><i style="--h:${hue(n)}">${esc(n[0])}</i>${esc(n)} <em>${cn[n]||0}</em></button>`).join('');
+ sr.innerHTML=`<button class="sc ${S.sf==='Todas'?'on':''}" data-sf="Todas">Todas</button>`+nm.map(n=>`<button class="sc ${n===S.sf?'on':''}" data-sf="${esc(n)}"><i style="--h:${hue(n)}">${esc(n[0])}</i>${esc(n)} <em>${cn[n]||0}</em></button>`).join('');
  const fc=(S.so!=='mix')+(S.pe>0)+S.un+!!S.fo,fn=$('#fn');fn.hidden=!fc;fn.textContent=fc;const f2=$('#fn2');f2.hidden=!fc;f2.textContent=fc;
  $('#tabs').innerHTML=cats.map(c=>`<button class="tab ${c===S.cat?'on':''}" data-c="${esc(c)}">${esc(c)}${c==='Descartadas'&&nDis?` <small class="cnt">${nDis}</small>`:''}${c==='Guardadas'&&Object.keys(S.fav).length?` <small class="cnt">${Object.keys(S.fav).length}</small>`:''}</button>`).join('');
  const ta=$('.tab.on'),tb=$('#tabs');if(ta)tb.scrollLeft=ta.offsetLeft-tb.offsetLeft-(tb.clientWidth-ta.offsetWidth)/2;
@@ -988,7 +978,6 @@ function moveCat(c,d){const i=S.cats.indexOf(c),j=i+d;if(i<0||j<0||j>=S.cats.len
 const catOf=a=>(S.sc&&S.sc[a.src])||a.cat||'General';
 const mapCats=()=>{S.sc={};S.src.forEach(x=>S.sc[x.name]=x.cat)};
 const srcKey=x=>n2(x.name).replace(/\s*\(\d+\)\s*$/,'').trim();
-function fixNames(){const seen={};let ch=0;S.src.forEach(x=>{const k=x.name.toLowerCase();if(seen[k]){seen[k]++;x.name=`${x.name} (${seen[k]})`;ch=1}else seen[k]=1});if(ch)ls.set('nz_src',S.src)}
 const syncCats=()=>{S.src.forEach(x=>{if(!S.cats.includes(x.cat))S.cats.push(x.cat)});if(!S.cats.includes('General'))S.cats.push('General');ls.set('nz_cats',S.cats)};
 const defCat=()=>S.cats.includes(S.cat)?S.cat:'General';
 function fillCats(sel){sel=sel||$('#ac').value||defCat();$('#ac').innerHTML=S.cats.map(c=>`<option ${c===sel?'selected':''}>${esc(c)}</option>`).join('')+'<option value="__new">+ Nueva categoría…</option>'}
@@ -1005,7 +994,7 @@ function ask(msg,o={}){return new Promise(res=>{const ov=document.createElement(
  ov.onclick=()=>end(false);d.onclick=e=>{const b=e.target.closest('[data-a]');if(b)end(b.dataset.a==='1')};addEventListener('keydown',kd,true);document.body.append(ov,d);d.querySelector(o.danger?'[data-a="0"]':'[data-a="1"]').focus()})}
 async function delCat(c){const k=S.src.filter(x=>x.cat===c).length;if(!await ask(k?`Sus ${k} fuentes pasarán a «General».`:'La categoría está vacía.',{title:`¿Eliminar «${c}»?`,ok:'Eliminar',danger:1}))return;
  S.src.forEach(x=>{if(x.cat===c)x.cat='General'});Object.values(S.fav).forEach(a=>{if(a.cat===c)a.cat='General'});bigSet('nz_fav',S.fav);S.cats=S.cats.filter(x=>x!==c);if(S.cat===c)S.cat='Todas';saveSrc(1);renderCats()}
-const saveSrc=nr=>{if(!nr)S.dirty=1;fixNames();syncCats();ls.set('nz_src',S.src);srcs()};
+const saveSrc=nr=>{if(!nr)S.dirty=1;syncCats();ls.set('nz_src',S.src);srcs()};
 const PN={1:'F',6:'A',7:'C',8:'V',9:'B'};
 function tab(n){[1,6,7,8,9].forEach(k=>{$('#t'+k).classList.toggle('on',n===k);$('#p'+PN[k]).hidden=n!==k});if(n>1)tabInit();try{$('#t'+n).scrollIntoView({block:'nearest',inline:'center'})}catch(e){}}
 const tabInit=()=>{lgDraw();$('#ver').textContent='Versión '+VER;segs();cdTxt();syncPf();mwUi();syncAz();bkTxt();tpUi();lsUi();csnTxt();swUi()};
@@ -1108,9 +1097,10 @@ $('#sl').addEventListener('click',async e=>{
  const tg=e.target.closest('[data-g]');if(tg){const v=S.src.filter(x=>x.cat===tg.dataset.g&&smatch(x)),on=!v.every(x=>x.on);v.forEach(x=>x.on=on);saveSrc();return}
  const b=e.target.closest('[data-d]'),ed=e.target.closest('[data-e]');
  if(b){const i=+b.dataset.d,n=S.src[i].name;if(!await ask('Dejarás de recibir sus noticias. Puedes volver a añadirla cuando quieras.',{title:`¿Eliminar «${n}»?`,ok:'Eliminar',danger:1}))return;S.src.splice(i,1);resetForm();saveSrc();toast('Fuente eliminada')}
- if(ed){const f=S.src[ed.dataset.e];resetForm();S.edit=+ed.dataset.e;$('#an').value=f.name;$('#au').value=f.url;$('#ac').value=f.cat;$('#ft').textContent='Editar fuente';$('#aa').textContent='Comprobar y guardar';$('#fr').hidden=false}
+ if(ed)editSrc(+ed.dataset.e)
 });
 const fm=(m,c='')=>{const e=$('#fm');e.hidden=!m;e.className='w fm '+c;e.textContent=m||''};
+function editSrc(i){const f=S.src[i];if(!f)return;resetForm();S.edit=i;$('#an').value=f.name;$('#au').value=f.url;$('#ac').value=f.cat;$('#ft').textContent='Editar fuente';$('#aa').textContent='Comprobar y guardar';$('#fr').hidden=false}
 function resetForm(){S.edit=null;S.pend=null;$('#ak').textContent='Guardar igualmente';$('#an').value=$('#au').value='';fillCats(defCat());$('#ft').textContent='Añadir fuente';$('#aa').textContent='Comprobar y añadir';$('#ak').hidden=true;$('#fr').hidden=true;fm('')}
 function commit(f,items){
  const ed=S.edit!==null;let x;
@@ -1118,7 +1108,7 @@ function commit(f,items){
  // Lo que ya se descargó al comprobar se usa tal cual: no hace falta pedirlo otra vez
  if(items&&items.length){const now=Date.now(),have=new Set(S.news.map(a=>a.id)),add=items.filter(a=>a.link&&now-a.date<120*864e5&&!have.has(a.id)).map(a=>({...a,got:now}));
   S.news=[...add,...S.news].sort((a,b)=>b.date-a.date);S.hl[x.id]=items.length;S.ft[x.id]=now;if(S.hr)delete S.hr[x.id];saveNews()}
- const msg=ed?'Fuente actualizada':'Fuente añadida';resetForm();saveSrc();if(!items)toast(msg);load();S.dirty=0;
+ const msg=ed?'Fuente actualizada':'Fuente añadida';resetForm();saveSrc();revUi();if(!items)toast(msg);load();S.dirty=0;
 }
 $('#aa').onclick=async()=>{
  const f={name:$('#an').value.trim(),url:$('#au').value.trim(),cat:$('#ac').value.trim()||'General'},o=S.src.filter((x,i)=>i!==S.edit);
@@ -1161,7 +1151,7 @@ function saveNews(){const now=Date.now(),full=n=>S.news.slice(0,n).map(a=>({...a
 async function deepen(){
  if(S.deep)return;S.deep=1;const b=$('#more');if(b){b.disabled=true;b.textContent='Buscando noticias más antiguas…'}
  const sc=S.src.filter(x=>x.on&&S.dp[x.id]!==99&&(S.cat==='Todas'||x.cat===S.cat)&&(S.sf==='Todas'||x.name===S.sf)),known=new Set(S.news.map(a=>a.id));let add=0;
- await pool(sc,8,async x=>{const pg=(S.dp[x.id]||1)+1,m=await viaProxies(addParam(x.url,'paged',pg),x).catch(()=>null),nw=(m||[]).filter(i=>i.link&&!known.has(i.id));
+ await pool(sc,8,async x=>{const pg=(S.dp[x.id]||1)+1,m=await viaProxy(addParam(x.url,'paged',pg),x).catch(()=>null),nw=(m||[]).filter(i=>i.link&&!known.has(i.id));
   if(!nw.length){S.dp[x.id]=99;return}nw.forEach(i=>known.add(i.id));S.dp[x.id]=pg;S.news.push(...nw);add+=nw.length});
  ls.set('nz_dp',S.dp);S.deep=0;
  if(add){S.news.sort((a,b)=>b.date-a.date);saveNews();S.lim+=add;toast(`+${add} noticias más antiguas`)}else toast('No hay más noticias disponibles en estas fuentes');
@@ -1191,15 +1181,15 @@ let py=-1,pd=0;
 addEventListener('touchstart',e=>{py=scrollY<=0&&!isOpen()&&e.touches.length===1?e.touches[0].clientY:-1;pd=0},{passive:true});
 addEventListener('touchmove',e=>{if(py<0)return;pd=Math.min(110,Math.max(0,e.touches[0].clientY-py));$('#ptr').style.cssText=`opacity:${Math.min(1,pd/70)};transform:translateY(${pd*.5}px) rotate(${pd*3}deg)`},{passive:true});
 addEventListener('touchend',()=>{if(py>=0&&pd>=70)refresh();py=-1;pd=0;$('#ptr').style.cssText=''},{passive:true});
-S.pf=ls.get('nz_pf',{th:ls.get('nz_theme','auto'),fs:1,rf:30});S.pf.dp=S.pf.dp||1;if(S.pf.sn===undefined)S.pf.sn=true;if(S.pf.rf&&S.pf.rf<30)S.pf.rf=30;if(!S.pf.q1){S.pf.dp=1;S.pf.q1=1;ls.set('nz_pf',S.pf)}if(history.state&&history.state.r)history.replaceState(null,'');
-fixNames();S.cats=ls.get('nz_cats',[]);syncCats();
+S.pf=ls.get('nz_pf',{th:'auto',fs:1,rf:30});S.pf.dp=S.pf.dp||1;if(S.pf.sn===undefined)S.pf.sn=true;if(S.pf.rf&&S.pf.rf<30)S.pf.rf=30;if(history.state&&history.state.r)history.replaceState(null,'');
+S.cats=ls.get('nz_cats',[]);syncCats();
 const ui=ls.get('nz_ui',{});S.cat=typeof ui.cat==='string'?ui.cat:'Todas';S.sf=typeof ui.sf==='string'?ui.sf:'Todas';S.so=['new','cov'].includes(ui.so)?ui.so:'mix';S.pe=[1,2,7].includes(+ui.pe)?+ui.pe:0;S.un=ui.un===true;S.fo=ui.fo===true;
 setTheme(S.pf.th==='dark'||S.pf.th==='light'?S.pf.th:(sysDark()?'dark':'light'));applyFs();applyPf();applyAccent();sched();
 render(true);
 (async()=>{try{navigator.storage.persist()}catch(e){}
  const tI=performance.now();const [n,f,r,dd,sn]=await Promise.all([bigGet('nz_news',[]),bigGet('nz_fav',{}),bigGet('nz_rd',[]),bigGet('nz_dis',[]),bigGet('nz_seen',[])]);S.tdb=Math.round(performance.now()-tI);
  S.news=Array.isArray(n)?n:[];{const g=Date.now();S.news.forEach(a=>{if(!a.got)a.got=g})} // noticias de antes de este cambio: cuentan como descargadas hoy, no se recorta nada aún
- S.news.forEach(a=>{if(MOJ.test(a.title||'')){a.title=fixMoj(a.title);a.snip=fixMoj(a.snip);a.html=fixMoj(a.html)}});S.fav=f&&typeof f==='object'?f:{};S.rd=new Set(Array.isArray(r)?r:[]);S.dis=new Map(Array.isArray(dd)?dd:[]);S.seen=new Map(Array.isArray(sn)?sn:[]);S.ready=1;snapUp();urlFix();S.t0=Math.round(performance.now());
+ S.news.forEach(a=>{if(MOJ.test(a.title||'')){a.title=fixMoj(a.title);a.snip=fixMoj(a.snip);a.html=fixMoj(a.html)}});S.fav=f&&typeof f==='object'?f:{};S.rd=new Set(Array.isArray(r)?r:[]);S.dis=new Map(Array.isArray(dd)?dd:[]);S.seen=new Map(Array.isArray(sn)?sn:[]);S.ready=1;snapUp();S.t0=Math.round(performance.now());
  render(!S.news.length);if(S.news.length)render();shareIn();if(FIRST)obOpen();else load()})();
 // Accesos directos del icono (?a=…) y «Compartir» desde otras apps (share_target: ?st=&sx=&su=)
 let SH=null;
@@ -1220,7 +1210,7 @@ $('#shf').onclick=async()=>{const s=SH;shClose();if(!s)return;
  const id='sh:'+s.url;S.fav[id]={id,title:(s.title||s.host).slice(0,300),link:s.url,date:Date.now(),html:'',snip:s.text.length>=30?s.text.slice(0,200):'',src:s.host,cat:'General',img:null};
  bigSet('nz_fav',S.fav);toast('Guardada para leer');render();
  // Completa título, resumen, imagen y medio leyendo la página a través del proxy propio
- try{const u=new URL(s.url),r=await timed(sg=>fetch(PX[0].f(u.href),{signal:sg}),8000);if(!r.ok)return;
+ try{const u=new URL(s.url),r=await pget(u.href,8000).catch(()=>null);if(!r)return;
   const d=new DOMParser().parseFromString((await r.text()).slice(0,4e5),'text/html'),mt=k=>((d.querySelector(`meta[property="${k}"],meta[name="${k}"]`)||{}).content||'').trim();
   const f=S.fav[id];if(!f)return;const t=(mt('og:title')||d.title||'').trim(),ds=mt('og:description')||mt('description'),im=mt('og:image'),sn=mt('og:site_name');
   if(t&&!s.title)f.title=t.slice(0,300);if(ds){f.snip=ds.slice(0,200);f.html='<p>'+esc(ds)+'</p>'}
@@ -1291,7 +1281,7 @@ function azParse(a){const t=/^Aviso\.\s*Nivel\s+(\S+?)\.\s*(.+?)\.\s*(.+)$/.exec
  return{lv:n2(t[1]),ph:t[2],zone:t[3],s:ts(d[1],d[2],d[3],d[4],d[5],d[6]),e:ts(d[7],d[8],d[9],d[10],d[11],d[12])}}
 function azLog(o){const r=LG.runs[0];if(r&&Date.now()-r.t<12e4){r.aemet=o;lgSave();lgDraw()}else log('Avisos AEMET: '+o.t,o.ok?'ok':'err')}
 async function loadAlerts(force){const c=S.pf.az;if(!c){S.alerts=[];return}if(!force&&Date.now()-(S.alT||0)<6e5)return;S.alT=Date.now();
- try{const it=await viaProxies(`https://www.aemet.es/documentos_d/eltiempo/prediccion/avisos/rss/CAP_AFAC${c}_RSS.xml`,{id:'aemet',name:'AEMET',cat:'Avisos'});
+ try{const it=await viaProxy(`https://www.aemet.es/documentos_d/eltiempo/prediccion/avisos/rss/CAP_AFAC${c}_RSS.xml`,{id:'aemet',name:'AEMET',cat:'Avisos'});
   const raw=it.filter(a=>/^Aviso\./.test(a.title)),ok=raw.map(azParse).filter(Boolean);S.alerts=ok;S.alOk=Date.now();
   azLog({ok:raw.length===ok.length,t:`${ok.length} ${ok.length===1?'aviso':'avisos'} para tu zona`+(raw.length>ok.length?` (${raw.length-ok.length} con formato no reconocido)`:'')})}
  catch(e){azLog({ok:false,t:'no se pudieron consultar'})}
@@ -1353,7 +1343,7 @@ function bkClean(j){if(!j||j.app!=='noticiahz'||!j.data||typeof j.data!=='object
 function bkBanner(){const now=Date.now(),lb=ls.get('nz_lb',0),ref=lb||ls.get('nz_fu',0),due=!!ref&&now-ref>30*864e5&&(ls.get('nz_bz',0)||0)<now&&$('#azb').hidden&&$('#ib').hidden;$('#bkb').hidden=!due;if(due)$('#bkm').textContent=lb?`Hace ${Math.floor((now-lb)/864e5)} días que no haces una copia de seguridad.`:'Todavía no has hecho ninguna copia de seguridad.'}
 $('#bkg').onclick=()=>{$('#bkb').hidden=true;$('#bx').click()};
 $('#bkz').onclick=()=>{ls.set('nz_bz',Date.now()+14*864e5);$('#bkb').hidden=true};
-const bkTxt=()=>{const t=ls.get('nz_lb',0);$('#bkt').textContent=`${Object.keys(S.fav).length} guardadas · ${S.rd.size} leídas · ${S.dis.size} descartadas · `+(t?'última copia '+ago(t).toLowerCase():'sin copias todavía')};
+const bkTxt=()=>{const t=ls.get('nz_lb',0);const nd=[...S.dis.values()].filter(v=>v>0).length;$('#bkt').textContent=`${pl(Object.keys(S.fav).length,'guardada')} · ${pl(S.rd.size,'leída')} · ${pl(nd,'descartada')} · `+(t?'última copia '+ago(t).toLowerCase():'sin copias todavía')};
 $('#bx').onclick=()=>{const j={app:'noticiahz',v:1,exported:new Date().toISOString(),data:{src:S.src,cats:S.cats,pf:S.pf,mw:MW.list,tp:TP.list,sm:SM.m,seen:[...S.seen],ui:{cat:S.cat,sf:S.sf,so:S.so,pe:S.pe,un:S.un,fo:!!S.fo},fav:Object.values(S.fav).map(a=>({...a,_t:undefined,also:undefined,nw:undefined})),rd:[...S.rd],dis:[...S.dis],lr:S.lr||{}}};
  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(j)],{type:'application/json'}));a.download=`noticiahz-copia-${new Date().toISOString().slice(0,10)}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),4e3);ls.set('nz_lb',Date.now());bkTxt();toast('Copia de seguridad descargada')};
 async function bkApply(r){
@@ -1412,9 +1402,6 @@ function watchSeen(){if(sio)sio.disconnect();sT.forEach(clearTimeout);sT.clear()
 const csnTxt=()=>{$('#csn small').textContent=`${S.seen.size} noticias vistas`};
 $('#csn').onclick=()=>{const old=[...S.seen];if(!old.length)return toast('No hay noticias vistas');S.seen.clear();bigSet('nz_seen',[]);snapUp();render();csnTxt();undoFn('Historial de vistas borrado',()=>{old.forEach(([k,v])=>S.seen.set(k,v));bigSet('nz_seen',old);snapUp();render();csnTxt()})};
 // Direcciones conocidas que redirigen a otro sitio (el navegador no puede seguir esa redirección a través del proxy)
-const SN={402:'requiere pago o ha superado su límite',403:'el sitio bloquea al proxy',404:'no existe esa dirección',429:'demasiadas peticiones',500:'error del propio sitio',503:'sitio caído','Failed to fetch':'redirige a otro sitio'};
-const URLFIX={'https://naukas.com/feed/':'https://feeds.feedburner.com/naukas','https://e00-marca.uecdn.es/rss/portada.xml':'https://e00-xlk-ue-marca.uecdn.es/rss/googlenews/portada.xml'};
-function urlFix(){let n=0;S.src.forEach(x=>{const y=URLFIX[x.url];if(y&&!S.src.some(z=>z.url===y)){x.url=y;n++;log(`${x.name}: dirección actualizada → ${y}`,'ok')}});if(n){ls.set('nz_src',S.src);S.ft={}}}
 const favMark=(c,on)=>{let m=c.querySelector('.fvm');if(!on){if(m)m.remove();return}
  if(!m){c.querySelector('.meta').insertAdjacentHTML('beforeend','<svg class="i fvm" aria-label="Guardada"><use href="#b"/></svg>');m=c.querySelector('.fvm')}
  m.classList.remove('pop');void m.getBoundingClientRect();m.classList.add('pop')};
@@ -1472,11 +1459,12 @@ function revUi(){const now=Date.now(),m=new Map();S.src.forEach(x=>m.set(x.name,
  const srt={p:(a,b)=>a.x.name.localeCompare(b.x.name),i:(a,b)=>a.last-b.last,s:(a,b)=>b.n30-a.n30,m:(a,b)=>a.x.name.localeCompare(b.x.name),t:(a,b)=>a.x.name.localeCompare(b.x.name)};
  const list=all.filter(F[rvF]).sort(srt[rvF]);
  const ch=(t,bad)=>`<span class="chip${bad?' bad':''}">${t}</span>`;
- const rows=list.slice(0,rvN).map(r=>{const x=r.x;return`<div class="row"><div><div class="nl"><b>${esc(x.name)}</b>${r.bad?ch('No carga',1):''}${r.mu?ch('Silenciada'):''}${x.on?'':ch('Desactivada')}</div>${r.bad&&S.hr&&S.hr[x.id]?`<small class="rsn">${esc(S.hr[x.id][0].toUpperCase()+S.hr[x.id].slice(1))}</small>`:''}<small class="rvm">${esc(x.cat)} · ${r.n30} en 30 d · última ${r.last?ago(r.last).toLowerCase():'sin noticias'}<br>${r.op} abiertas · ${r.sv} guardadas · ${r.ds} descartadas</small></div>${r.mu?`<button class="rvb" data-ru="${esc(x.name)}">Reactivar</button>`:''}<label class="sw"><input type="checkbox" data-rt="${esc(x.id)}" ${x.on?'checked':''} aria-label="Activar ${esc(x.name)}"><span></span></label><button class="gb dg" data-rx="${esc(x.id)}" aria-label="Eliminar"><svg class="i"><use href="#t"/></svg></button></div>`}).join('');
+ const rows=list.slice(0,rvN).map(r=>{const x=r.x;return`<div class="row"><div><div class="nl"><b>${esc(x.name)}</b>${r.bad?ch('No carga',1):''}${r.mu?ch('Silenciada'):''}${x.on?'':ch('Desactivada')}</div>${r.bad&&S.hr&&S.hr[x.id]?`<small class="rsn">${esc(S.hr[x.id][0].toUpperCase()+S.hr[x.id].slice(1))}</small>`:''}<small class="rvm">${esc(x.cat)} · ${r.n30} en 30 d · última ${r.last?ago(r.last).toLowerCase():'sin noticias'}<br>${r.op} abiertas · ${r.sv} guardadas · ${r.ds} descartadas</small></div>${r.mu?`<button class="rvb" data-ru="${esc(x.name)}">Reactivar</button>`:''}<label class="sw"><input type="checkbox" data-rt="${esc(x.id)}" ${x.on?'checked':''} aria-label="Activar ${esc(x.name)}"><span></span></label><button class="gb" data-re="${esc(x.id)}" aria-label="Editar y comprobar"><svg class="i"><use href="#p"/></svg></button><button class="gb dg" data-rx="${esc(x.id)}" aria-label="Eliminar"><svg class="i"><use href="#t"/></svg></button></div>`}).join('');
  $('#rvl').innerHTML=list.length?`<div class="gc">${rows}</div>`+(list.length>rvN?`<div class="more" style="padding-top:12px"><button class="btn o" id="rvm" style="margin:0">Ver más (${list.length-rvN})</button></div>`:''):'<p class="hint">Nada que mostrar aquí.</p>'}
 $('#rvf').onclick=e=>{const b=e.target.closest('[data-f]');if(b){rvF=b.dataset.f;rvN=40;revUi()}};
 $('#rvl').addEventListener('change',e=>{const id=e.target.dataset.rt;if(!id)return;const x=S.src.find(z=>z.id===id);if(x){x.on=e.target.checked;saveSrc();revUi()}});
 $('#rvl').addEventListener('click',async e=>{
+ const re=e.target.closest('[data-re]');if(re){editSrc(S.src.findIndex(z=>z.id===re.dataset.re));return}
  const u=e.target.closest('[data-ru]');if(u){delete SM.m[u.dataset.ru];ls.set('nz_sm',SM.m);revUi();render();return}
  const d=e.target.closest('[data-rx]');if(d){const i=S.src.findIndex(z=>z.id===d.dataset.rx);if(i<0||!await ask('Dejarás de recibir sus noticias.',{title:`¿Eliminar «${S.src[i].name}»?`,ok:'Eliminar',danger:1}))return;S.src.splice(i,1);saveSrc();revUi();toast('Fuente eliminada');return}
  if(e.target.closest('#rvm')){rvN+=40;revUi()}});
