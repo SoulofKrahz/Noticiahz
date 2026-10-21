@@ -28,12 +28,13 @@ async function run(browser, label, viewport, mobile) {
     const rel = decodeURIComponent(new URL(u).pathname.slice(1));
     if (rel.startsWith('p/')) {
       const host = rel.split('/')[1];
-      if (/news\.google/.test(host) && /q=rap/i.test(u)) return r.fulfill({ status: 503, headers: { 'X-Nz': '1' }, body: 'sorry' });
+      if (/news\.google/.test(host) && /q=(rap|site)/i.test(u)) return r.fulfill({ status: 503, headers: { 'X-Nz': '1' }, body: 'sorry' });
+      if (/bing\.com/.test(host) && /q=site/i.test(u)) { const h = (decodeURIComponent(u).match(/site:([a-z0-9.-]+)/i) || [])[1] || ''; return r.fulfill({ status: 200, headers: { 'X-Nz': '1' }, contentType: 'application/rss+xml', body: `<?xml version="1.0"?><rss version="2.0"><channel>${/bingok/.test(h) ? [0, 1, 2].map(i => `<item><title>Noticia ${i} de ${h}</title><link>http://www.bing.com/news/apiclick.aspx?ref=FexRss&amp;url=https%3a%2f%2f${h}%2fn%2f${i}&amp;c=1</link><pubDate>${new Date(Date.now() - i * 36e5).toUTCString()}</pubDate><description>Resumen ${i}</description></item>`).join('') + '<item><title>Otra web</title><link>http://www.bing.com/news/apiclick.aspx?url=https%3a%2f%2fajena.es%2fx</link></item>' : ''}</channel></rss>` }) }
       if (/bing\.com/.test(host)) return r.fulfill({ status: 200, headers: { 'X-Nz': '1' }, contentType: 'application/rss+xml', body: `<?xml version="1.0"?><rss version="2.0" xmlns:News="https://www.bing.com/news/search?q=x&amp;format=rss"><channel><item><title>Nuevo disco de rap</title><link>http://www.bing.com/news/apiclick.aspx?ref=FexRss&amp;url=https%3a%2f%2fwww.rapbing.es%2fdisco&amp;c=1</link><News:Source>Rap Bing</News:Source></item></channel></rss>` });
       if (/news\.google/.test(host) && !/site(%3A|:)/i.test(u)) return r.fulfill({ status: 200, headers: { 'X-Nz': '1' }, contentType: 'application/rss+xml', body: gn(u) });
       if (/aemet|news\.google/.test(host)) return r.fulfill({ status: 404, headers: { 'X-Nz': '1' }, body: 'no' });
       HITS[host] = (HITS[host] || 0) + 1;
-      if (/mondosonoro|roto\.test/.test(host)) return r.fulfill({ status: 403, headers: { 'X-Nz': '1' }, body: 'no' });
+      if (/mondosonoro|roto\.test|bingok/.test(host)) return r.fulfill({ status: 403, headers: { 'X-Nz': '1' }, body: 'no' });
       if (/cuota\.test/.test(host)) return r.fulfill({ status: 429, body: 'error code: 1027' });
       if (/viejo\.test/.test(host)) return r.fulfill({ status: 200, contentType: 'application/rss+xml', body: rss(host).replace(/<pubDate>[^<]*/g, '<pubDate>' + new Date(Date.now() - 400 * 864e5).toUTCString()) });
       return r.fulfill({ status: 200, contentType: 'application/rss+xml', body: rss(host) });
@@ -102,6 +103,10 @@ async function run(browser, label, viewport, mobile) {
   ok(ro.open && /No carga: el sitio bloquea al proxy \(403\)/.test(ro.msg) && ro.ak === 'Guardar igualmente', `una fuente que falla no cierra la ventana y dice por qué (${ro.msg.slice(0, 60)})`);
   const vi = await tryAdd('Viejo', 'https://viejo.test/feed/');
   ok(vi.open && /warn/.test(vi.cls) && /lo último que ha publicado es del/.test(vi.msg), `una web que no publica avisa en vez de cerrarse (${vi.msg.slice(0, 70)})`);
+  const sb = await tryAdd('SoloBing', 'https://www.bingok.test/');
+  ok(sb.open && /Bing Noticias/.test(sb.msg) && sb.ak === 'Guardar así', `si la web y Google fallan, ofrece cargarla vía Bing (${sb.msg.slice(0, 60)})`);
+  const gb = await p.evaluate(async () => { const a = await getFeed({ name: 'GB', cat: 'Local', url: 'https://news.google.com/rss/search?q=site:bingok.test+when:3d&hl=es&gl=ES&ceid=ES:es' }); return a ? { n: a.length, real: a.every(x => /^https:\/\/bingok\.test\//.test(x.link)) } : null });
+  ok(gb && gb.n === 3 && gb.real, `una fuente de Google News bloqueada carga vía Bing con los enlaces reales (${JSON.stringify(gb)})`);
   const h0 = HITS['bueno.test'] || 0, bu = await tryAdd('Bueno', 'https://bueno.test/feed/'); await idle();
   ok(!bu.open && (HITS['bueno.test'] - h0) === 1 && await p.evaluate(() => S.news.some(a => a.src === 'Bueno')), `una fuente buena se añade con lo ya descargado (${HITS['bueno.test'] - h0} descarga)`);
   await p.evaluate(() => { S.src = S.src.filter(x => x.name !== 'Bueno'); saveSrc() });

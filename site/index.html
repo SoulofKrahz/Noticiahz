@@ -652,7 +652,7 @@ async function stUi(){const el=$('#stg');if(!el)return;try{const st=navigator.st
  catch(x){el.textContent='Este navegador no informa del almacenamiento.'}}
 function log(m,c=''){if(LG.run)LG.run.notes.push({m,c});else{LG.evs.unshift({t:Date.now(),m,c});LG.evs=LG.evs.slice(0,30);lgSave();lgDraw()}}
 const cfReset=()=>{const d=new Date();d.setUTCHours(24,0,0,0);return d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})};
-function why(h){const f=S.nf&&S.nf[h],s=f&&f.s;if(s===undefined)return'no respondió';if(s==='cf')return`el proxy no está disponible (posible límite diario gratuito de Cloudflare; se restablece a las ${cfReset()})`;
+function why(h){const f=S.nf&&S.nf[h],s=f&&f.s;if(s===undefined)return'no respondió';if(s===503&&h==='news.google.com')return'Google News bloquea al proxy (503)';if(s==='cf')return`el proxy no está disponible (posible límite diario gratuito de Cloudflare; se restablece a las ${cfReset()})`;
  const T={402:'pide pago o ha superado su límite (402)',403:'el sitio bloquea al proxy (403)',404:'esa dirección ya no existe (404)',410:'esa dirección ya no existe (410)',429:'demasiadas peticiones, lo limita el sitio (429)',500:'error del propio sitio (500)',502:'el sitio no respondió bien (502)',503:'sitio caído o en mantenimiento (503)',504:'el sitio tardó demasiado (504)',520:'la web respondió algo inesperado (520)',521:'la web está caída (521)',522:'no se pudo conectar con la web: no existe o no responde (522)',523:'no se encuentra la web (523)',524:'la web tardó demasiado (524)',525:'fallo de conexión segura con la web (525)',526:'certificado de la web no válido (526)',530:'no se encuentra la web: el dominio no existe o está mal escrito (530)'};
  if(T[s])return T[s];if(typeof s==='number')return`error HTTP ${s}`;
  if(/abort/i.test(s))return'tardó demasiado en responder';if(s==='Failed to fetch')return'no se pudo conectar';if(/XML no válido/.test(s))return'la dirección no devuelve un feed válido';if(/Sin artículos|sin titulares/i.test(s))return'no devuelve noticias (puede que la dirección sea una web y no un feed)';return s}
@@ -718,10 +718,10 @@ function parse(xml,src){
  return nodes.slice(0,300).map(n=>{
   const html=t(n,'content:encoded','content','description','summary','media:description');
   const l=[...n.getElementsByTagName('link')].find(x=>!x.getAttribute('rel')||x.getAttribute('rel')==='alternate');
-  const link=((l&&(l.getAttribute('href')||l.textContent))||t(n,'guid')).trim();
+  const link=unBing(((l&&(l.getAttribute('href')||l.textContent))||t(n,'guid')).trim());
   const g1=x=>n.getElementsByTagName(x)[0],ok=x=>x&&(/thumbnail/i.test(x.tagName)||/image|\.(jpe?g|png|webp|gif)/i.test((x.getAttribute('type')||'')+' '+(x.getAttribute('medium')||'')+' '+(x.getAttribute('url')||''))),m=[g1('media:content'),g1('media:thumbnail'),g1('enclosure')].find(ok);
   let ti=t(n,'title');if(/^https?:\/\/news\.google\.com\//.test(link))ti=ti.replace(/\s+-\s+[^-]{2,60}$/,'');
-  return mk(src,ti,link,t(n,'pubDate','published','updated','dc:date'),/^https?:\/\/news\.google\.com\//.test(link)?'':html,m&&m.getAttribute('url'));
+  const bi=!m&&g1('News:Image');return mk(src,ti,link,t(n,'pubDate','published','updated','dc:date'),/^https?:\/\/news\.google\.com\//.test(link)?'':html,m?m.getAttribute('url'):bi?bi.textContent.trim():'');
  });
 }
 // Sitemap de noticias (el que los periódicos publican para Google): titular, fecha e imagen de cada noticia
@@ -767,6 +767,8 @@ async function check(src,step=()=>{}){
  step('Último intento: Google News…');
  const h=u.hostname.replace(/^www\./,'');
  if(r=await any([`https://news.google.com/rss/search?q=site:${h}+when:7d&hl=es&gl=ES&ceid=ES:es`],'google'))return r;
+ step('Último intento: Bing Noticias…');
+ try{const items=await viaBing(h,src);return{items,url:bingU('site:'+h),via:'bing'}}catch(e){}
  return{fail:1,why:why0};
 }
 async function fetchTxt(x,ms=8000){return(await(await pget(x,ms)).text()).slice(0,6e6)}
@@ -802,16 +804,25 @@ async function discover(u,deep){const pages=[u.origin+'/'];if(deep&&u.pathname.l
    a.sort((x,y)=>(P.test(y.t+y.h)?1:0)-(P.test(x.t+x.h)?1:0)||x.h.length-y.h.length);out.push(...a.slice(0,10).map(o=>o.h))}
  }catch(e){}}
  return[...new Set(out)].filter(h=>/^https:/.test(h)&&!/comment|comentario/i.test(h))}
-async function heal(x){const hh=ls.get('nz_hh3',{});if(Date.now()-(hh[x.id]||0)<864e5)return null;hh[x.id]=Date.now();ls.set('nz_hh3',hh);
+async function heal(x){if(searchSite(x.url))return null;const hh=ls.get('nz_hh3',{});if(Date.now()-(hh[x.id]||0)<864e5)return null;hh[x.id]=Date.now();ls.set('nz_hh3',hh);
  let u;try{u=new URL(x.url)}catch{return null}
  const disc=await discover(u);
  const alt=u.pathname.length>1?(u.pathname.endsWith('/')?u.pathname.slice(0,-1):u.pathname+'/')+u.search:'',
   paths=[alt,...FEEDP].filter(Boolean).map(q=>u.origin+q),
   c=[...new Set([...disc,...paths])].filter(y=>y!==x.url);
  try{return await Promise.any(c.map(async y=>({url:y,items:await viaProxy(y,x,8000,false)})))}catch{return null}}
+// Bing Noticias como alternativa a Google News, que bloquea (503) las peticiones desde Cloudflare
+const bingU=q=>`https://www.bing.com/news/search?q=${encodeURIComponent(q)}&format=rss&setmkt=es-ES&setlang=es&cc=ES`;
+function unBing(l){if(/bing\.com\/news\/apiclick/i.test(l))try{return new URL(l).searchParams.get('url')||l}catch(e){}return l}
+const hostIs=(u,h)=>{const b=baseHost(u);return!!b&&(b===h||b.endsWith('.'+h))};
+// Web de una búsqueda «site:…» de Google News o de Bing (si la dirección de la fuente es una de ellas)
+function searchSite(u){try{const x=new URL(u);if(!/(^|\.)(news\.google|bing)\.com$/.test(x.hostname))return'';const m=(x.searchParams.get('q')||'').match(/site:([a-z0-9.-]+)/i);return m?m[1].replace(/^www\./,'').toLowerCase():''}catch(e){return''}}
+// Noticias de una web vía Bing: primero «site:web»; si Bing no lo entiende, buscando el dominio. Solo se quedan las de esa web.
+async function viaBing(h,src){for(const q of['site:'+h,h]){try{const it=(await viaProxy(bingU(q),src,12000,false)).filter(a=>hostIs(a.link,h));if(it.length)return it}catch(e){}}throw Error('Bing no tiene noticias de '+h)}
 async function getFeed(src){
- try{return await viaProxy(src.url,src)}catch(e){return null}
-}
+ const site=searchSite(src.url),gn=site&&/news\.google\.com/.test(src.url);
+ try{let a=await viaProxy(src.url,src);if(site&&!gn)a=a.filter(x=>hostIs(x.link,site));return a}
+ catch(e){if(gn&&(e.st===503||e.st===429||e.name==='ParseError'||/RSS/.test(e.message)))try{const a=await viaBing(site,src);(S.vb=S.vb||new Set()).add(src.name);return a}catch(x){}return null}}
 
 const spinAll=on=>{['#rf','#b-rf'].forEach(q=>$(q).classList.toggle('spin',on));document.body.classList.toggle('ld',on)};
 const rlp={set textContent(v){document.querySelectorAll('.rft').forEach(e=>e.textContent=v)}};
@@ -846,6 +857,7 @@ async function loadRun(){
  let added=0;const nowG=Date.now();S.news.forEach(a=>{const o=old.get(a.id);if(o){a.nw=o.nw;if(o.got)a.got=o.got}else{a.got=a.got||nowG;if(old.size){a.nw=1;added++}}});if(added)S.nwPending=1;S.nw=S.news.filter(a=>a.nw).length;badge();
  S.hr=S.hr||{};todo.forEach(x=>{if(S.hl[x.id]===0)S.hr[x.id]=why(host(x.url));else delete S.hr[x.id]});
  const bad=on.filter(x=>S.hl[x.id]===0).length;
+ if(S.vb&&S.vb.size){log(`Google News bloquea al proxy; cargadas vía Bing Noticias: ${[...S.vb].join(', ')}`,'ok');S.vb.clear()}
  if(LG.run){const r=LG.run;r.ok=todo.filter(x=>S.hl[x.id]>0).length;r.items=fresh.length;r.added=added;r.dur=Date.now()-r.t;
   r.fails=todo.filter(x=>!(S.hl[x.id]>0)).map(x=>({n:x.name,h:host(x.url),r:why(host(x.url))}));
   r.paused=S.bo?S.src.filter(x=>S.bo[x.id]>Date.now()&&!r.fails.some(f=>f.n===x.name)).map(x=>x.name):[];r.fails.forEach(f=>{const x=S.src.find(z=>z.name===f.n);if(x&&S.bo&&S.bo[x.id]>Date.now())f.r+=' · en pausa 6 h'});
@@ -1146,11 +1158,11 @@ $('#aa').onclick=async()=>{
  const r=await check(f,m=>{if(tk===S.ck)fm(m)});
  if(tk!==S.ck)return; // se canceló o se abrió otra fuente mientras tanto
  b.disabled=false;b.textContent=lbl;
- if(r.fail){S.pend={f};akSet('Guardar igualmente');return fm(`No carga: ${r.why}. He probado también las rutas de feed habituales, los enlaces de la web, el sitemap de noticias y Google News, sin éxito. Revisa la dirección; si sabes que es correcta, puedes guardarla igualmente.`,'err')}
+ if(r.fail){S.pend={f};akSet('Guardar igualmente');return fm(`No carga: ${r.why}. He probado también las rutas de feed habituales, los enlaces de la web, el sitemap de noticias, Google News y Bing Noticias, sin éxito. Revisa la dirección; si sabes que es correcta, puedes guardarla igualmente.`,'err')}
  if(r.url!==f.url&&o.some(x=>x.url===r.url))return fm(`El feed de esa web ya está en tu lista (${o.find(x=>x.url===r.url).name}).`,'err');
  const found=r.url!==f.url,newest=Math.max(...r.items.map(a=>a.date)),age=Date.now()-newest,last=new Date(newest).toLocaleDateString('es-ES',{day:'numeric',month:'long',year:'numeric'});
  f.url=r.url;const n=r.items.length;
- const how=r.via==='google'?`Solo carga a través de Google News: ${n} titulares de los últimos días, sin imagen ni resumen.`:r.via==='sitemap'?`Solo carga a través de su sitemap de noticias: ${n} titulares, sin resumen.`:'';
+ const how=r.via==='google'?`Solo carga a través de Google News: ${n} titulares de los últimos días, sin imagen ni resumen.`:r.via==='bing'?`Solo carga a través de Bing Noticias: ${n} titulares recientes, con resumen corto.`:r.via==='sitemap'?`Solo carga a través de su sitemap de noticias: ${n} titulares, sin resumen.`:'';
  if(age>45*864e5){S.pend={f,items:r.items};akSet('Guardar igualmente');return fm(`El feed funciona (${n} noticias), pero lo último que ha publicado es del ${last}. ${age>120*864e5?'Son demasiado antiguas para mostrarse, por eso no ves nada suyo.':'Publica muy poco.'} No es un fallo de la dirección: esta web apenas publica.`,'warn')}
  if(how){S.pend={f,items:r.items};akSet('Guardar así');return fm(`${how} ${found?'No he encontrado un feed propio.':''} Última noticia: ${last}.`,'warn')}
  commit(f,r.items);
