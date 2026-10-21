@@ -13,6 +13,9 @@ const fails = [];
 const ok = (cond, msg) => { if (!cond) fails.push(msg); console.log((cond ? '  ✓ ' : '  ✗ ') + msg); };
 
 const HITS = {};
+// Google News simulado para «Descubrir»: medios nuevos y uno que ya está en las fuentes (El País)
+const gn = u => { const q = decodeURIComponent((u.match(/q=([^&+]*)/) || [])[1] || 'x'); const M = [['https://www.mallorcadiario.com', 'mallorcadiario.com'], ['https://www.cronicabalear.es', 'Crónica Balear'], ['https://elpais.com', 'El País'], ['https://hiphopgoldenage.es', 'Hip Hop Golden Age']];
+  return `<?xml version="1.0"?><rss version="2.0"><channel>${M.map((m, i) => `<item><title>${q} titular ${i} - ${m[1]}</title><link>https://news.google.com/rss/articles/${i}</link><source url="${m[0]}">${m[1]}</source></item>`).join('')}</channel></rss>` };
 async function run(browser, label, viewport, mobile) {
   console.log(`\n== ${label}`);
   const ctx = await browser.newContext({ viewport, isMobile: mobile, hasTouch: mobile, serviceWorkers: 'block' });
@@ -25,6 +28,7 @@ async function run(browser, label, viewport, mobile) {
     const rel = decodeURIComponent(new URL(u).pathname.slice(1));
     if (rel.startsWith('p/')) {
       const host = rel.split('/')[1];
+      if (/news\.google/.test(host) && !/site(%3A|:)/i.test(u)) return r.fulfill({ status: 200, headers: { 'X-Nz': '1' }, contentType: 'application/rss+xml', body: gn(u) });
       if (/aemet|news\.google/.test(host)) return r.fulfill({ status: 404, headers: { 'X-Nz': '1' }, body: 'no' });
       HITS[host] = (HITS[host] || 0) + 1;
       if (/mondosonoro|roto\.test/.test(host)) return r.fulfill({ status: 403, headers: { 'X-Nz': '1' }, body: 'no' });
@@ -99,6 +103,14 @@ async function run(browser, label, viewport, mobile) {
   const h0 = HITS['bueno.test'] || 0, bu = await tryAdd('Bueno', 'https://bueno.test/feed/'); await idle();
   ok(!bu.open && (HITS['bueno.test'] - h0) === 1 && await p.evaluate(() => S.news.some(a => a.src === 'Bueno')), `una fuente buena se añade con lo ya descargado (${HITS['bueno.test'] - h0} descarga)`);
   await p.evaluate(() => { S.src = S.src.filter(x => x.name !== 'Bueno'); saveSrc() });
+  // 6c) Descubrir fuentes: propone medios nuevos de Google News y no repite los que ya tienes
+  const dsc = await p.evaluate(async () => { document.querySelector('#sgF [data-s="d"]').click(); document.querySelector('#dsb').click(); await new Promise(r => setTimeout(r, 1500));
+    const names = [...document.querySelectorAll('#dsr .dsi b')].map(b => b.textContent); return { names, vis: !document.querySelector('#pD').hidden, tabs: [...document.querySelectorAll('#sgF button')].every(b => b.scrollWidth <= b.clientWidth + 1) } });
+  ok(dsc.vis && dsc.names.includes('Hip Hop Golden Age') && !dsc.names.includes('El País') && !dsc.names.includes('Crónica Balear') && dsc.tabs, `Descubrir propone medios nuevos sin repetir los tuyos (${dsc.names.join(', ')})`);
+  const dad = await p.evaluate(async () => { document.querySelector('[data-dsadd="hiphopgoldenage.es"]').click(); await new Promise(r => setTimeout(r, 1500));
+    return { added: S.src.some(x => x.name === 'Hip Hop Golden Age'), gone: ![...document.querySelectorAll('#dsr .dsi b')].some(b => b.textContent === 'Hip Hop Golden Age'), form: document.querySelector('#fr').hidden } });
+  ok(dad.added && dad.gone && dad.form, `Añadir desde Descubrir comprueba, añade y lo quita de la lista (${JSON.stringify(dad)})`);
+  await p.evaluate(() => { S.src = S.src.filter(x => x.name !== 'Hip Hop Golden Age'); saveSrc(); document.querySelector('#sgF [data-s="l"]').click() });
   // 6b) El color elegido cambia el manifest (icono de la app instalada); un color libre usa el más parecido
   const ico = await p.evaluate(async () => { const m = () => document.querySelector('link[rel=manifest]').getAttribute('href'); const r = []; document.querySelector('#sws .swc[data-i="2"]').click(); r.push(m()); const ok = (await fetch(m())).ok && (await fetch('ic/azul-mask.png')).ok; r.push(nzIco(200, .9), nzIco(10, .1), nzIco(150, .8)); document.querySelector('#sws .swc[data-i="0"]').click(); r.push(m(), ok); return r });
   ok(ico[0] === 'manifest-azul.webmanifest' && ico[1] === 'azul' && ico[2] === 'grafito' && ico[3] === '' && ico[4] === 'manifest.webmanifest' && ico[5], `el icono de la app sigue al color (${ico.join(', ')})`);

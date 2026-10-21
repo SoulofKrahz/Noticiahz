@@ -293,7 +293,7 @@ body.qs .qd{display:flex}.qd input{flex:1;min-width:0;padding:10px 12px;border:1
 .amh{padding:2px 2px 12px}.amh b{font:600 17px/1.3 Newsreader,Georgia,serif;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}.amh small{color:var(--mu);font-size:13px}
 .amr{display:flex;gap:8px;margin-bottom:14px}.amr button{flex:1;padding:12px 6px;border:1px solid var(--bd);border-radius:12px;background:var(--bg);font-weight:600;font-size:13.5px}.amr button:active{background:var(--tint);color:var(--em)}
 .amt{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:12.5px;font-weight:600;color:var(--mu);padding:2px 2px 8px}.am .seg button{flex:none;padding:6px 12px;font-size:12.5px}.am .af{padding-bottom:4px}
-#rvf{overflow-x:auto;scrollbar-width:none}#rvf button{flex:none;white-space:nowrap;padding:9px 12px}.row small.rvm{white-space:normal}.row small.rsn{color:#d23c41;white-space:normal}.rvb{font-size:12.5px;font-weight:600;color:var(--em);padding:6px 10px;border:1px solid var(--em2);border-radius:99px;white-space:nowrap}
+#rvf{overflow-x:auto;scrollbar-width:none}#rvf button{flex:none;white-space:nowrap;padding:9px 12px}.row small.rvm{white-space:normal}.dsh{margin:18px 4px 8px;font:600 13px Inter,sans-serif;color:var(--mu);text-transform:uppercase;letter-spacing:.04em}.dsi{align-items:flex-start}.dse{display:block;margin-top:6px;font-size:13px;line-height:1.35;color:var(--tx);text-decoration:none;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.dse::before{content:'· ';color:var(--mu)}.dsbt{display:flex;flex-direction:column;gap:4px;align-items:stretch;flex:none}.dsbt .btn{margin:0;padding:8px 14px}.dsbt .tb{justify-content:center}.row small.rsn{color:#d23c41;white-space:normal}.rvb{font-size:12.5px;font-weight:600;color:var(--em);padding:6px 10px;border:1px solid var(--em2);border-radius:99px;white-space:nowrap}
 .lgi rect{fill:var(--em2)}.lgi .n{stroke:var(--lgn,#06150f)}.lgi .h{stroke:var(--lgh,none)}
 .sws{display:flex;flex-wrap:wrap;gap:12px;margin-top:14px}.swc{width:40px;height:40px;border-radius:50%;border:2px solid var(--card);box-shadow:0 0 0 1px var(--bd);flex:none}.swc.on{box-shadow:0 0 0 2px var(--card),0 0 0 4px var(--em2)}
 .gb.on{color:#e3a008}.gb.on svg{fill:currentColor}
@@ -435,7 +435,7 @@ main .card .ph{border-radius:0;background:var(--tint);aspect-ratio:16/9}.card .p
     <div class="mt"><button class="on" id="t1">Fuentes</button><button id="t6">Apariencia</button><button id="t7">Contenido</button><button id="t9">Datos</button><button id="t8">Avanzado</button></div>
     <div class="mc">
       <div id="pF">
-        <div class="stk"><div class="seg" id="sgF"><button class="on" data-s="l">Lista</button><button data-s="r">Revisión</button><button data-s="c">Categorías</button></div></div>
+        <div class="stk"><div class="seg" id="sgF"><button class="on" data-s="l">Lista</button><button data-s="r">Revisión</button><button data-s="c">Categorías</button><button data-s="d">Descubrir</button></div></div>
       <div id="p1">
         <div class="ssr"><div class="ssi"><svg class="i"><use href="#s"/></svg><input id="sq" type="search" placeholder="Buscar fuente por nombre, web o categoría" aria-label="Buscar fuente" autocomplete="off" enterkeyhint="search"></div></div>
         <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin:6px 0 8px"><p class="hint" id="ssum" style="margin:0 4px"></p><button class="tb" id="ordb">Ordenar</button></div>
@@ -454,6 +454,15 @@ main .card .ph{border-radius:0;background:var(--tint);aspect-ratio:16/9}.card .p
         <div id="sl"></div>
       </div>
       <div id="p5" hidden><p class="hint" id="rvs" style="margin:6px 4px 10px"></p><div class="seg" id="rvf"></div><div id="rvl" style="margin-top:12px"></div><p class="hint" style="margin:14px 4px 0">Basado en las noticias que guarda la app (unos 120 días). «Sin abrir»: al menos 3 noticias en 30 días y ninguna abierta ni guardada.</p></div>
+      <div id="pD" hidden>
+        <section class="set dsx"><h3>Descubrir fuentes</h3><p>Busca en Google News de los últimos 7 días qué medios publican sobre estos temas y te enseña los que aún no tienes.</p>
+          <div style="display:flex;gap:8px"><input id="dsi" placeholder="Ej. Mallorca, rap español, robótica" maxlength="40" aria-label="Tema para descubrir fuentes" autocomplete="off" enterkeyhint="done" style="flex:1;min-width:0;padding:11px 12px;border:1px solid var(--bd);border-radius:10px;background:var(--bg);font-size:16px"><button class="btn o" id="dsa" style="margin:0">Añadir</button></div>
+          <div class="af" id="dsl" style="padding:12px 0 0"></div>
+          <button class="btn" id="dsb" style="width:100%;justify-content:center;margin:12px 0 0"><svg class="i"><use href="#s"/></svg>Buscar medios</button>
+          <p class="fm" id="dsm" hidden style="margin:12px 0 0"></p></section>
+        <div id="dsr"></div>
+        <div id="dsd"></div>
+      </div>
       <div id="p4" hidden>
         <div class="add" style="grid-template-columns:minmax(0,1fr) auto">
           <h3 class="w">Nueva categoría</h3>
@@ -724,7 +733,7 @@ async function pool(items,n,fn){let i=0;await Promise.all(Array.from({length:Mat
 function timed(fn,ms=10000){const c=new AbortController();const id=setTimeout(()=>c.abort(),ms);return fn(c.signal).finally(()=>clearTimeout(id))}
 
 // Proxy propio: /p/<host>/… lo atiende _worker.js (Cloudflare Pages). Ningún servicio de terceros ve qué lees.
-const VER='2026-10-21-9';
+const VER='2026-10-21-10';
 if(!ls.get('nz_fu',0))ls.set('nz_fu',Date.now());
 const px=u=>{const x=new URL(u);return '/p/'+x.host+x.pathname+x.search};
 // Si la respuesta de error no lleva la marca X-Nz, no la dio nuestro proxy sino Cloudflare (límite diario gratuito o caída): se anota como 'cf'
@@ -1015,7 +1024,7 @@ const saveSrc=nr=>{if(!nr)S.dirty=1;syncCats();if(!ls.set('nz_src',S.src))toast(
 const PN={1:'F',6:'A',7:'C',8:'V',9:'B'};
 function tab(n){[1,6,7,8,9].forEach(k=>{$('#t'+k).classList.toggle('on',n===k);$('#p'+PN[k]).hidden=n!==k});if(n>1)tabInit();try{$('#t'+n).scrollIntoView({block:'nearest',inline:'center'})}catch(e){}}
 const tabInit=()=>{lgDraw();stUi();$('#ver').textContent='Versión '+VER;segs();cdTxt();syncPf();mwUi();syncAz();bkTxt();tpUi();lsUi();csnTxt();swUi()};
-function sub(k){const M={l:'p1',r:'p5',c:'p4'};for(const x in M){$('#'+M[x]).hidden=k!==x;const b=$('#sgF [data-s="'+x+'"]');if(b)b.classList.toggle('on',k===x)}if(k==='r')revUi();else if(k==='c')renderCats();else srcs()}
+function sub(k){const M={l:'p1',r:'p5',c:'p4',d:'pD'};for(const x in M){$('#'+M[x]).hidden=k!==x;const b=$('#sgF [data-s="'+x+'"]');if(b)b.classList.toggle('on',k===x)}if(k==='r')revUi();else if(k==='c')renderCats();else if(k==='d')dsUi();else srcs()}
 
 $('#grid').addEventListener('click',e=>{
  if(Date.now()-(S.sw||0)<400)return;
@@ -1125,7 +1134,7 @@ function commit(f,items){
  // Lo que ya se descargó al comprobar se usa tal cual: no hace falta pedirlo otra vez
  if(items&&items.length){const now=Date.now(),have=new Set(S.news.map(a=>a.id)),add=items.filter(a=>a.link&&now-a.date<120*864e5&&!have.has(a.id)).map(a=>({...a,got:now}));
   S.news=fairNews([...add,...S.news].sort((a,b)=>b.date-a.date));S.hl[x.id]=items.length;S.ft[x.id]=now;if(S.hr)delete S.hr[x.id];saveNews()}
- const msg=ed?'Fuente actualizada':'Fuente añadida';resetForm();saveSrc();revUi();if(!items)toast(msg);load();S.dirty=0;
+ const msg=ed?'Fuente actualizada':'Fuente añadida';resetForm();saveSrc();revUi();if(!$('#pD').hidden)dsUi();if(!items)toast(msg);load();S.dirty=0;
 }
 $('#aa').onclick=async()=>{
  const f={name:$('#an').value.trim(),url:$('#au').value.trim(),cat:$('#ac').value.trim()||'General'},o=S.src.filter((x,i)=>i!==S.edit);
@@ -1484,6 +1493,43 @@ $('#am').addEventListener('click',e=>{const a=AM.a;if(!a)return;
  const w=e.target.closest('[data-w]');
  if(w){const x=w.dataset.w,mu=AM.mode==='mute',L=mu?MW.list:TP.list;if(L.some(y=>n2(y)===n2(x))){toast('Ya estaba añadida');return}
   L.push(x);if(mu){ls.set('nz_mw',MW.list);mwBuild()}else{ls.set('nz_tp',TP.list);tpBuild()}amClose();toast(mu?`Palabra silenciada: ${x}`:`Tema destacado: ${x}`);render()}});
+// ---- Descubrir fuentes: medios que salen en Google News sobre tus temas y que aún no tienes ----
+// Solo pide a Google al pulsar «Buscar medios» (una petición por tema, por el proxy propio). El feed de cada medio se busca
+// al pulsar «Añadir», con la misma comprobación de siempre.
+const DS={q:ls.get('nz_dq',['tecnología','ciencia','historia','rap español','Mallorca','España']),hide:ls.get('nz_dx',[]),res:null,busy:0};
+const baseHost=u=>{try{return new URL(u).hostname.replace(/^(www|m|amp)\./,'')}catch{return''}};
+// ¿Ya la tienes? Por web (también subdominios) o por nombre
+function dsHave(h,name){const n=n2(name).replace(/[^a-z0-9]/g,'');return S.src.some(x=>{const b=baseHost(x.url);return b&&(b===h||b.endsWith('.'+h)||h.endsWith('.'+b))||n&&n2(x.name).replace(/[^a-z0-9]/g,'')===n})}
+// Categoría probable según el tema: la que se llame parecido o una equivalencia habitual
+function dsCat(t){const k=n2(t),syn={mallorca:'local',baleares:'local',palma:'local',espana:'actualidad',nacional:'actualidad',rap:'musica','hip hop':'musica',ciencia:'ciencia',tecnologia:'tecnologia',historia:'historia'};
+ const w=[k,...Object.keys(syn).filter(x=>k.includes(x)).map(x=>syn[x])];for(const q of w){const c=S.cats.find(c=>{const m=n2(c);return m===q||m.includes(q)||q.includes(m)});if(c)return c}return defCat()}
+async function dsSearch(){if(DS.busy)return;const qs=DS.q.slice(0,8);if(!qs.length)return dsMsg('Añade al menos un tema.','err');
+ DS.busy=1;const b=$('#dsb');b.disabled=true;b.classList.add('spin');dsMsg(`Buscando en Google News (${qs.length} ${qs.length===1?'tema':'temas'})…`);
+ const M=new Map();let okq=0,cf=0;
+ await Promise.all(qs.map(async t=>{try{const x=await fetchTxt(`https://news.google.com/rss/search?q=${encodeURIComponent(t)}+when:7d&hl=es&gl=ES&ceid=ES:es`,12000);
+   const d=new DOMParser().parseFromString(x,'text/xml');if(d.querySelector('parsererror'))throw Error('xml');okq++;
+   [...d.getElementsByTagName('item')].forEach(it=>{const se=it.getElementsByTagName('source')[0];if(!se)return;const h=baseHost(se.getAttribute('url')||''),name=(se.textContent||'').trim();if(!h||!name)return;
+    let r=M.get(h);if(!r)M.set(h,r={h,name,n:0,t:new Set(),ex:[]});r.n++;r.t.add(t);
+    const ti=(it.getElementsByTagName('title')[0]||{}).textContent||'',li=(it.getElementsByTagName('link')[0]||{}).textContent||'';if(r.ex.length<2&&ti)r.ex.push({ti:ti.replace(/\s+-\s+[^-]{2,80}$/,''),li})})}
+  catch(e){if(e.st==='cf')cf=1}}));
+ DS.busy=0;b.disabled=false;b.classList.remove('spin');
+ if(!okq)return dsMsg(cf?`El proxy no responde: posible límite diario de Cloudflare (vuelve a las ${cfReset()}).`:'Google News no ha respondido. Inténtalo en un rato.','err');
+ DS.res=[...M.values()].sort((a,b)=>b.t.size-a.t.size||b.n-a.n);DS.at=Date.now();dsMsg('');dsUi()}
+function dsMsg(m,c=''){const e=$('#dsm');e.hidden=!m;e.className='fm '+c;e.textContent=m||''}
+function dsUi(){
+ $('#dsl').innerHTML=DS.q.map(w=>`<button class="ac" data-dq="${esc(w)}">${esc(w)}<svg class="i"><use href="#x"/></svg></button>`).join('')||'<span class="hint" style="margin:0">Sin temas.</span>';
+ const r=DS.res?DS.res.filter(x=>!DS.hide.includes(x.h)&&!dsHave(x.h,x.name)):null,top=r?r.slice(0,25):[];
+ $('#dsr').innerHTML=!r?'':top.length?`<h4 class="dsh">${r.length} ${r.length===1?'medio nuevo':'medios nuevos'}${r.length>25?' · los 25 que más publican sobre tus temas':''}</h4><div class="gc">${top.map(x=>`<div class="row dsi"><div><div class="nl"><b>${esc(x.name)}</b></div><small class="rvm">${esc(x.h)} · ${x.n} ${x.n===1?'noticia':'noticias'} en 7 días · ${esc([...x.t].join(', '))}</small>${x.ex.map(e=>`<a class="dse" href="${esc(e.li)}" target="_blank" rel="noopener noreferrer">${esc(e.ti)}</a>`).join('')}</div><div class="dsbt"><button class="btn" data-dsadd="${esc(x.h)}">Añadir</button><button class="tb" data-dshide="${esc(x.h)}">Ocultar</button></div></div>`).join('')}</div>`:'<p class="hint" style="margin:12px 4px">No hay medios nuevos para estos temas: ya tienes los que más publican. Prueba con temas más concretos.</p>';
+ const miss=DEFAULTS.filter(d=>!S.src.some(x=>x.id===d.id||x.url===d.url));
+ $('#dsd').innerHTML=miss.length?`<h4 class="dsh">Predeterminadas que no tienes</h4><div class="gc">${miss.map(d=>`<div class="row"><div><div class="nl"><b>${esc(d.name)}</b></div><small class="rvm">${esc(d.cat)} · ${esc(baseHost(d.url))}</small></div><button class="btn o" data-dsdef="${esc(d.id)}" style="margin:0">Añadir</button></div>`).join('')}</div>`:''}
+$('#dsb').onclick=dsSearch;
+const dsAddQ=()=>{const v=$('#dsi').value.trim();if(!v)return;if(!DS.q.some(x=>n2(x)===n2(v))){DS.q.push(v);ls.set('nz_dq',DS.q)}$('#dsi').value='';dsUi()};
+$('#dsa').onclick=dsAddQ;$('#dsi').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();dsAddQ()}});
+$('#pD').addEventListener('click',e=>{
+ const q=e.target.closest('[data-dq]');if(q){DS.q=DS.q.filter(x=>x!==q.dataset.dq);ls.set('nz_dq',DS.q);dsUi();return}
+ const hd=e.target.closest('[data-dshide]');if(hd){DS.hide.push(hd.dataset.dshide);ls.set('nz_dx',DS.hide.slice(-300));dsUi();toast('No volverá a salir en Descubrir');return}
+ const ad=e.target.closest('[data-dsadd]');if(ad){const x=DS.res.find(y=>y.h===ad.dataset.dsadd);if(!x)return;resetForm();$('#an').value=x.name;$('#au').value='https://'+x.h+'/';fillCats(dsCat([...x.t][0]));$('#fr').hidden=false;$('#aa').click();return}
+ const df=e.target.closest('[data-dsdef]');if(df){const d=DEFAULTS.find(y=>y.id===df.dataset.dsdef);if(!d)return;if(!S.cats.includes(d.cat)){S.cats.push(d.cat);ls.set('nz_cats',S.cats)}S.src.push({...d,on:true});saveSrc();dsUi();toast(`«${d.name}» añadida`);S.ft[d.id]=0;load()}});
 // ---- Revisión de fuentes ----
 let rvF='p',rvN=40;
 function revUi(){const now=Date.now(),m=new Map();S.src.forEach(x=>m.set(x.name,{x,n:0,n30:0,last:0,op:0,sv:0,ds:0}));
