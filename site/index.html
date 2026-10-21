@@ -455,7 +455,7 @@ main .card .ph{border-radius:0;background:var(--tint);aspect-ratio:16/9}.card .p
       </div>
       <div id="p5" hidden><p class="hint" id="rvs" style="margin:6px 4px 10px"></p><div class="seg" id="rvf"></div><div id="rvl" style="margin-top:12px"></div><p class="hint" style="margin:14px 4px 0">Basado en las noticias que guarda la app (unos 120 días). «Sin abrir»: al menos 3 noticias en 30 días y ninguna abierta ni guardada.</p></div>
       <div id="pD" hidden>
-        <section class="set dsx"><h3>Descubrir fuentes</h3><p>Busca en Google News de los últimos 7 días qué medios publican sobre estos temas y te enseña los que aún no tienes.</p>
+        <section class="set dsx"><h3>Descubrir fuentes</h3><p>Busca en Google News (o en Bing Noticias si Google no responde) qué medios publican sobre estos temas y te enseña los que aún no tienes.</p>
           <div style="display:flex;gap:8px"><input id="dsi" placeholder="Ej. Mallorca, rap español, robótica" maxlength="40" aria-label="Tema para descubrir fuentes" autocomplete="off" enterkeyhint="done" style="flex:1;min-width:0;padding:11px 12px;border:1px solid var(--bd);border-radius:10px;background:var(--bg);font-size:16px"><button class="btn o" id="dsa" style="margin:0">Añadir</button></div>
           <div class="af" id="dsl" style="padding:12px 0 0"></div>
           <button class="btn" id="dsb" style="width:100%;justify-content:center;margin:12px 0 0"><svg class="i"><use href="#s"/></svg>Buscar medios</button>
@@ -733,7 +733,7 @@ async function pool(items,n,fn){let i=0;await Promise.all(Array.from({length:Mat
 function timed(fn,ms=10000){const c=new AbortController();const id=setTimeout(()=>c.abort(),ms);return fn(c.signal).finally(()=>clearTimeout(id))}
 
 // Proxy propio: /p/<host>/… lo atiende _worker.js (Cloudflare Pages). Ningún servicio de terceros ve qué lees.
-const VER='2026-10-21-10.1';
+const VER='2026-10-21-10.2';
 if(!ls.get('nz_fu',0))ls.set('nz_fu',Date.now());
 const px=u=>{const x=new URL(u);return '/p/'+x.host+x.pathname+x.search};
 // Si la respuesta de error no lleva la marca X-Nz, no la dio nuestro proxy sino Cloudflare (límite diario gratuito o caída): se anota como 'cf'
@@ -1504,26 +1504,29 @@ function dsHave(h,name){const n=n2(name).replace(/[^a-z0-9]/g,'');return S.src.s
 function dsCat(t){const k=n2(t),syn={mallorca:'local',baleares:'local',palma:'local',espana:'actualidad',nacional:'actualidad',rap:'musica','hip hop':'musica',ciencia:'ciencia',tecnologia:'tecnologia',historia:'historia'};
  const w=[k,...Object.keys(syn).filter(x=>k.includes(x)).map(x=>syn[x])];for(const q of w){const c=S.cats.find(c=>{const m=n2(c);return m===q||m.includes(q)||q.includes(m)});if(c)return c}return defCat()}
 async function dsSearch(){if(DS.busy)return;const qs=DS.q.slice(0,8);if(!qs.length)return dsMsg('Añade al menos un tema.','err');
- DS.busy=1;const b=$('#dsb');b.disabled=true;b.classList.add('spin');dsMsg(`Buscando en Google News (${qs.length} ${qs.length===1?'tema':'temas'})…`);
- const M=new Map(),why=[];let okq=0,cf=0;
- // De una en una y con un reintento: varias búsquedas a la vez desde el mismo servidor hacen que Google las corte
- const one=async t=>{const x=await fetchTxt(`https://news.google.com/rss/search?q=${encodeURIComponent(t)}+when:7d&hl=es&gl=ES&ceid=ES:es`,12000);
-   if(!/<rss|<feed/i.test(x.slice(0,600)))throw Error(/consent\.google|consentimiento|before you continue/i.test(x)?'Google pide aceptar cookies':'no devolvió RSS');return x};
- for(const t of qs){try{let x;try{x=await one(t)}catch(e){if(e.st==='cf')throw e;await new Promise(r=>setTimeout(r,900));x=await one(t)}
-   dsMsg(`Buscando en Google News… ${okq+1}/${qs.length}`);
-   const d=new DOMParser().parseFromString(x,'text/xml');if(d.querySelector('parsererror'))throw Error('RSS ilegible');okq++;
-   [...d.getElementsByTagName('item')].forEach(it=>{const se=it.getElementsByTagName('source')[0];if(!se)return;const h=baseHost(se.getAttribute('url')||''),name=(se.textContent||'').trim();if(!h||!name)return;
-    let r=M.get(h);if(!r)M.set(h,r={h,name,n:0,t:new Set(),ex:[]});r.n++;r.t.add(t);
-    const ti=(it.getElementsByTagName('title')[0]||{}).textContent||'',li=(it.getElementsByTagName('link')[0]||{}).textContent||'';if(r.ex.length<2&&ti)r.ex.push({ti:ti.replace(/\s+-\s+[^-]{2,80}$/,''),li})})}
-  catch(e){if(e.st==='cf'){cf=1;break}why.push(t+': '+(e.st?'HTTP '+e.st:e.name==='AbortError'?'tardó demasiado':e.message))}}
- DS.busy=0;if(why.length)log('Descubrir: '+why.join(' · '),okq?'':'err');b.disabled=false;b.classList.remove('spin');
- if(!okq)return dsMsg(cf?`El proxy no responde: posible límite diario de Cloudflare (vuelve a las ${cfReset()}).`:`Google News no ha respondido (${why[0]||'sin detalle'}). Inténtalo en un rato; el detalle completo está en el registro.`,'err');
- DS.res=[...M.values()].sort((a,b)=>b.t.size-a.t.size||b.n-a.n);DS.at=Date.now();dsMsg('');dsUi()}
+ DS.busy=1;const b=$('#dsb');b.disabled=true;b.classList.add('spin');dsMsg(`Buscando medios (${qs.length} ${qs.length===1?'tema':'temas'})…`);
+ const M=new Map(),why=[],used=new Set();let okq=0,cf=0,gnOff=0;
+ const add=(t,h,name,ti,li)=>{h=baseHost(h);name=(name||'').trim();if(!h||!name||/(^|\.)(google|bing|msn)\.com$/.test(h))return;let r=M.get(h);if(!r)M.set(h,r={h,name,n:0,t:new Set(),ex:[]});r.n++;r.t.add(t);if(r.ex.length<2&&ti)r.ex.push({ti,li})};
+ const rss=async u=>{const x=await fetchTxt(u,12000);if(!/<rss|<feed/i.test(x.slice(0,800)))throw Error(/consent\.|before you continue|antes de continuar/i.test(x)?'pide aceptar cookies':'no devolvió RSS');
+  const d=new DOMParser().parseFromString(x,'text/xml');if(d.querySelector('parsererror'))throw Error('RSS ilegible');return[...d.getElementsByTagName('item')]};
+ const tx=(it,tag)=>(it.getElementsByTagName(tag)[0]||{}).textContent||'';
+ // 1) Google News: el medio viene en <source url="…">. Google suele cortar (503) a los servidores de Cloudflare: si pasa, se deja de intentar en esta búsqueda
+ const gn=async t=>{(await rss(`https://news.google.com/rss/search?q=${encodeURIComponent(t)}+when:7d&hl=es&gl=ES&ceid=ES:es`)).forEach(it=>{const se=it.getElementsByTagName('source')[0];if(se)add(t,se.getAttribute('url')||'',se.textContent,tx(it,'title').replace(/\s+-\s+[^-]{2,80}$/,''),tx(it,'link'))})};
+ // 2) Bing Noticias: el medio viene en <News:Source> y la web original en el parámetro url= del enlace
+ const bn=async t=>{(await rss(`https://www.bing.com/news/search?q=${encodeURIComponent(t)}&format=rss&setmkt=es-ES&setlang=es&cc=ES`)).forEach(it=>{const li=tx(it,'link');let real='';try{real=new URL(li).searchParams.get('url')||''}catch(e){}if(!real&&!/bing\.com/.test(li))real=li;add(t,real,tx(it,'News:Source')||tx(it,'news:Source'),tx(it,'title'),real||li)})};
+ const err=e=>e.st?'HTTP '+e.st:e.name==='AbortError'?'tardó demasiado':e.message;
+ for(const t of qs){dsMsg(`Buscando medios… ${qs.indexOf(t)+1}/${qs.length}`);const w=[];
+  if(!gnOff){try{await gn(t);okq++;used.add('Google News');continue}catch(e){if(e.st==='cf'){cf=1;break}w.push('Google News '+err(e));if(e.st===503||e.st===429||/cookies/.test(e.message))gnOff=1}}
+  try{await bn(t);okq++;used.add('Bing Noticias')}catch(e){if(e.st==='cf'){cf=1;break}w.push('Bing '+err(e));why.push(t+': '+w.join(', '))}}
+ DS.busy=0;b.disabled=false;b.classList.remove('spin');
+ if(why.length||gnOff)log('Descubrir: '+(gnOff?'Google News bloquea al proxy (se usó Bing). ':'')+why.join(' · '),okq?'':'err');
+ if(!okq)return dsMsg(cf?`El proxy no responde: posible límite diario de Cloudflare (vuelve a las ${cfReset()}).`:`Ni Google News ni Bing han respondido (${why[0]||'sin detalle'}). Inténtalo en un rato; el detalle está en el registro.`,'err');
+ DS.res=[...M.values()].sort((a,b)=>b.t.size-a.t.size||b.n-a.n);DS.at=Date.now();DS.via=[...used].join(' y ');dsMsg('');dsUi()}
 function dsMsg(m,c=''){const e=$('#dsm');e.hidden=!m;e.className='fm '+c;e.textContent=m||''}
 function dsUi(){
  $('#dsl').innerHTML=DS.q.map(w=>`<button class="ac" data-dq="${esc(w)}">${esc(w)}<svg class="i"><use href="#x"/></svg></button>`).join('')||'<span class="hint" style="margin:0">Sin temas.</span>';
  const r=DS.res?DS.res.filter(x=>!DS.hide.includes(x.h)&&!dsHave(x.h,x.name)):null,top=r?r.slice(0,25):[];
- $('#dsr').innerHTML=!r?'':top.length?`<h4 class="dsh">${r.length} ${r.length===1?'medio nuevo':'medios nuevos'}${r.length>25?' · los 25 que más publican sobre tus temas':''}</h4><div class="gc">${top.map(x=>`<div class="row dsi"><div><div class="nl"><b>${esc(x.name)}</b></div><small class="rvm">${esc(x.h)} · ${x.n} ${x.n===1?'noticia':'noticias'} en 7 días · ${esc([...x.t].join(', '))}</small>${x.ex.map(e=>`<a class="dse" href="${esc(e.li)}" target="_blank" rel="noopener noreferrer">${esc(e.ti)}</a>`).join('')}</div><div class="dsbt"><button class="btn" data-dsadd="${esc(x.h)}">Añadir</button><button class="tb" data-dshide="${esc(x.h)}">Ocultar</button></div></div>`).join('')}</div>`:'<p class="hint" style="margin:12px 4px">No hay medios nuevos para estos temas: ya tienes los que más publican. Prueba con temas más concretos.</p>';
+ $('#dsr').innerHTML=!r?'':top.length?`<h4 class="dsh">${r.length} ${r.length===1?'medio nuevo':'medios nuevos'}${r.length>25?' · los 25 que más publican sobre tus temas':''}${DS.via?' · vía '+esc(DS.via):''}</h4><div class="gc">${top.map(x=>`<div class="row dsi"><div><div class="nl"><b>${esc(x.name)}</b></div><small class="rvm">${esc(x.h)} · ${x.n} ${x.n===1?'noticia':'noticias'} en 7 días · ${esc([...x.t].join(', '))}</small>${x.ex.map(e=>`<a class="dse" href="${esc(e.li)}" target="_blank" rel="noopener noreferrer">${esc(e.ti)}</a>`).join('')}</div><div class="dsbt"><button class="btn" data-dsadd="${esc(x.h)}">Añadir</button><button class="tb" data-dshide="${esc(x.h)}">Ocultar</button></div></div>`).join('')}</div>`:'<p class="hint" style="margin:12px 4px">No hay medios nuevos para estos temas: ya tienes los que más publican. Prueba con temas más concretos.</p>';
  const miss=DEFAULTS.filter(d=>!S.src.some(x=>x.id===d.id||x.url===d.url));
  $('#dsd').innerHTML=miss.length?`<h4 class="dsh">Predeterminadas que no tienes</h4><div class="gc">${miss.map(d=>`<div class="row"><div><div class="nl"><b>${esc(d.name)}</b></div><small class="rvm">${esc(d.cat)} · ${esc(baseHost(d.url))}</small></div><button class="btn o" data-dsdef="${esc(d.id)}" style="margin:0">Añadir</button></div>`).join('')}</div>`:''}
 $('#dsb').onclick=dsSearch;

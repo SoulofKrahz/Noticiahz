@@ -28,6 +28,8 @@ async function run(browser, label, viewport, mobile) {
     const rel = decodeURIComponent(new URL(u).pathname.slice(1));
     if (rel.startsWith('p/')) {
       const host = rel.split('/')[1];
+      if (/news\.google/.test(host) && /q=rap/i.test(u)) return r.fulfill({ status: 503, headers: { 'X-Nz': '1' }, body: 'sorry' });
+      if (/bing\.com/.test(host)) return r.fulfill({ status: 200, headers: { 'X-Nz': '1' }, contentType: 'application/rss+xml', body: `<?xml version="1.0"?><rss version="2.0" xmlns:News="https://www.bing.com/news/search?q=x&amp;format=rss"><channel><item><title>Nuevo disco de rap</title><link>http://www.bing.com/news/apiclick.aspx?ref=FexRss&amp;url=https%3a%2f%2fwww.rapbing.es%2fdisco&amp;c=1</link><News:Source>Rap Bing</News:Source></item></channel></rss>` });
       if (/news\.google/.test(host) && !/site(%3A|:)/i.test(u)) return r.fulfill({ status: 200, headers: { 'X-Nz': '1' }, contentType: 'application/rss+xml', body: gn(u) });
       if (/aemet|news\.google/.test(host)) return r.fulfill({ status: 404, headers: { 'X-Nz': '1' }, body: 'no' });
       HITS[host] = (HITS[host] || 0) + 1;
@@ -106,7 +108,7 @@ async function run(browser, label, viewport, mobile) {
   // 6c) Descubrir fuentes: propone medios nuevos de Google News y no repite los que ya tienes
   const dsc = await p.evaluate(async () => { document.querySelector('#sgF [data-s="d"]').click(); document.querySelector('#dsb').click(); await new Promise(r => setTimeout(r, 1500));
     const names = [...document.querySelectorAll('#dsr .dsi b')].map(b => b.textContent); return { names, vis: !document.querySelector('#pD').hidden, tabs: [...document.querySelectorAll('#sgF button')].every(b => b.scrollWidth <= b.clientWidth + 1) } });
-  ok(dsc.vis && dsc.names.includes('Hip Hop Golden Age') && !dsc.names.includes('El País') && !dsc.names.includes('Crónica Balear') && dsc.tabs, `Descubrir propone medios nuevos sin repetir los tuyos (${dsc.names.join(', ')})`);
+  ok(dsc.vis && dsc.names.includes('Rap Bing') && dsc.names.includes('Hip Hop Golden Age') && !dsc.names.includes('El País') && !dsc.names.includes('Crónica Balear') && dsc.tabs, `Descubrir propone medios nuevos sin repetir los tuyos (${dsc.names.join(', ')})`);
   const dad = await p.evaluate(async () => { document.querySelector('[data-dsadd="hiphopgoldenage.es"]').click(); await new Promise(r => setTimeout(r, 1500));
     return { added: S.src.some(x => x.name === 'Hip Hop Golden Age'), gone: ![...document.querySelectorAll('#dsr .dsi b')].some(b => b.textContent === 'Hip Hop Golden Age'), form: document.querySelector('#fr').hidden } });
   ok(dad.added && dad.gone && dad.form, `Añadir desde Descubrir comprueba, añade y lo quita de la lista (${JSON.stringify(dad)})`);
