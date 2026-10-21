@@ -337,6 +337,11 @@ main .card .ph{border-radius:0;background:var(--tint);aspect-ratio:16/9}.card .p
  .bb button{padding:7px 0}
 }
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* Ajustes: las 5 pestañas siempre visibles (sin scroll lateral) y registro con flecha propia */
+@media(max-width:760px){.mt{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0;padding:0 4px;overflow:visible}.mt button{white-space:normal;line-height:1.15;padding:8px 2px;font-size:13px;text-align:center;display:flex;align-items:center;justify-content:center;min-height:50px}}
+#lgd summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:10px}#lgd summary::-webkit-details-marker{display:none}
+#lgd summary::after{content:"";width:9px;height:9px;border-right:2px solid var(--mu);border-bottom:2px solid var(--mu);transform:rotate(45deg) translateY(-3px);transition:transform .2s;flex:none;margin-right:4px}#lgd[open] summary::after{transform:rotate(-135deg) translateX(-3px)}
 </style>
 </head>
 <body>
@@ -473,8 +478,9 @@ main .card .ph{border-radius:0;background:var(--tint);aspect-ratio:16/9}.card .p
         <section class="set" id="ins" hidden><h3>Instalar la app</h3><p>Ábrela como una app más: a pantalla completa y desde el icono.</p><div class="lrs"><button class="lr" id="insb"><svg class="i"><use href="#dl"/></svg><div><b>Instalar Noticiahz</b><small>Se añade a tu pantalla de inicio</small></div></button></div></section>
         <section class="set"><h3>Actualización automática</h3><p>Cada cuánto se buscan noticias nuevas.</p>
           <div class="seg" id="sg-rf"><button data-v="30">30 min</button><button data-v="60">1 hora</button><button data-v="0">Nunca</button></div></section><section class="set"><h3>Noticias por fuente</h3><p>Cuántas páginas de cada fuente se descargan. Más páginas = más noticias, pero tarda más. Si una web no permite páginas, solo se cargan sus últimas.</p>
-          <div class="seg" id="sg-dp"><button data-v="1">Últimas</button><button data-v="3">Amplio</button><button data-v="8">Máximo</button></div></section><div class="abt"><div class="logo" style="margin:0" role="img" aria-label="Noticiahz"><svg class="lgi" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="15" fill="#0a9d5c"/><path d="M21.5 17.5V50M21.5 34C21.5 25 27 22 33 22C40 22 44 26.5 44 33V50" fill="none" stroke="#06150f" stroke-width="9"/><path d="M7 41H25L29 29L34 51L38 36L41 41H57" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="lw" aria-hidden="true">noticia<em>hz</em></span><svg class="lp" viewBox="0 0 44 24" aria-hidden="true"><path d="M1 13H13L17 2L23 21L27 8L30 13H43"/></svg></div><span>Diseñado y creado por <strong>Krahz</strong></span><p class="hint" id="ver"></p></div>
+          <div class="seg" id="sg-dp"><button data-v="1">Últimas</button><button data-v="3">Amplio</button><button data-v="8">Máximo</button></div></section>
         <details id="lgd" class="set" style="margin-top:4px"><summary style="font:600 15px Inter,sans-serif;cursor:pointer">Registro de actividad</summary><p style="margin:6px 0 10px">Qué pasó en cada actualización y qué fuentes fallaron y por qué. «Copiar» lo prepara en texto para enviarlo.</p><div id="p2"></div></details>
+        <div class="abt"><div class="logo" style="margin:0" role="img" aria-label="Noticiahz"><svg class="lgi" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="15" fill="#0a9d5c"/><path d="M21.5 17.5V50M21.5 34C21.5 25 27 22 33 22C40 22 44 26.5 44 33V50" fill="none" stroke="#06150f" stroke-width="9"/><path d="M7 41H25L29 29L34 51L38 36L41 41H57" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="lw" aria-hidden="true">noticia<em>hz</em></span><svg class="lp" viewBox="0 0 44 24" aria-hidden="true"><path d="M1 13H13L17 2L23 21L27 8L30 13H43"/></svg></div><span>Diseñado y creado por <strong>Krahz</strong></span><p class="hint" id="ver"></p></div>
       </div>
     </div>
   </div>
@@ -698,7 +704,7 @@ async function pool(items,n,fn){let i=0;await Promise.all(Array.from({length:Mat
 function timed(fn,ms=10000){const c=new AbortController();const id=setTimeout(()=>c.abort(),ms);return fn(c.signal).finally(()=>clearTimeout(id))}
 
 // Proxy propio: /p/<host>/... lo atiende _worker.js (Cloudflare Pages)
-const VER='2026-10-21-2.2';
+const VER='2026-10-21-2.4';
 if(!ls.get('nz_fu',0))ls.set('nz_fu',Date.now());
 const PX=[{f:u=>{const x=new URL(u);return '/p/'+x.host+x.pathname+x.search},can:u=>/^https?:\/\//i.test(u),own:1,n:'propio',ok:0,bad:0,until:0}];
 const addParam=(u,k,v)=>u+(u.includes('?')?'&':'?')+k+'='+v;
@@ -928,7 +934,7 @@ function open(a){
 const isOpen=()=>$('#dr').classList.contains('show')||$('#md').classList.contains('show');
 function hide(){if(!isOpen())return;try{speechSynthesis.cancel()}catch(e){}$('#dt').classList.remove('on');$('#dr').classList.remove('show');$('#ov').classList.remove('show');$('#md').classList.remove('show');document.body.classList.remove('lock');if(S.lf&&S.lf.focus)S.lf.focus({preventScroll:true});resetForm();S.sq='';$('#sq').value='';tabs();render();if(S.dirty){S.dirty=0;load()}}
 function closeAll(){if(!$('#fr').hidden){resetForm();return}if(!$('#am').hidden){amClose();return}if(!$('#fp').hidden){fpClose();return}if(history.state&&history.state.r)history.back();else hide()}
-function lockOpen(f){S.lf=document.activeElement;history.pushState({r:1},'');document.body.classList.add('lock');if(f)$(f).focus({preventScroll:true})}
+function lockOpen(f){S.lf=document.activeElement;history.pushState({r:1},'');document.body.classList.add('lock');if(f)$(f).focus({preventScroll:true,focusVisible:false})}
 // Ventana de añadir/editar fuente: flotante sobre Ajustes, con fondo oscuro; atrás, Esc o tocar fuera la cierran
 let FRP=0,FRSKIP=0;
 addEventListener('popstate',()=>{if(FRSKIP){FRSKIP=0;return}if(FRP){FRP=0;resetForm();return}hide()});
