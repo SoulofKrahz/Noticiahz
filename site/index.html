@@ -734,7 +734,7 @@ async function pool(items,n,fn){let i=0;await Promise.all(Array.from({length:Mat
 function timed(fn,ms=10000){const c=new AbortController();const id=setTimeout(()=>c.abort(),ms);return fn(c.signal).finally(()=>clearTimeout(id))}
 
 // Proxy propio: /p/<host>/… lo atiende _worker.js (Cloudflare Pages). Ningún servicio de terceros ve qué lees.
-const VER='2026-10-22-1';
+const VER='2026-10-22-2';
 if(!ls.get('nz_fu',0))ls.set('nz_fu',Date.now());
 const px=u=>{const x=new URL(u);return '/p/'+x.host+x.pathname+x.search};
 // Si la respuesta de error no lleva la marca X-Nz, no la dio nuestro proxy sino Cloudflare (límite diario gratuito o caída): se anota como 'cf'
@@ -983,7 +983,11 @@ function open(a){
  const was=isOpen();$('#dr').classList.add('show');$('#ov').classList.add('show');if(!was)lockOpen('#dx');
 }
 const isOpen=()=>$('#dr').classList.contains('show')||$('#md').classList.contains('show');
-function hide(){if(!isOpen())return;try{speechSynthesis.cancel()}catch(e){}$('#dt').classList.remove('on');$('#dr').classList.remove('show');$('#ov').classList.remove('show');$('#md').classList.remove('show');document.body.classList.remove('lock');if(S.lf&&S.lf.focus)S.lf.focus({preventScroll:true});resetForm();S.sq='';$('#sq').value='';tabs();render();if(S.dirty){S.dirty=0;load()}}
+// Al cerrar Ajustes se olvida todo lo de «paso»: búsquedas, resultados de Descubrir, textos a medio escribir, modo ordenar,
+// filtros de Revisión, registro desplegado y posición. Lo que sí son ajustes (color, temas, fuentes…) se queda guardado.
+function resetSet(){DS.res=null;DS.via='';dsMsg('');$('#dsr').innerHTML='';['#dsi','#cn','#tpi','#mwi'].forEach(q=>{const e=$(q);if(e)e.value=''});S.ord=false;rvF='p';rvN=40;
+ const l=$('#lgd');if(l)l.open=false;document.querySelectorAll('#md details[open]').forEach(d=>d.open=false);const b=$('#md .mb');if(b)b.scrollTop=0;tab(1);sub('l')}
+function hide(){if(!isOpen())return;if($('#md').classList.contains('show'))try{resetSet()}catch(e){errLog('Cerrar ajustes: '+e.message)}try{speechSynthesis.cancel()}catch(e){}$('#dt').classList.remove('on');$('#dr').classList.remove('show');$('#ov').classList.remove('show');$('#md').classList.remove('show');document.body.classList.remove('lock');if(S.lf&&S.lf.focus)S.lf.focus({preventScroll:true});resetForm();S.sq='';$('#sq').value='';tabs();render();if(S.dirty){S.dirty=0;load()}}
 function closeAll(){if(!$('#fr').hidden){resetForm();return}if(!$('#am').hidden){amClose();return}if(!$('#fp').hidden){fpClose();return}if(history.state&&history.state.r)history.back();else hide()}
 function lockOpen(f){S.lf=document.activeElement;history.pushState({r:1},'');document.body.classList.add('lock');if(f){let el=$(f);if(f==='#mx'){el=$('#md .mb');el.tabIndex=-1}el.focus({preventScroll:true,focusVisible:false})}}
 // Ventana de añadir/editar fuente: flotante sobre Ajustes, con fondo oscuro; atrás, Esc o tocar fuera la cierran

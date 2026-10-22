@@ -126,6 +126,11 @@ async function run(browser, label, viewport, mobile) {
     return { added: S.src.some(x => x.name === 'Hip Hop Golden Age'), gone: ![...document.querySelectorAll('#dsr .dsi b')].some(b => b.textContent === 'Hip Hop Golden Age'), form: document.querySelector('#fr').hidden } });
   ok(dad.added && dad.gone && dad.form, `Añadir desde Descubrir comprueba, añade y lo quita de la lista (${JSON.stringify(dad)})`);
   await p.evaluate(() => { S.src = S.src.filter(x => x.name !== 'Hip Hop Golden Age'); saveSrc(); document.querySelector('#sgF [data-s="l"]').click() });
+  // 6d) Al cerrar y abrir Ajustes no queda nada «a medias» (resultados de Descubrir, textos, pestaña)
+  const rs = await p.evaluate(async () => { document.querySelector('#sgF [data-s="d"]').click(); document.querySelector('#dsb').click(); await new Promise(r => setTimeout(r, 1200)); document.querySelector('#dsi').value = 'abc'; tab(7); document.querySelector('#tpi').value = 'xyz';
+    const had = document.querySelectorAll('#dsr .dsi').length; closeAll(); await new Promise(r => setTimeout(r, 300)); document.querySelector('#st').click(); await new Promise(r => setTimeout(r, 300));
+    const r = { had, tab1: !document.querySelector('#p1').hidden || !document.querySelector('#pF').hidden, res: document.querySelectorAll('#dsr .dsi').length, dsi: document.querySelector('#dsi').value, tpi: document.querySelector('#tpi').value }; closeAll(); await new Promise(r => setTimeout(r, 300)); return r });
+  ok(rs.had > 0 && rs.res === 0 && !rs.dsi && !rs.tpi, `al cerrar Ajustes se borran búsquedas y textos a medias (${JSON.stringify(rs)})`);
   // 6b) El color elegido va a la cookie nz_ic (el manifest no cambia de dirección); un color libre usa el más parecido
   const ico = await p.evaluate(() => { const m = () => document.querySelector('link[rel=manifest]').getAttribute('href'), ck = () => (document.cookie.match(/nz_ic=([a-z]*)/) || [])[1];
     document.querySelector('#sws .swc[data-i="2"]').click(); const r = [m(), ck(), nzIco(200, .9), nzIco(10, .1), nzIco(150, .8)]; document.querySelector('#sws .swc[data-i="0"]').click(); r.push(m(), ck()); return r });
