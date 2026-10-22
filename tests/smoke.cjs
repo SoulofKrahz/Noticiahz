@@ -13,6 +13,14 @@ const fails = [];
 const ok = (cond, msg) => { if (!cond) fails.push(msg); console.log((cond ? '  ✓ ' : '  ✗ ') + msg); };
 
 const HITS = {};
+async function workerTest() {
+  const w = (await import(require('url').pathToFileURL(path.join(SITE, '_worker.js')).href)).default, env = { ASSETS: { fetch: async q => new Response(fs.readFileSync(path.join(SITE, new URL(q.url).pathname))) } };
+  const get = async c => JSON.parse(await (await w.fetch(new Request('https://app.test/manifest.webmanifest', { headers: c ? { Cookie: c } : {} }), env)).text()).icons[0].src;
+  const r = [await get('nz_ic=azul'), await get(''), await get('otra=1; nz_ic=x../'), await get('nz_ic=grafito; z=1')];
+  ok(r[0] === 'ic/azul-192.png' && r[1] === 'icon-192.png' && r[2] === 'icon-192.png' && r[3] === 'ic/grafito-192.png', `el proxy sirve el manifest del color de la cookie (${r.join(', ')})`);
+  const rt = JSON.parse(fs.readFileSync(path.join(SITE, '_routes.json'), 'utf8'));
+  ok(rt.include.includes('/manifest.webmanifest'), '_routes.json pasa el manifest por el proxy');
+}
 // Google News simulado para «Descubrir»: medios nuevos y uno que ya está en las fuentes (El País)
 const gn = u => { const q = decodeURIComponent((u.match(/q=([^&+]*)/) || [])[1] || 'x'); const M = [['https://www.mallorcadiario.com', 'mallorcadiario.com'], ['https://www.cronicabalear.es', 'Crónica Balear'], ['https://elpais.com', 'El País'], ['https://hiphopgoldenage.es', 'Hip Hop Golden Age']];
   return `<?xml version="1.0"?><rss version="2.0"><channel>${M.map((m, i) => `<item><title>${q} titular ${i} - ${m[1]}</title><link>https://news.google.com/rss/articles/${i}</link><source url="${m[0]}">${m[1]}</source></item>`).join('')}</channel></rss>` };
@@ -118,9 +126,10 @@ async function run(browser, label, viewport, mobile) {
     return { added: S.src.some(x => x.name === 'Hip Hop Golden Age'), gone: ![...document.querySelectorAll('#dsr .dsi b')].some(b => b.textContent === 'Hip Hop Golden Age'), form: document.querySelector('#fr').hidden } });
   ok(dad.added && dad.gone && dad.form, `Añadir desde Descubrir comprueba, añade y lo quita de la lista (${JSON.stringify(dad)})`);
   await p.evaluate(() => { S.src = S.src.filter(x => x.name !== 'Hip Hop Golden Age'); saveSrc(); document.querySelector('#sgF [data-s="l"]').click() });
-  // 6b) El color elegido cambia el manifest (icono de la app instalada); un color libre usa el más parecido
-  const ico = await p.evaluate(async () => { const m = () => document.querySelector('link[rel=manifest]').getAttribute('href'); const r = []; document.querySelector('#sws .swc[data-i="2"]').click(); r.push(m()); const ok = (await fetch(m())).ok && (await fetch('ic/azul-mask.png')).ok; r.push(nzIco(200, .9), nzIco(10, .1), nzIco(150, .8)); document.querySelector('#sws .swc[data-i="0"]').click(); r.push(m(), ok); return r });
-  ok(ico[0] === 'manifest-azul.webmanifest' && ico[1] === 'azul' && ico[2] === 'grafito' && ico[3] === '' && ico[4] === 'manifest.webmanifest' && ico[5], `el icono de la app sigue al color (${ico.join(', ')})`);
+  // 6b) El color elegido va a la cookie nz_ic (el manifest no cambia de dirección); un color libre usa el más parecido
+  const ico = await p.evaluate(() => { const m = () => document.querySelector('link[rel=manifest]').getAttribute('href'), ck = () => (document.cookie.match(/nz_ic=([a-z]*)/) || [])[1];
+    document.querySelector('#sws .swc[data-i="2"]').click(); const r = [m(), ck(), nzIco(200, .9), nzIco(10, .1), nzIco(150, .8)]; document.querySelector('#sws .swc[data-i="0"]').click(); r.push(m(), ck()); return r });
+  ok(ico[0] === 'manifest.webmanifest' && ico[1] === 'azul' && ico[2] === 'azul' && ico[3] === 'grafito' && ico[4] === '' && ico[5] === 'manifest.webmanifest' && ico[6] === '', `el color elegido llega al manifest sin cambiar su dirección (${ico.join(', ')})`);
   // 7) Copia de seguridad: exportar y restaurar sin duplicar
   const bk = await p.evaluate(() => new Promise(res => { const o = URL.createObjectURL; URL.createObjectURL = b => { b.text().then(t => res(t)); URL.createObjectURL = o; return o.call(URL, b) }; document.querySelector('#bx').click() }));
   const j = JSON.parse(bk);
@@ -180,6 +189,7 @@ async function run(browser, label, viewport, mobile) {
 (async () => {
   const browser = await chromium.launch(process.env.PW_EXE ? { executablePath: process.env.PW_EXE } : {});
   try {
+    console.log('\n== Proxy (_worker.js)'); await workerTest();
     await run(browser, 'Móvil (412×915)', { width: 412, height: 915 }, true);
     await run(browser, 'PC (1366×850)', { width: 1366, height: 850 }, false);
   } catch (e) { fails.push('la prueba se interrumpió: ' + e.message); console.log(e); }

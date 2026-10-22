@@ -80,9 +80,25 @@ async function proxy(req, url, env) {
   });
 }
 
+// Icono según el color de la app: la página guarda el color en la cookie nz_ic y aquí se sirve, en la misma dirección
+// de siempre, el manifest de ese color (manifest-<color>.webmanifest). Chrome solo actualiza el icono instalado si la
+// dirección del manifest no cambia.
+const COLORS = ['turquesa', 'azul', 'indigo', 'violeta', 'rosa', 'coral', 'naranja', 'ambar', 'grafito'];
+async function manifest(req, url, env) {
+  const m = (req.headers.get('Cookie') || '').match(/(?:^|;\s*)nz_ic=([a-z]+)/);
+  const k = m && COLORS.includes(m[1]) ? m[1] : '';
+  const r = await env.ASSETS.fetch(new Request(new URL(k ? `/manifest-${k}.webmanifest` : '/manifest.webmanifest', url), req));
+  const h = new Headers(r.headers);
+  h.set('Content-Type', 'application/manifest+json');
+  h.set('Cache-Control', 'no-cache');
+  h.set('Vary', 'Cookie');
+  return new Response(r.body, { status: r.status, headers: h });
+}
+
 export default {
   async fetch(req, env) {
     const url = new URL(req.url);
+    if (url.pathname === '/manifest.webmanifest') return manifest(req, url, env);
     if (url.pathname.startsWith('/p/')) {
       try { return await proxy(req, url, env); } catch (e) { return txt('Error interno del proxy', 502); }
     }
