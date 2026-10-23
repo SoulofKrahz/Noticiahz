@@ -8,7 +8,7 @@ const MIME = { html: 'text/html; charset=utf-8', js: 'text/javascript', json: 'a
 const W = ['lluvia','puerto','mercado','festival','robot','ministro','teatro','vacuna','satélite','consola','museo','huelga','playa','tormenta','cohete','escuela','tranvía','biblioteca','volcán','estadio','fábrica','orquesta','glaciar','servidor','parlamento','hospital','olivo','faro','camión','abeja'];
 const pick = (s, k) => { let h = 7; for (const c of s) h = (h * 31 + c.charCodeAt(0)) >>> 0; return W[(h + k * 7) % W.length] + ' ' + W[(h * 3 + k * 11) % W.length] + ' ' + W[(h * 5 + k * 13) % W.length] };
 const rss = host => `<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"><channel><title>${host}</title>${[0, 1, 2].map(i =>
-  `<item><title>${i === 0 ? 'La IA ' : ''}${pick(host, i)} ${host.split('.').slice(-2, -1)[0]} ${i}</title><link>https://${host}/n/${i}</link><pubDate>${new Date(Date.now() - i * 36e5).toUTCString()}</pubDate><description>Resumen ${i} de ${host}</description></item>`).join('')}</channel></rss>`;
+  `<item><title>${i === 0 ? 'La IA ' : ''}${pick(host, i)} ${host.split('.').slice(-2, -1)[0]} ${i}</title><link>https://${host}/n/${i}</link><pubDate>${new Date(Date.now() - i * 36e5).toUTCString()}</pubDate><description>${i === 2 ? '' : `Resumen ${i} de ${host}. ` + 'Texto de la noticia con detalles suficientes para leerla en la app. '.repeat(3)}</description></item>`).join('')}</channel></rss>`;
 const fails = [];
 const ok = (cond, msg) => { if (!cond) fails.push(msg); console.log((cond ? '  ✓ ' : '  ✗ ') + msg); };
 
@@ -62,6 +62,7 @@ async function run(browser, label, viewport, mobile) {
   await p.goto(BASE); await idle();
   const n = await p.evaluate(() => document.querySelectorAll('#grid .card').length);
   ok(n > 10, `carga noticias de los feeds (${n} tarjetas)`);
+  ok(await p.evaluate(() => [...document.querySelectorAll('#grid .card')].every(c => !/fixed|absolute/.test(getComputedStyle(c).position))), 'ninguna tarjeta queda flotando (choque de nombres de clase)');
   ok(await p.evaluate(() => /^\d{4}-\d\d-\d\d-[\d.]+$/.test(VER)), 'VER tiene el formato fecha-N');
 
   // 2b) Registro: una tarjeta por actualización con los fallos explicados
@@ -86,7 +87,9 @@ async function run(browser, label, viewport, mobile) {
   ok(q[0] > 0 && q[1] === 0, `la búsqueda filtra (IA: ${q[0]}, sin resultados: ${q[1]})`);
 
   // 5) Lector
-  await p.evaluate(() => document.querySelector('#grid .card h3').click()); await p.waitForTimeout(400);
+  const np = await p.evaluate(() => { const c = document.querySelector('#grid .card.nwb'); if (!c) return null; const o = window.open; let u = ''; window.open = x => { u = x }; c.querySelector('h3').click(); window.open = o; return { web: /^https:/.test(u), mark: !!c.querySelector('.npm'), reader: document.querySelector('#dr').classList.contains('show') } });
+  ok(np && np.web && np.mark && !np.reader, `una noticia sin resumen va marcada «Web» y abre directamente la web (${JSON.stringify(np)})`);
+  await p.evaluate(() => document.querySelector('#grid .card:not(.nwb) h3').click()); await p.waitForTimeout(400);
   ok(await p.evaluate(() => document.querySelector('#dr').classList.contains('show')), 'abre el lector');
   await p.keyboard.press('Escape'); await p.waitForTimeout(300);
   ok(await p.evaluate(() => !document.querySelector('#dr').classList.contains('show')), 'cierra el lector con Esc');
