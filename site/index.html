@@ -69,6 +69,7 @@ header{padding-top:env(safe-area-inset-top);position:sticky;top:0;z-index:20;bac
 .sc{display:flex;align-items:center;gap:7px;padding:5px 13px 5px 6px;border-radius:99px;border:1px solid var(--bd);background:var(--card);font-size:13px;font-weight:600;color:var(--mu);white-space:nowrap;flex:none}
 .sc:first-child{padding-left:13px}.sc i{width:20px;height:20px;border-radius:50%;background:var(--tint);color:var(--em);display:grid;place-items:center;font:600 11px Inter,sans-serif}
 .sc:hover{color:var(--tx)}.sc.on{border-color:var(--em2);background:var(--tint);color:var(--em)}
+.status #cnt.nwc{color:var(--em);font-weight:600}
 .status{display:flex;justify-content:space-between;align-items:center;gap:12px;color:var(--mu);font-size:13px;padding:10px 0 12px}
 #cnt{white-space:nowrap}.status span:last-child{display:flex;gap:2px}
 .tb{display:inline-flex;align-items:center;gap:6px;padding:7px 10px;border-radius:9px;color:var(--mu);font-size:13px;font-weight:600}
@@ -773,7 +774,7 @@ async function pool(items,n,fn){let i=0;await Promise.all(Array.from({length:Mat
 function timed(fn,ms=10000){const c=new AbortController();const id=setTimeout(()=>c.abort(),ms);return fn(c.signal).finally(()=>clearTimeout(id))}
 
 // Proxy propio: /p/<host>/… lo atiende _worker.js (Cloudflare Pages). Ningún servicio de terceros ve qué lees.
-const VER='2026-10-23-3';
+const VER='2026-10-23-4';
 if(!ls.get('nz_fu',0))ls.set('nz_fu',Date.now());
 const px=u=>{const x=new URL(u);return '/p/'+x.host+x.pathname+x.search};
 // Si la respuesta de error no lleva la marca X-Nz, no la dio nuestro proxy sino Cloudflare (límite diario gratuito o caída): se anota como 'cf'
@@ -952,7 +953,7 @@ function tabs(){
  if(S.sf!=='Todas'&&!nm.includes(S.sf))S.sf='Todas';
  const sr=$('#srcs');sr.hidden=!nm.length; // siempre visible si hay al menos una fuente
  const cn={};(S.cat==='Guardadas'?Object.values(S.fav):S.cat==='Descartadas'?DL:TL?TL:S.news.filter(a=>!S.dis.has(a.id)&&!isMuted(a)&&!smOn(a.src))).forEach(a=>{if(S.cat==='Todas'||S.cat==='Guardadas'||S.cat==='Descartadas'||TL||catOf(a)===S.cat)cn[a.src]=(cn[a.src]||0)+1});
- sr.innerHTML=`<button class="sc ${S.sf==='Todas'?'on':''}" data-sf="Todas">Todas</button>`+nm.map(n=>`<button class="sc ${n===S.sf?'on':''}" data-sf="${esc(n)}"><i style="--h:${hue(n)}">${esc(n[0])}</i>${esc(n)} <em>${cn[n]||0}</em></button>`).join('');
+ sr.innerHTML=`<button class="sc ${S.sf==='Todas'?'on':''}" data-sf="Todas">Todas <em>${(S.alln||{})[S.cat]??''}</em></button>`+nm.map(n=>`<button class="sc ${n===S.sf?'on':''}" data-sf="${esc(n)}"><i style="--h:${hue(n)}">${esc(n[0])}</i>${esc(n)} <em>${cn[n]||0}</em></button>`).join('');
  const fc=(S.so!=='mix')+(S.pe>0)+S.un+!!S.fo,fn=$('#fn');fn.hidden=!fc;fn.textContent=fc;const f2=$('#fn2');f2.hidden=!fc;f2.textContent=fc;
  $('#tabs').innerHTML=cats.map(c=>`<button class="tab ${c===S.cat?'on':''}" data-c="${esc(c)}">${esc(c)}${c==='Descartadas'&&nDis?` <small class="cnt">${nDis}</small>`:''}${c==='Guardadas'&&Object.keys(S.fav).length?` <small class="cnt">${Object.keys(S.fav).length}</small>`:''}${c==='Siguiendo'?` <small class="cnt">${TR.list.length}</small>`:''}</button>`).join('');
  const ta=$('.tab.on'),tb=$('#tabs');if(ta)tb.scrollLeft=ta.offsetLeft-tb.offsetLeft-(tb.clientWidth-ta.offsetWidth)/2;
@@ -1007,7 +1008,7 @@ function render(skel){
  const key=[S.cat,S.sf,S.so,S.pe,S.un,S.q].join('|');if(key!==S.key){S.key=key;S.lim=40}
  S.V=list;
  S.lvI=(S.so==='new'&&!sv&&S.lv)?list.findIndex(a=>!a.alert&&a.date<S.lv):-1;if(S.lvI<1)S.lvI=-1;
- S.nwV=S.cat==='Guardadas'?0:list.filter(a=>a.nw).length;$('#cnt').textContent=S.cat==='Guardadas'?`${list.length} guardadas`:S.cat==='Descartadas'?`${list.length} ${list.length===1?'descartada':'descartadas'}`:tv?`${list.length} ${list.length===1?'noticia':'noticias'} de lo que sigues`:`${list.length} ${list.length===1?'noticia':'noticias'}`+(S.nwV?` · ${S.nwV} ${S.nwV===1?'nueva':'nuevas'}`:'');badge();
+ cntTxt();
  if(!list.length&&S.cat!=='Guardadas'&&!S.src.some(x=>x.on)){g.innerHTML='<div class="empty"><h3>No tienes fuentes activas</h3><p>Activa alguna fuente para ver noticias.</p><button class="btn" id="opn">Abrir fuentes</button></div>';return}
  if(!list.length){
   g.innerHTML=`<div class="empty"><h3>${S.cat==='Guardadas'?'Aún no has guardado nada':S.news.length?'Sin resultados':'No hemos podido cargar noticias'}</h3>${tv?trBar():''}<p>${tv?'Todavía no hay noticias de lo que sigues.':S.cat==='Descartadas'?'No hay noticias descartadas.':S.cat==='Guardadas'?'Pulsa el marcador de cualquier noticia para guardarla.':S.news.length?'Prueba con otra búsqueda o categoría.':'Comprueba tu conexión o consulta el registro para ver qué falló.'}</p>${S.news.length||S.cat==='Guardadas'?(hasF?'<button class="btn" id="clr">Quitar filtros</button>':''):'<button class="btn" id="retry">Reintentar</button>'}</div>`;return}
@@ -1371,7 +1372,11 @@ $('#grid').addEventListener('click',async e=>{
  if(e.target.closest('#dve')){const n=disList().length;if(!await ask(`Se borrarán ${n} noticias de la app. Seguirán ocultas aunque las fuentes las vuelvan a publicar.`,{title:'¿Eliminar las descartadas?',ok:'Eliminar',danger:1}))return;
   S.news=S.news.filter(a=>!S.dis.has(a.id));saveNews();S.cat='Todas';render();toast(`${n} ${n===1?'noticia eliminada':'noticias eliminadas'}`)}});
 $('#cd').onclick=()=>{const n=S.dis.size;S.dis.clear();saveDis();render();cdTxt();toast(n?'Noticias restauradas':'No hay descartadas')};
-const cntTxt=()=>{const n=S.V.length;S.nwV=S.cat==='Guardadas'?0:S.V.filter(a=>a.nw).length;$('#cnt').textContent=S.cat==='Guardadas'?`${n} guardadas`:S.cat==='Descartadas'?`${n} ${n===1?'descartada':'descartadas'}`:`${n} ${n===1?'noticia':'noticias'}`+(S.nwV?` · ${S.nwV} ${S.nwV===1?'nueva':'nuevas'}`:'');badge()};
+const cntTxt=()=>{const n=S.V.length,sp=S.cat==='Guardadas'||S.cat==='Descartadas';S.nwV=sp?0:S.V.filter(a=>a.nw).length;
+ // El total va en el chip «Todas» (como el de cada fuente); debajo, lo nuevo
+ if(S.sf==='Todas'){(S.alln=S.alln||{})[S.cat]=n;const e=$('#srcs [data-sf="Todas"] em');if(e)e.textContent=n}
+ const c=$('#cnt');c.classList.toggle('nwc',!!S.nwV);
+ c.textContent=S.q?`${n} ${n===1?'resultado':'resultados'}`:S.cat==='Guardadas'?'Tus noticias guardadas':S.cat==='Descartadas'?'Ocultas en el resto de la app':S.cat==='Siguiendo'?'De las historias que sigues':S.nwV?`${S.nwV} ${S.nwV===1?'noticia nueva':'noticias nuevas'}`:'Sin noticias nuevas';badge()};
 const favCnt=()=>{const n=Object.keys(S.fav).length,t=document.querySelector('.tab[data-c="Guardadas"]');if(t)t.innerHTML='Guardadas'+(n?` <small class="cnt">${n}</small>`:'')};
 // La tarjeta se quita y las demás fluyen a su nuevo sitio (técnica FLIP)
 function flowOut(c,hero){const g=$('#grid'),cs=[...g.querySelectorAll('.card')].filter(x=>x!==c),f=new Map(cs.map(x=>[x,x.getBoundingClientRect()]));
@@ -1638,8 +1643,7 @@ $('#pD').addEventListener('click',e=>{
  const df=e.target.closest('[data-dsdef]');if(df){const d=DEFAULTS.find(y=>y.id===df.dataset.dsdef);if(!d)return;if(!S.cats.includes(d.cat)){S.cats.push(d.cat);ls.set('nz_cats',S.cats)}S.src.push({...d,on:true});saveSrc();dsUi();toast(`«${d.name}» añadida`);S.ft[d.id]=0;load()}});
 // ---- Novedades: resumen de lo que ha cambiado en cada versión (la primera es siempre la actual) ----
 const CHANGES=[
- [VER,['Las noticias marcadas «Web» se abren de verdad en su página (antes abrían un lector vacío)']],
- ['2026-10-23-2',['El lector tiene la barra de acciones abajo, como el feed, y puedes elegir su orden en Ajustes → Apariencia','Las noticias sin resumen se marcan «Web» y se abren directamente en su página','Exportar fuentes deja elegir qué categorías incluir','Al comprobar una fuente con aviso, solo queda «Guardar así»','Nueva categoría y confirmaciones con ventanas propias de la app','Este apartado de Novedades']],
+ [VER,['El lector tiene la barra de acciones abajo, como el feed; su orden se elige en Ajustes → Apariencia','El botón «Siguiente» del lector ya funciona','Las noticias sin resumen llevan la marca «Web»: se abren en su página y quedan como leídas (en el menú de pulsación larga puedes verlas en el lector)','El total de noticias va en el chip «Todas», como en cada fuente; debajo, solo las nuevas','Exportar fuentes deja elegir qué categorías incluir','Al comprobar una fuente con aviso, solo queda «Guardar así»','Ventanas propias de la app para crear categorías y confirmar','Este apartado de Novedades']],
  ['2026-10-23-1',['Abrir y cerrar Ajustes y el lector responde mucho más rápido','Las primeras fotos del feed aparecen antes']],
  ['2026-10-23-0',['Seguir una noticia: etiqueta «Siguiendo» y pestaña con cada historia durante 7 días']],
  ['2026-10-22-2',['Al cerrar Ajustes se borra lo que quedó a medias (búsquedas, textos)']],

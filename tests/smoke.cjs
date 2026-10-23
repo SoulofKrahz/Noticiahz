@@ -62,6 +62,8 @@ async function run(browser, label, viewport, mobile) {
   await p.goto(BASE); await idle(); await p.waitForFunction(() => S.last && !S.loading, null, { timeout: 30000 }); // la primera actualización empieza tras cargar los textos
   const n = await p.evaluate(() => document.querySelectorAll('#grid .card').length);
   ok(n > 10, `carga noticias de los feeds (${n} tarjetas)`);
+  const tot = await p.evaluate(() => ({ chip: (document.querySelector('#srcs [data-sf="Todas"] em') || {}).textContent, n: S.V.length, cnt: document.querySelector('#cnt').textContent }));
+  ok(+tot.chip === tot.n && !/\d+ noticias$/.test(tot.cnt), `el total va en el chip «Todas» y debajo solo lo nuevo (${JSON.stringify(tot)})`);
   const dids = await p.evaluate(() => { const c = {}; document.querySelectorAll('[id]').forEach(e => c[e.id] = (c[e.id] || 0) + 1); return Object.keys(c).filter(k => c[k] > 1) });
   ok(!dids.length, `no hay identificadores repetidos (${dids.join(', ') || 'ninguno'})`);
   ok(await p.evaluate(() => [...document.querySelectorAll('#grid .card')].every(c => !/fixed|absolute/.test(getComputedStyle(c).position))), 'ninguna tarjeta queda flotando (choque de nombres de clase)');
