@@ -185,7 +185,7 @@ pre .ok{color:var(--em)}pre .err{color:#e5484d}
 :root{color-scheme:light}[data-theme=dark]{color-scheme:dark}
 *{scrollbar-width:thin;scrollbar-color:var(--bd) transparent}::selection{background:var(--tint);color:var(--em)}
 button,a,label{touch-action:manipulation}select option{background:var(--card);color:var(--tx)}
-.ph img{opacity:0;transition:opacity .35s}.ph img.ld{opacity:1}
+.ph img{opacity:0;transition:opacity .35s}.ph img.ld{opacity:1}.ph img.nf{opacity:1;transition:none} /* las 2 primeras sin fundido: se ven antes (cuenta para el LCP) */
 .body blockquote{margin:0 0 1em;padding-left:14px;border-left:3px solid var(--em2);color:var(--mu)}
 .body h1,.body h2,.body h3,.body h4{font:600 1.1em/1.3 Inter,sans-serif;margin:1.4em 0 .5em}
 .body table{display:block;overflow-x:auto;max-width:100%}.body figure{margin:0 0 1em}.body figcaption{font:13px Inter,sans-serif;color:var(--mu)}
@@ -762,7 +762,7 @@ async function pool(items,n,fn){let i=0;await Promise.all(Array.from({length:Mat
 function timed(fn,ms=10000){const c=new AbortController();const id=setTimeout(()=>c.abort(),ms);return fn(c.signal).finally(()=>clearTimeout(id))}
 
 // Proxy propio: /p/<host>/… lo atiende _worker.js (Cloudflare Pages). Ningún servicio de terceros ve qué lees.
-const VER='2026-10-23-0';
+const VER='2026-10-23-1';
 if(!ls.get('nz_fu',0))ls.set('nz_fu',Date.now());
 const px=u=>{const x=new URL(u);return '/p/'+x.host+x.pathname+x.search};
 // Si la respuesta de error no lleva la marca X-Nz, no la dio nuestro proxy sino Cloudflare (límite diario gratuito o caída): se anota como 'cf'
@@ -929,7 +929,9 @@ function mix(list){const c={},now=Date.now();
  const SL=[0,2,5,9,14],tp=out.filter(a=>topicOf(a)&&!S.snap.rd.has(a.id)&&!(S.pf.sn&&S.snap.seen.has(a.id))).slice(0,SL.length);
  if(tp.length){const rest=out.filter(a=>!tp.includes(a));tp.forEach((a,k)=>rest.splice(Math.min(SL[k],rest.length),0,a));return rest}
  return out}
-const saveRd=()=>{if(!S.ready)return;if(S.last&&S.news.length){const k=new Set(S.news.map(a=>a.id));Object.keys(S.fav).forEach(i=>k.add(i));S.rd.forEach(i=>k.has(i)||S.rd.delete(i))}bigSet('nz_rd',[...S.rd])};
+const saveRd=()=>{if(!S.ready)return;clearTimeout(saveRd.t);saveRd.t=setTimeout(saveRdNow,800)};
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&saveRd.t){clearTimeout(saveRd.t);saveRd.t=0;saveRdNow()}});
+const saveRdNow=()=>{saveRd.t=0;if(S.last&&S.news.length){const k=new Set(S.news.map(a=>a.id));Object.keys(S.fav).forEach(i=>k.add(i));S.rd.forEach(i=>k.has(i)||S.rd.delete(i))}bigSet('nz_rd',[...S.rd])};
 const markRead=a=>{if(!S.rd.has(a.id))lrAdd(a.src,'p',1);S.rd.add(a.id);saveRd()};
 function tabs(){
  mapCats();const DL=disList(),nDis=DL.length,cats=['Todas',...S.cats.filter(c=>S.src.some(x=>x.on&&x.cat===c)),'Guardadas',...(TR.list.length?['Siguiendo']:[]),...(nDis||S.cat==='Descartadas'?['Descartadas']:[])];
@@ -956,7 +958,7 @@ function card(a,i,hero){try{return cardRaw(a,i,hero)}catch(e){errLog('Tarjeta «
 function cardRaw(a,i,hero){
  const bm=S.fav[a.id]?'on':'';
  return`<article class="card ${hero?'hero':''} ${topicOf(a)?'tp':''} ${S.rd.has(a.id)?'rd':''} ${a.alert?'al al-'+a.alert:''} ${!hero&&a.img&&i%9===4?'feat':''}" data-k="${i}" tabindex="0">
- <div class="ph ${a.img?'':'noimg'}">${esc((a.src||'N')[0])}${a.img?`<img src="${esc(a.img)}" alt="" ${i<2?'fetchpriority="high"':'loading="lazy"'} decoding="async" referrerpolicy="no-referrer" onload="this.classList.add('ld')" onerror="this.parentNode.classList.add('noimg');this.remove()">`:''}${vid(a)&&a.img?'<span class="pl"></span>':''}</div>
+ <div class="ph ${a.img?'':'noimg'}">${esc((a.src||'N')[0])}${a.img?`<img src="${esc(a.img)}" alt="" ${i<2?'class="nf" fetchpriority="high"':'loading="lazy"'} decoding="async" referrerpolicy="no-referrer" onload="this.classList.add('ld')" onerror="this.parentNode.classList.add('noimg');this.remove()">`:''}${vid(a)&&a.img?'<span class="pl"></span>':''}</div>
  <div class="cb"><div class="meta"><button class="chip" data-sf="${esc(a.src)}" title="Ver solo ${esc(a.src)}"><i class="mg" style="--h:${hue(a.src)}">${esc((a.src||'N')[0])}</i>${esc(a.src)}</button>${a.nw?'<span class="dot" title="Nueva"></span>':''}<span>${ago(a.date)}</span>${tpx(a)}${trOf(a)&&S.cat!=='Siguiendo'?'<span class="trm"><svg class="i"><use href="#fw"/></svg>Siguiendo</span>':''}${S.rd.has(a.id)?'<span class="rdm"><svg class="i"><use href="#ck"/></svg>Leída</span>':''}${bm&&S.cat!=='Guardadas'?'<svg class="i fvm" aria-label="Guardada"><use href="#b"/></svg>':''}</div>
  <h3>${esc(a.title)}</h3><p>${esc(a.snip)}</p>
  <div class="foot">${a.also&&a.also.length?`<button class="also" data-also aria-label="Ver la misma noticia en otros medios">También en ${esc(a.also.slice(0,2).map(x=>x.src).join(', '))}${a.also.length>2?' y '+(a.also.length-2)+' más':''}</button>`:`<span class="meta">${esc(catOf(a))}</span>`}<span class="acts">${S.cat==='Descartadas'?`<button class="bm rsb" data-rs="${i}" aria-label="Restaurar" title="Restaurar"><svg class="i"><use href="#r"/></svg></button>`:S.cat==='Guardadas'?'':`<button class="bm dsk" data-ds="${i}" aria-label="Descartar" title="Descartar (Supr)"><svg class="i"><use href="#x"/></svg></button>`}${a.alert||S.cat==='Descartadas'?'':`<button class="bm dsk ${bm}" data-bm="${i}" aria-label="Guardar" title="Guardar"><svg class="i"><use href="#b"/></svg></button>`}<a class="bm" data-go href="${esc(a.link)}" target="_blank" rel="noopener noreferrer" aria-label="${act(a).s}" title="${act(a).s}"><svg class="i"><use href="#${act(a).i}"/></svg></a><button class="bm" data-sh aria-label="Compartir" title="Compartir"><svg class="i"><use href="#h"/></svg></button></span></div></div></article>`;
@@ -1004,7 +1006,7 @@ const pos=()=>S.V.findIndex(x=>x.id===S.cur.id);
 function go(d){const n=S.V[pos()+d];if(n)open(n)}
 function bodyOf(a){const b=a.html?clean(a.html,a.img):'';return txt(b)||/<img/i.test(b)?b:`<p>${esc(a.snip||(vid(a)?'Sin descripción. Abre el vídeo para verlo.':'Sin vista previa. Abre el artículo completo para leerlo.'))}</p>`}
 function open(a){
- S.cur=a;markRead(a);try{speechSynthesis.cancel()}catch(e){}$('#dt').classList.remove('on');$('#rp').style.width=0;const k=pos();$('#dp').disabled=k<1;$('#dn').disabled=k<0||k>=S.V.length-1;
+ S.cur=a;(S.rdo=S.rdo||new Set()).add(a.id);markRead(a);try{speechSynthesis.cancel()}catch(e){}$('#dt').classList.remove('on');$('#rp').style.width=0;const k=pos();$('#dp').disabled=k<1;$('#dn').disabled=k<0||k>=S.V.length-1;
  let body=bodyOf(a);if(!a.html&&!S.bodyOk&&S.bodyP)S.bodyP.then(()=>{if(S.cur===a&&a.html){const el=$('#art .body');if(el)el.innerHTML=bodyOf(a)}});const im=a.img?`<img class="hi" src="${esc(a.img)}" alt="" referrerpolicy="no-referrer" onerror="this.remove()">`:'';
  $('#art').innerHTML=`<div class="meta"><span class="chip">${esc(a.src)}</span><span>${new Date(a.date).toLocaleString('es-ES',{dateStyle:'long',timeStyle:'short'})}</span>${vid(a)?'<span>▶ Vídeo</span>':''}</div>
  <h2>${esc(a.title)}</h2>${a.img?(vid(a)?`<a class="vh" href="${esc(a.link)}" target="_blank" rel="noopener noreferrer" aria-label="${esc(act(a).t)}">${im}<span class="pl"></span></a>`:im):''}
@@ -1018,7 +1020,12 @@ const isOpen=()=>$('#dr').classList.contains('show')||$('#md').classList.contain
 // filtros de Revisión, registro desplegado y posición. Lo que sí son ajustes (color, temas, fuentes…) se queda guardado.
 function resetSet(){DS.res=null;DS.via='';dsMsg('');$('#dsr').innerHTML='';['#dsi','#cn','#tpi','#mwi'].forEach(q=>{const e=$(q);if(e)e.value=''});S.ord=false;rvF='p';rvN=40;
  const l=$('#lgd');if(l)l.open=false;document.querySelectorAll('#md details[open]').forEach(d=>d.open=false);const b=$('#md .mb');if(b)b.scrollTop=0;tab(1);sub('l')}
-function hide(){if(!isOpen())return;if($('#md').classList.contains('show'))try{resetSet()}catch(e){errLog('Cerrar ajustes: '+e.message)}try{speechSynthesis.cancel()}catch(e){}$('#dt').classList.remove('on');$('#dr').classList.remove('show');$('#ov').classList.remove('show');$('#md').classList.remove('show');document.body.classList.remove('lock');if(S.lf&&S.lf.focus)S.lf.focus({preventScroll:true});resetForm();S.sq='';$('#sq').value='';tabs();render();if(S.dirty){S.dirty=0;load()}}
+// Cerrar primero (lo que se ve) y hacer el trabajo pesado después de la animación: el toque responde al instante
+function hide(){if(!isOpen())return;const wasSet=$('#md').classList.contains('show');if(wasSet)try{resetSet()}catch(e){errLog('Cerrar ajustes: '+e.message)}try{speechSynthesis.cancel()}catch(e){}$('#dt').classList.remove('on');$('#dr').classList.remove('show');$('#ov').classList.remove('show');$('#md').classList.remove('show');document.body.classList.remove('lock');if(S.lf&&S.lf.focus)S.lf.focus({preventScroll:true});resetForm();S.sq='';$('#sq').value='';
+ clearTimeout(hide.t);hide.t=setTimeout(()=>{if(isOpen())return; // si se volvió a abrir algo, ya se pintará al cerrar
+  if(wasSet||S.un){tabs();render()}else{ // del lector: solo se repintan las tarjetas que se han leído
+   (S.rdo||[]).forEach(id=>{const k=S.V.findIndex(x=>x.id===id),el=k>=0&&$(`#grid .card[data-k="${k}"]`);if(el)el.outerHTML=card(S.V[k],k,el.classList.contains('hero'))});tabs()}
+  S.rdo=new Set();if(S.dirty){S.dirty=0;load()}},320)}
 function closeAll(){if(!$('#fr').hidden){resetForm();return}if(!$('#am').hidden){amClose();return}if(!$('#fp').hidden){fpClose();return}if(history.state&&history.state.r)history.back();else hide()}
 function lockOpen(f){S.lf=document.activeElement;history.pushState({r:1},'');document.body.classList.add('lock');if(f){let el=$(f);if(f==='#mx'){el=$('#md .mb');el.tabIndex=-1}el.focus({preventScroll:true,focusVisible:false})}}
 // Ventana de añadir/editar fuente: flotante sobre Ajustes, con fondo oscuro; atrás, Esc o tocar fuera la cierran
@@ -1072,7 +1079,8 @@ const saveSrc=nr=>{if(!nr)S.dirty=1;syncCats();if(!ls.set('nz_src',S.src))toast(
 const PN={1:'F',6:'A',7:'C',8:'V',9:'B'};
 function tab(n){[1,6,7,8,9].forEach(k=>{$('#t'+k).classList.toggle('on',n===k);$('#p'+PN[k]).hidden=n!==k});if(n>1)tabInit();try{$('#t'+n).scrollIntoView({block:'nearest',inline:'center'})}catch(e){}}
 const tabInit=()=>{lgDraw();stUi();$('#ver').textContent='Versión '+VER;segs();cdTxt();syncPf();mwUi();syncAz();bkTxt();tpUi();lsUi();csnTxt();swUi()};
-function sub(k){const M={l:'p1',r:'p5',c:'p4',d:'pD'};for(const x in M){$('#'+M[x]).hidden=k!==x;const b=$('#sgF [data-s="'+x+'"]');if(b)b.classList.toggle('on',k===x)}if(k==='r')revUi();else if(k==='c')renderCats();else if(k==='d')dsUi();else srcs()}
+function sub(k,lazy){const M={l:'p1',r:'p5',c:'p4',d:'pD'};for(const x in M){$('#'+M[x]).hidden=k!==x;const b=$('#sgF [data-s="'+x+'"]');if(b)b.classList.toggle('on',k===x)}
+ const run=()=>{if(k==='r')revUi();else if(k==='c')renderCats();else if(k==='d')dsUi();else srcs()};if(lazy)requestAnimationFrame(()=>setTimeout(run,0));else run()} // lazy: primero se abre la ventana, luego se pinta la lista
 
 $('#grid').addEventListener('click',e=>{
  if(Date.now()-(S.sw||0)<400)return;
@@ -1115,7 +1123,7 @@ $('.mc').addEventListener('click',e=>{const b=e.target.closest('.seg button');if
 $('#cr').onclick=()=>{const old=[...S.rd];if(!old.length)return toast('No hay noticias leídas');S.rd.clear();bigSet('nz_rd',[]);render();undoFn('Historial de leídas borrado',()=>{old.forEach(x=>S.rd.add(x));bigSet('nz_rd',old);render()})};
 $('#cf').onclick=async()=>{if(!await ask(`Se quitarán ${Object.keys(S.fav).length} noticias guardadas.`,{title:'¿Vaciar guardadas?',ok:'Vaciar',danger:1}))return;S.fav={};bigSet('nz_fav',{});render();toast('Guardadas vaciadas')};
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.pf.rf&&Date.now()-(S.last||0)>S.pf.rf*60000)load()});
-$('#st').onclick=()=>{tab(1);sub('l');$('#md').classList.add('show');lockOpen('#mx')};
+$('#st').onclick=()=>{tab(1);sub('l',1);$('#md').classList.add('show');lockOpen('#mx')};
 $('#lg').onclick=()=>{tab(8);$('#lgd').open=true;$('#md').classList.add('show');lockOpen('#mx');setTimeout(()=>$('#lgd').scrollIntoView({block:'start'}),60)};
 $('#mx').onclick=$('#mov').onclick=closeAll;
 $('#t1').onclick=()=>tab(1);$('#t6').onclick=()=>tab(6);$('#t7').onclick=()=>tab(7);$('#t8').onclick=()=>tab(8);$('#t9').onclick=()=>tab(9);let ipr=null;
