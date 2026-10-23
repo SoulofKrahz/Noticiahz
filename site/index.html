@@ -145,7 +145,8 @@ header{transition:transform .25s}header.hd{transform:translateY(-100%)}
 .add input,.add select{min-width:0;padding:9px 12px;border:1px solid var(--bd);border-radius:10px;background:var(--bg)}
 .add .w{grid-column:1/-1}
 #askov{z-index:70}.askd{position:fixed;z-index:71;left:50%;top:50%;transform:translate(-50%,-50%);width:min(420px,calc(100vw - 32px));max-height:calc(100dvh - 48px);overflow-y:auto;background:var(--card);border:1px solid var(--bd);border-radius:18px;padding:20px;box-shadow:0 24px 60px -20px #0009;animation:popin .16s ease-out}
-.askd h3{font:600 19px/1.25 Newsreader,serif;margin:0 0 8px}.askd p{white-space:pre-line;color:var(--mu);font-size:14.5px;line-height:1.5;margin:0 0 18px}.aski{width:100%;margin:4px 0 14px;padding:11px 12px;border:1px solid var(--bd);border-radius:10px;background:var(--bg);color:var(--tx);font-size:16px}.askb{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}.askb .btn{margin:0;min-width:110px;justify-content:center}
+.askd h3{font:600 19px/1.25 Newsreader,serif;margin:0 0 8px}.askd p{white-space:pre-line;color:var(--mu);font-size:14.5px;line-height:1.5;margin:0 0 18px}.askq{display:flex;gap:8px;margin:0 0 8px}.askq button{font-size:13px;font-weight:600;color:var(--em);padding:4px 2px}.askc{max-height:45dvh;overflow-y:auto;margin:0 0 14px;border:1px solid var(--bd);border-radius:12px;padding:4px 12px}.askc label{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--bd);font-size:14.5px;cursor:pointer}.askc label:last-child{border-bottom:0}.askc input{width:19px;height:19px;accent-color:var(--em);flex:none}
+.aski{width:100%;margin:4px 0 14px;padding:11px 12px;border:1px solid var(--bd);border-radius:10px;background:var(--bg);color:var(--tx);font-size:16px}.askb{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}.askb .btn{margin:0;min-width:110px;justify-content:center}
 .btn.dg{background:#c0392b;border-color:#c0392b;color:#fff}
 .add.pop{position:fixed;z-index:56;left:50%;top:50%;transform:translate(-50%,-50%);width:min(520px,calc(100vw - 32px));max-height:calc(100dvh - 48px);overflow-y:auto;margin:0;box-shadow:0 24px 60px -20px #0009;animation:popin .18s ease-out}
 #frov{z-index:55}
@@ -428,12 +429,12 @@ main .card .ph{border-radius:0;background:var(--tint);aspect-ratio:16/9}.card .p
   <i id="rp"></i>
   <div class="art" id="art"></div>
   <nav class="db" aria-label="Acciones de la noticia">
-    <button id="dx" aria-label="Volver"><svg class="i"><use href="#x"/></svg><span>Volver</span></button>
     <button id="dp" aria-label="Anterior"><svg class="i"><use href="#l"/></svg><span>Anterior</span></button>
     <button id="dn" aria-label="Siguiente"><svg class="i"><use href="#n"/></svg><span>Siguiente</span></button>
     <button id="dbm" aria-label="Guardar"><svg class="i"><use href="#b"/></svg><span>Guardar</span></button>
     <button id="dfw" aria-label="Seguir esta noticia"><svg class="i"><use href="#fw"/></svg><span>Seguir</span></button>
     <button id="dsh" aria-label="Compartir"><svg class="i"><use href="#h"/></svg><span>Compartir</span></button>
+    <button id="dx" aria-label="Volver"><svg class="i"><use href="#x"/></svg><span>Volver</span></button>
   </nav>
 </aside>
 
@@ -1080,10 +1081,10 @@ function renCat(o){const n=(prompt('Nuevo nombre de la categoría',o)||'').trim(
  S.cats=S.cats.map(c=>c===o?n:c);S.src.forEach(x=>{if(x.cat===o)x.cat=n});Object.values(S.fav).forEach(a=>{if(a.cat===o)a.cat=n});bigSet('nz_fav',S.fav);if(S.cat===o)S.cat=n;saveSrc(1);renderCats()}
 // Diálogo de confirmación con el estilo de la app (sustituye a confirm()). Devuelve una promesa true/false.
 function ask(msg,o={}){return new Promise(res=>{const ov=document.createElement('div'),d=document.createElement('div');ov.className='ov show';ov.id='askov';d.className='askd';d.setAttribute('role','alertdialog');d.setAttribute('aria-modal','true');
- d.innerHTML=`${o.title?`<h3>${esc(o.title)}</h3>`:''}<p></p>${o.input?`<input class="aski" maxlength="${o.input.max||40}" placeholder="${esc(o.input.ph||'')}" autocomplete="off" enterkeyhint="done">`:''}<div class="askb"><button class="btn o" data-a="0">${esc(o.no||'Cancelar')}</button><button class="btn${o.danger?' dg':''}" data-a="1">${esc(o.ok||'Aceptar')}</button></div>`;
+ d.innerHTML=`${o.title?`<h3>${esc(o.title)}</h3>`:''}<p></p>${o.checks?`<div class="askq"><button type="button" data-all="1">Todas</button><button type="button" data-all="0">Ninguna</button></div><div class="askc">${o.checks.map(c=>`<label><input type="checkbox" value="${esc(c.v)}" ${c.on?'checked':''}><span>${esc(c.label)}</span></label>`).join('')}</div>`:''}${o.input?`<input class="aski" maxlength="${o.input.max||40}" placeholder="${esc(o.input.ph||'')}" autocomplete="off" enterkeyhint="done">`:''}<div class="askb"><button class="btn o" data-a="0">${esc(o.no||'Cancelar')}</button><button class="btn${o.danger?' dg':''}" data-a="1">${esc(o.ok||'Aceptar')}</button></div>`;
  d.querySelector('p').textContent=msg;d.querySelector('p').hidden=!msg;const inp=d.querySelector('.aski'),prev=document.activeElement;
  const end=v=>{removeEventListener('keydown',kd,true);ov.remove();d.remove();try{prev&&prev.focus&&prev.focus({preventScroll:true})}catch(e){}res(v)},kd=e=>{if(e.key==='Escape'){e.stopPropagation();e.preventDefault();end(false)}};
- ov.onclick=()=>end(false);d.onclick=e=>{const b=e.target.closest('[data-a]');if(b){if(b.dataset.a==='1'&&inp){const v=inp.value.trim();if(!v){inp.focus();return}end(v)}else end(b.dataset.a==='1')}};
+ ov.onclick=()=>end(false);d.onclick=e=>{const al=e.target.closest('[data-all]');if(al){d.querySelectorAll('.askc input').forEach(i=>i.checked=al.dataset.all==='1');return}const b=e.target.closest('[data-a]');if(b){if(b.dataset.a==='1'&&o.checks){const v=[...d.querySelectorAll('.askc input:checked')].map(i=>i.value);if(!v.length)return;end(v);return}if(b.dataset.a==='1'&&inp){const v=inp.value.trim();if(!v){inp.focus();return}end(v)}else end(b.dataset.a==='1')}};
  if(inp)inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();d.querySelector('[data-a="1"]').click()}});addEventListener('keydown',kd,true);document.body.append(ov,d);(inp||d.querySelector(o.danger?'[data-a="0"]':'[data-a="1"]')).focus()})} // con o.input devuelve el texto escrito (o false)
 async function delCat(c){const k=S.src.filter(x=>x.cat===c).length;if(!await ask(k?`Sus ${k} fuentes pasarán a «General».`:'La categoría está vacía.',{title:`¿Eliminar «${c}»?`,ok:'Eliminar',danger:1}))return;
  S.src.forEach(x=>{if(x.cat===c)x.cat='General'});Object.values(S.fav).forEach(a=>{if(a.cat===c)a.cat='General'});bigSet('nz_fav',S.fav);S.cats=S.cats.filter(x=>x!==c);if(S.cat===c)S.cat='Todas';saveSrc(1);renderCats()}
@@ -1272,7 +1273,9 @@ function setSrc(n,top){S.sf=n;render();if(top)scrollTo({top:0,behavior:'smooth'}
 $('#srcs').addEventListener('click',e=>{const c=e.target.closest('[data-sf]');if(c)setSrc(c.dataset.sf)});
 $('#fb').onclick=()=>{const h=$('#fp').hidden=!$('#fp').hidden;$('#fb').classList.toggle('on',!h)};
 $('#un').onchange=e=>{S.un=e.target.checked;render()};
-$('#ox').onclick=()=>{const x=`<?xml version="1.0" encoding="UTF-8"?><opml version="2.0"><head><title>Noticiahz</title></head><body>${S.src.map(s=>`<outline type="rss" text="${esc(s.name)}" xmlUrl="${esc(s.url)}" category="${esc(s.cat)}"/>`).join('')}</body></opml>`;const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([x],{type:'text/x-opml'}));a.download='noticiahz.opml';a.click()};
+$('#ox').onclick=async()=>{const ci=c=>{const k=S.cats.indexOf(c);return k<0?999:k},cs=[...new Set(S.src.map(s=>s.cat))].sort((a,b)=>ci(a)-ci(b)||a.localeCompare(b)),n=c=>S.src.filter(s=>s.cat===c).length;
+ const sel=await ask('Elige qué categorías van en el archivo.',{title:'Exportar fuentes',checks:cs.map(c=>({v:c,label:`${c} · ${n(c)} ${n(c)===1?'fuente':'fuentes'}`,on:true})),ok:'Exportar'});if(!sel)return;const L=S.src.filter(s=>sel.includes(s.cat));
+ const x=`<?xml version="1.0" encoding="UTF-8"?><opml version="2.0"><head><title>Noticiahz</title></head><body>${L.map(s=>`<outline type="rss" text="${esc(s.name)}" xmlUrl="${esc(s.url)}" category="${esc(s.cat)}"/>`).join('')}</body></opml>`;const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([x],{type:'text/x-opml'}));a.download=`noticiahz-fuentes-${new Date().toISOString().slice(0,10)}.opml`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),4e3);toast(`${L.length} ${L.length===1?'fuente exportada':'fuentes exportadas'}`)};
 $('#oi').onchange=async e=>{const f=e.target.files[0];if(!f)return;const d=new DOMParser().parseFromString(await f.text(),'text/xml');let n=0;
  d.querySelectorAll('outline[xmlUrl]').forEach(o=>{const url=(o.getAttribute('xmlUrl')||'').trim();const nm=(o.getAttribute('text')||o.getAttribute('title')||url).slice(0,80);if(n>=500||!/^https?:\/\//i.test(url)||url.length>2000||S.src.some(s=>s.url===url||srcKey(s)===srcKey({name:nm})))return;S.src.push({id:'u'+Date.now()+n,name:nm,url,cat:((o.getAttribute('category')||'General').trim().slice(0,24))||'General',on:true});n++});
  saveSrc();e.target.value='';toast(`${n} fuentes importadas`);if(n)load()};

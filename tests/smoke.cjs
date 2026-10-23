@@ -144,6 +144,12 @@ async function run(browser, label, viewport, mobile) {
     TR.list.push({ id: 'viejo', t: 'x', w: ['zzzqqq'], c: Date.now() - 8 * 864e5, l: Date.now() - 8 * 864e5 }); trPrune(); const pruned = !TR.list.some(t => t.id === 'viejo');
     TR.list = []; trSave(); render(); return { sug, cnt, tab, lab, all, n, bar, pruned, back: S.cat } });
   ok(fw.tab && fw.lab > 0 && fw.all && fw.n > 0 && fw.bar && fw.pruned && fw.back === 'Todas' && /coinciden/.test(fw.cnt), `seguir una noticia: etiqueta, pestaña, solo lo que coincide y caducidad (${JSON.stringify(fw)})`);
+  // 6f) Exportar fuentes eligiendo categorías
+  const ex = await p.evaluate(async () => { let out = ''; const o = URL.createObjectURL; URL.createObjectURL = b => { b.text().then(t => out = t); URL.createObjectURL = o; return o.call(URL, b) };
+    document.querySelector('#ox').click(); await new Promise(r => setTimeout(r, 200)); const boxes = [...document.querySelectorAll('.askc input')]; const drop = boxes[0].value; boxes[0].checked = false;
+    document.querySelector('.askd [data-a="1"]').click(); await new Promise(r => setTimeout(r, 400)); const cats = [...out.matchAll(/category="([^"]*)"/g)].map(m => m[1]);
+    return { n: boxes.length, drop, has: cats.includes(drop.replace(/&/g, '&amp;')), total: cats.length, all: S.src.length } });
+  ok(ex.n > 2 && !ex.has && ex.total > 0 && ex.total < ex.all, `exportar fuentes deja quitar categorías (${JSON.stringify(ex)})`);
   // 6b) El color elegido va a la cookie nz_ic (el manifest no cambia de dirección); un color libre usa el más parecido
   const ico = await p.evaluate(() => { const m = () => document.querySelector('link[rel=manifest]').getAttribute('href'), ck = () => (document.cookie.match(/nz_ic=([a-z]*)/) || [])[1];
     document.querySelector('#sws .swc[data-i="2"]').click(); const r = [m(), ck(), nzIco(200, .9), nzIco(10, .1), nzIco(150, .8)]; document.querySelector('#sws .swc[data-i="0"]').click(); r.push(m(), ck()); return r });
