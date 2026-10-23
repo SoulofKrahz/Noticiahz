@@ -302,7 +302,8 @@ body.qs .qd{display:flex}.qd input{flex:1;min-width:0;padding:10px 12px;border:1
 .am::before{content:"";position:absolute;top:9px;left:50%;width:38px;height:4px;margin-left:-19px;border-radius:4px;background:var(--bd)}
 .am:not([hidden]){animation:sheet .22s cubic-bezier(.2,.8,.2,1)}#aov{z-index:44;touch-action:none}
 .amh{padding:2px 2px 12px}.amh b{font:600 17px/1.3 Newsreader,Georgia,serif;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}.amh small{color:var(--mu);font-size:13px}
-.amr{display:flex;gap:8px;margin-bottom:14px}.amr button{flex:1;padding:12px 6px;border:1px solid var(--bd);border-radius:12px;background:var(--bg);font-weight:600;font-size:13.5px}.amr button:active{background:var(--tint);color:var(--em)}
+.amr{display:flex;gap:8px;margin-bottom:14px}.amr button{flex:1;padding:12px 6px;border:1px solid var(--bd);border-radius:12px;background:var(--bg);font-weight:600;font-size:13.5px}.amg{display:grid;grid-template-columns:repeat(3,1fr)}.amg button{min-height:46px;line-height:1.2}
+.amr button:active{background:var(--tint);color:var(--em)}
 .amt{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:12.5px;font-weight:600;color:var(--mu);padding:2px 2px 8px}.am .seg button{flex:none;padding:6px 12px;font-size:12.5px}.am .af{padding-bottom:4px}
 #rvf{overflow-x:auto;scrollbar-width:none}#rvf button{flex:none;white-space:nowrap;padding:9px 12px}.row small.rvm{white-space:normal}.dsh{margin:18px 4px 8px;font:600 13px Inter,sans-serif;color:var(--mu);text-transform:uppercase;letter-spacing:.04em}.dsi{align-items:flex-start}.dse{display:block;margin-top:6px;font-size:13px;line-height:1.35;color:var(--tx);text-decoration:none;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.dse::before{content:'· ';color:var(--mu)}.dsbt{display:flex;flex-direction:column;gap:4px;align-items:stretch;flex:none}.dsbt .btn{margin:0;padding:8px 14px}.dsbt .tb{justify-content:center}.row small.rsn{color:#d23c41;white-space:normal}.rvb{font-size:12.5px;font-weight:600;color:var(--em);padding:6px 10px;border:1px solid var(--em2);border-radius:99px;white-space:nowrap}
 .lgi rect{fill:var(--em2)}.lgi .n{stroke:var(--lgn,#06150f)}.lgi .h{stroke:var(--lgh,none)}
@@ -967,7 +968,9 @@ S.lv=ls.get('nz_lv',0);{let hid=0;document.addEventListener('visibilitychange',(
 // Noticias sin resumen (o con uno que solo repite el titular): el lector no aportaría nada, así que la tarjeta va directa a la web
 const thin=a=>{if(!a||a.alert||S.pf.sr)return false;const t=(a.snip||'').trim();if(t.length<100)return true;const k=n2(a.title).slice(0,50);return!!k&&n2(t).startsWith(k)&&t.length<a.title.length+60};
 // Ojo: window.open es nuestra función open() del lector (declarada global), así que se abre con un enlace normal
-function goWeb(a,el){if(!a||!a.link)return;markRead(a);if(el)el.classList.add('rd');const l=document.createElement('a');l.href=a.link;l.target='_blank';l.rel='noopener noreferrer';document.body.appendChild(l);l.click();l.remove()}
+// Repinta una tarjeta (p. ej. para que salga «Leída»). Con un respiro: si se repinta durante el toque, el enlace no llega a abrirse
+const cardRefresh=el=>setTimeout(()=>{if(!el||!el.isConnected)return;const k=+el.dataset.k;if(S.V[k])el.outerHTML=card(S.V[k],k,el.classList.contains('hero'))},60);
+function goWeb(a,el){if(!a||!a.link)return;markRead(a);if(el){el.classList.add('rd');cardRefresh(el)}const l=document.createElement('a');l.href=a.link;l.target='_blank';l.rel='noopener noreferrer';document.body.appendChild(l);l.click();l.remove()}
 function card(a,i,hero){try{return cardRaw(a,i,hero)}catch(e){errLog('Tarjeta «'+String(a&&a.title).slice(0,40)+'»: '+e.message);return''}}
 function cardRaw(a,i,hero){
  const bm=S.fav[a.id]?'on':'';
@@ -1108,7 +1111,7 @@ function sub(k,lazy){const M={l:'p1',r:'p5',c:'p4',d:'pD'};for(const x in M){$('
 
 $('#grid').addEventListener('click',e=>{
  if(Date.now()-(S.sw||0)<400)return;
- const go=e.target.closest('[data-go]');if(go){const k=go.closest('.card'),a=k&&S.V[+k.dataset.k];if(a){markRead(a);k.classList.add('rd')}return}
+ const go=e.target.closest('[data-go]');if(go){const k=go.closest('.card'),a=k&&S.V[+k.dataset.k];if(a){markRead(a);k.classList.add('rd');cardRefresh(k)}return}
  const al=e.target.closest('[data-also]');if(al){e.stopPropagation();openAlso(al.closest('.card'));return}
  const sh=e.target.closest('[data-sh]');if(sh){e.stopPropagation();const k=sh.closest('.card'),a=k&&S.V[+k.dataset.k];if(a)shareArt(a);return}
  if(e.target.id==='retry')return load();
@@ -1555,7 +1558,7 @@ function titleWords(t){const seen=new Set(),out=[];(t.match(/[\p{L}\p{N}][\p{L}\
 const AM={a:null,c:null,mode:'mute',t:0};
 function amDraw(){const a=AM.a,sv=!!S.fav[a.id],rd=S.rd.has(a.id);
  $('#am').innerHTML=`<div class="amh"><b>${esc(a.title)}</b><small>${esc(a.src)}</small></div>
- <div class="amr"><button data-am="save">${sv?'Quitar de guardadas':'Guardar'}</button><button data-am="read">${rd?'Marcar no leída':'Marcar leída'}</button><button data-am="copy">Copiar enlace</button><button data-am="track">${trOf(a)?'Dejar de seguir':'Seguir esta noticia'}</button></div>
+ <div class="amr amg"><button data-am="save">${sv?'Quitar de guardadas':'Guardar'}</button><button data-am="read">${rd?'Marcar no leída':'Marcar leída'}</button>${thin(a)?'<button data-am="reader">Ver en el lector</button>':''}<button data-am="copy">Copiar enlace</button><button data-am="track">${trOf(a)?'Dejar de seguir':'Seguir'}</button></div>
  <div class="amt">Silenciar «${esc(a.src)}»</div>
  <div class="amr"><button data-sm="7">7 días</button><button data-sm="30">30 días</button><button data-sm="1">Siempre</button></div>
  <div class="amt"><span>Palabras del título</span><div class="seg"><button data-mode="mute" class="${AM.mode==='mute'?'on':''}">Silenciar</button><button data-mode="follow" class="${AM.mode==='follow'?'on':''}">Destacar</button></div></div>
@@ -1579,6 +1582,7 @@ $('#am').addEventListener('click',async e=>{const a=AM.a;if(!a)return;
  const b=e.target.closest('[data-am]');
  if(b){const k=b.dataset.am;
   if(k==='save'){const was=!!S.fav[a.id];fav(a);favCnt();amClose();if(S.cat==='Guardadas')render();else if(AM.c&&AM.c.isConnected)favMark(AM.c,!was)}
+  else if(k==='reader'){amCloseThen(()=>open(a))}
   else if(k==='track'){const t=trOf(a);if(t){amClose();if(await trStop(t))render()}else{AM.mode='track';AM.tr=trSuggest(a);trDraw()}}
   else if(k==='read'){S.rd.has(a.id)?S.rd.delete(a.id):S.rd.add(a.id);saveRd();amClose();render()}
   else{if(navigator.clipboard)navigator.clipboard.writeText(a.link).then(()=>toast('Enlace copiado'),()=>toast('No se pudo copiar'));amClose()}
