@@ -772,7 +772,7 @@ async function pool(items,n,fn){let i=0;await Promise.all(Array.from({length:Mat
 function timed(fn,ms=10000){const c=new AbortController();const id=setTimeout(()=>c.abort(),ms);return fn(c.signal).finally(()=>clearTimeout(id))}
 
 // Proxy propio: /p/<host>/… lo atiende _worker.js (Cloudflare Pages). Ningún servicio de terceros ve qué lees.
-const VER='2026-10-23-2';
+const VER='2026-10-23-3';
 if(!ls.get('nz_fu',0))ls.set('nz_fu',Date.now());
 const px=u=>{const x=new URL(u);return '/p/'+x.host+x.pathname+x.search};
 // Si la respuesta de error no lleva la marca X-Nz, no la dio nuestro proxy sino Cloudflare (límite diario gratuito o caída): se anota como 'cf'
@@ -966,7 +966,8 @@ const lvSep=i=>i===S.lvI?`<div class="lvs" role="separator"><span>Tu última vis
 S.lv=ls.get('nz_lv',0);{let hid=0;document.addEventListener('visibilitychange',()=>{if(document.hidden){hid=Date.now();ls.set('nz_lv',hid)}else if(hid&&Date.now()-hid>18e5){S.lv=hid;hid=0;render()}});addEventListener('pagehide',()=>ls.set('nz_lv',Date.now()))}
 // Noticias sin resumen (o con uno que solo repite el titular): el lector no aportaría nada, así que la tarjeta va directa a la web
 const thin=a=>{if(!a||a.alert||S.pf.sr)return false;const t=(a.snip||'').trim();if(t.length<100)return true;const k=n2(a.title).slice(0,50);return!!k&&n2(t).startsWith(k)&&t.length<a.title.length+60};
-function goWeb(a,el){if(!a||!a.link)return;markRead(a);if(el)el.classList.add('rd');window.open(a.link,'_blank','noopener')}
+// Ojo: window.open es nuestra función open() del lector (declarada global), así que se abre con un enlace normal
+function goWeb(a,el){if(!a||!a.link)return;markRead(a);if(el)el.classList.add('rd');const l=document.createElement('a');l.href=a.link;l.target='_blank';l.rel='noopener noreferrer';document.body.appendChild(l);l.click();l.remove()}
 function card(a,i,hero){try{return cardRaw(a,i,hero)}catch(e){errLog('Tarjeta «'+String(a&&a.title).slice(0,40)+'»: '+e.message);return''}}
 function cardRaw(a,i,hero){
  const bm=S.fav[a.id]?'on':'';
@@ -1028,7 +1029,7 @@ $('#rbl').addEventListener('change',e=>{const k=e.target.dataset.rbt;if(!k)retur
 function rdBar(a){if(!a)return;const sv=!!S.fav[a.id],fw=!!trOf(a);$('#dbm').classList.toggle('on',sv);$('#dbm span').textContent=sv?'Guardada':'Guardar';$('#dfw').classList.toggle('on',fw);$('#dfw span').textContent=fw?'Siguiendo':'Seguir'}
 function bodyOf(a){const b=a.html?clean(a.html,a.img):'';return txt(b)||/<img/i.test(b)?b:`<p>${esc(a.snip||(vid(a)?'Sin descripción. Abre el vídeo para verlo.':'Sin vista previa. Abre el artículo completo para leerlo.'))}</p>`}
 function open(a){
- S.cur=a;(S.rdo=S.rdo||new Set()).add(a.id);markRead(a);try{speechSynthesis.cancel()}catch(e){}$('#dt')?.classList.remove('on');$('#rp').style.width=0;const k=pos();$('#dp').disabled=k<1;$('#dnx').disabled=k<0||k>=S.V.length-1;
+ if(!a||typeof a!=='object'||!a.title)return;S.cur=a;(S.rdo=S.rdo||new Set()).add(a.id);markRead(a);try{speechSynthesis.cancel()}catch(e){}$('#dt')?.classList.remove('on');$('#rp').style.width=0;const k=pos();$('#dp').disabled=k<1;$('#dnx').disabled=k<0||k>=S.V.length-1;
  let body=bodyOf(a);if(!a.html&&!S.bodyOk&&S.bodyP)S.bodyP.then(()=>{if(S.cur===a&&a.html){const el=$('#art .body');if(el)el.innerHTML=bodyOf(a)}});const im=a.img?`<img class="hi" src="${esc(a.img)}" alt="" referrerpolicy="no-referrer" onerror="this.remove()">`:'';
  $('#art').innerHTML=`<div class="meta"><span class="chip">${esc(a.src)}</span><span>${new Date(a.date).toLocaleString('es-ES',{dateStyle:'long',timeStyle:'short'})}</span>${vid(a)?'<span>▶ Vídeo</span>':''}${'speechSynthesis' in window?'<button class="ttsb" id="dt" aria-label="Escuchar la noticia"><svg class="i"><use href="#v"/></svg>Escuchar</button>':''}</div>
  <h2>${esc(a.title)}</h2>${a.img?(vid(a)?`<a class="vh" href="${esc(a.link)}" target="_blank" rel="noopener noreferrer" aria-label="${esc(act(a).t)}">${im}<span class="pl"></span></a>`:im):''}
@@ -1633,7 +1634,8 @@ $('#pD').addEventListener('click',e=>{
  const df=e.target.closest('[data-dsdef]');if(df){const d=DEFAULTS.find(y=>y.id===df.dataset.dsdef);if(!d)return;if(!S.cats.includes(d.cat)){S.cats.push(d.cat);ls.set('nz_cats',S.cats)}S.src.push({...d,on:true});saveSrc();dsUi();toast(`«${d.name}» añadida`);S.ft[d.id]=0;load()}});
 // ---- Novedades: resumen de lo que ha cambiado en cada versión (la primera es siempre la actual) ----
 const CHANGES=[
- [VER,['El lector tiene la barra de acciones abajo, como el feed, y puedes elegir su orden en Ajustes → Apariencia','Las noticias sin resumen se marcan «Web» y se abren directamente en su página','Exportar fuentes deja elegir qué categorías incluir','Al comprobar una fuente con aviso, solo queda «Guardar así»','Nueva categoría y confirmaciones con ventanas propias de la app','Este apartado de Novedades']],
+ [VER,['Las noticias marcadas «Web» se abren de verdad en su página (antes abrían un lector vacío)']],
+ ['2026-10-23-2',['El lector tiene la barra de acciones abajo, como el feed, y puedes elegir su orden en Ajustes → Apariencia','Las noticias sin resumen se marcan «Web» y se abren directamente en su página','Exportar fuentes deja elegir qué categorías incluir','Al comprobar una fuente con aviso, solo queda «Guardar así»','Nueva categoría y confirmaciones con ventanas propias de la app','Este apartado de Novedades']],
  ['2026-10-23-1',['Abrir y cerrar Ajustes y el lector responde mucho más rápido','Las primeras fotos del feed aparecen antes']],
  ['2026-10-23-0',['Seguir una noticia: etiqueta «Siguiendo» y pestaña con cada historia durante 7 días']],
  ['2026-10-22-2',['Al cerrar Ajustes se borra lo que quedó a medias (búsquedas, textos)']],

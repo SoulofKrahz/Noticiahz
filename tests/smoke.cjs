@@ -59,7 +59,7 @@ async function run(browser, label, viewport, mobile) {
 
   // 2) Uso normal
   await p.evaluate(() => { localStorage.setItem('nz_ob', '1'); localStorage.setItem('nz_pf', JSON.stringify({ az: 'x' })) });
-  await p.goto(BASE); await idle();
+  await p.goto(BASE); await idle(); await p.waitForFunction(() => S.last && !S.loading, null, { timeout: 30000 }); // la primera actualización empieza tras cargar los textos
   const n = await p.evaluate(() => document.querySelectorAll('#grid .card').length);
   ok(n > 10, `carga noticias de los feeds (${n} tarjetas)`);
   const dids = await p.evaluate(() => { const c = {}; document.querySelectorAll('[id]').forEach(e => c[e.id] = (c[e.id] || 0) + 1); return Object.keys(c).filter(k => c[k] > 1) });
@@ -89,7 +89,7 @@ async function run(browser, label, viewport, mobile) {
   ok(q[0] > 0 && q[1] === 0, `la búsqueda filtra (IA: ${q[0]}, sin resultados: ${q[1]})`);
 
   // 5) Lector
-  const np = await p.evaluate(() => { const c = document.querySelector('#grid .card.nwb'); if (!c) return null; const o = window.open; let u = ''; window.open = x => { u = x }; c.querySelector('h3').click(); window.open = o; return { web: /^https:/.test(u), mark: !!c.querySelector('.npm'), reader: document.querySelector('#dr').classList.contains('show') } });
+  const np = await p.evaluate(() => { const c = document.querySelector('#grid .card.nwb'); if (!c) return null; let u = ''; const cap = e => { const l = e.target.closest && e.target.closest('a[target=_blank]'); if (l && !l.closest('#grid')) { u = l.href; e.preventDefault() } }; document.addEventListener('click', cap, true); c.querySelector('h3').click(); document.removeEventListener('click', cap, true); return { web: /^https:/.test(u), mark: !!c.querySelector('.npm'), reader: document.querySelector('#dr').classList.contains('show') } });
   ok(np && np.web && np.mark && !np.reader, `una noticia sin resumen va marcada «Web» y abre directamente la web (${JSON.stringify(np)})`);
   await p.evaluate(() => document.querySelector('#grid .card:not(.nwb) h3').click()); await p.waitForTimeout(400);
   ok(await p.evaluate(() => document.querySelector('#dr').classList.contains('show')), 'abre el lector');
