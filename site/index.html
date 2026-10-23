@@ -146,6 +146,8 @@ header{transition:transform .25s}header.hd{transform:translateY(-100%)}
 .add .w{grid-column:1/-1}
 #askov{z-index:70}.askd{position:fixed;z-index:71;left:50%;top:50%;transform:translate(-50%,-50%);width:min(420px,calc(100vw - 32px));max-height:calc(100dvh - 48px);overflow-y:auto;background:var(--card);border:1px solid var(--bd);border-radius:18px;padding:20px;box-shadow:0 24px 60px -20px #0009;animation:popin .16s ease-out}
 .askd h3{font:600 19px/1.25 Newsreader,serif;margin:0 0 8px}.askd p{white-space:pre-line;color:var(--mu);font-size:14.5px;line-height:1.5;margin:0 0 18px}.askq{display:flex;gap:8px;margin:0 0 8px}.askq button{font-size:13px;font-weight:600;color:var(--em);padding:4px 2px}.askc{max-height:45dvh;overflow-y:auto;margin:0 0 14px;border:1px solid var(--bd);border-radius:12px;padding:4px 12px}.askc label{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--bd);font-size:14.5px;cursor:pointer}.askc label:last-child{border-bottom:0}.askc input{width:19px;height:19px;accent-color:var(--em);flex:none}
+.rbg .gb:disabled{opacity:.25}
+.chgl{max-height:55dvh;overflow-y:auto;margin:0 0 14px}.chgl section{padding:10px 0;border-bottom:1px solid var(--bd)}.chgl section:last-child{border-bottom:0}.chgl h4{margin:0 0 6px;font:600 14px Inter,sans-serif}.chgl h4 small{color:var(--em);font-weight:600}.chgl ul{margin:0;padding-left:18px;font-size:13.5px;line-height:1.45;color:var(--tx)}.chgl li{margin:3px 0}
 .aski{width:100%;margin:4px 0 14px;padding:11px 12px;border:1px solid var(--bd);border-radius:10px;background:var(--bg);color:var(--tx);font-size:16px}.askb{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}.askb .btn{margin:0;min-width:110px;justify-content:center}
 .btn.dg{background:#c0392b;border-color:#c0392b;color:#fff}
 .add.pop{position:fixed;z-index:56;left:50%;top:50%;transform:translate(-50%,-50%);width:min(520px,calc(100vw - 32px));max-height:calc(100dvh - 48px);overflow-y:auto;margin:0;box-shadow:0 24px 60px -20px #0009;animation:popin .18s ease-out}
@@ -430,7 +432,7 @@ main .card .ph{border-radius:0;background:var(--tint);aspect-ratio:16/9}.card .p
   <div class="art" id="art"></div>
   <nav class="db" aria-label="Acciones de la noticia">
     <button id="dp" aria-label="Anterior"><svg class="i"><use href="#l"/></svg><span>Anterior</span></button>
-    <button id="dn" aria-label="Siguiente"><svg class="i"><use href="#n"/></svg><span>Siguiente</span></button>
+    <button id="dnx" aria-label="Siguiente"><svg class="i"><use href="#n"/></svg><span>Siguiente</span></button>
     <button id="dbm" aria-label="Guardar"><svg class="i"><use href="#b"/></svg><span>Guardar</span></button>
     <button id="dfw" aria-label="Seguir esta noticia"><svg class="i"><use href="#fw"/></svg><span>Seguir</span></button>
     <button id="dsh" aria-label="Compartir"><svg class="i"><use href="#h"/></svg><span>Compartir</span></button>
@@ -487,7 +489,7 @@ main .card .ph{border-radius:0;background:var(--tint);aspect-ratio:16/9}.card .p
         <section class="set"><h3>Tema y color</h3><p>Se aplica al instante y se guarda en este dispositivo.</p>
           <div class="seg" id="sg-th"><button data-v="auto">Automático</button><button data-v="light">Claro</button><button data-v="dark">Oscuro</button></div>
           <div class="sws" id="sws" role="radiogroup" aria-label="Color de la app"></div>
-          <div class="row" style="border:0;padding:14px 0 0"><div><b id="swn">Esmeralda</b><small style="white-space:normal">Color personalizado: la app ajusta el contraste sola. El icono de la app instalada toma el color de la paleta más parecido.</small></div><input type="color" id="acc" aria-label="Color personalizado" style="width:46px;height:38px;border:1px solid var(--bd);border-radius:10px;background:none;padding:2px;flex:none"></div></section><section class="set"><h3>Lectura</h3><p>Tamaño del texto de las noticias.</p>
+          <div class="row" style="border:0;padding:14px 0 0"><div><b id="swn">Esmeralda</b><small style="white-space:normal">Color personalizado: la app ajusta el contraste sola. El icono de la app instalada toma el color de la paleta más parecido.</small></div><input type="color" id="acc" aria-label="Color personalizado" style="width:46px;height:38px;border:1px solid var(--bd);border-radius:10px;background:none;padding:2px;flex:none"></div></section><section class="set"><h3>Barra del lector</h3><p>Qué botones salen abajo al leer una noticia y en qué orden (de izquierda a derecha).</p><div id="rbl"></div></section><section class="set"><h3>Lectura</h3><p>Tamaño del texto de las noticias.</p>
           <div class="seg" id="sg-fs"><button data-v="0.9">Pequeño</button><button data-v="1">Normal</button><button data-v="1.15">Grande</button></div></section><section class="set"><h3>Tarjetas</h3><p>Cómo se ven y cómo se manejan las noticias.</p><div class="gc"><div class="row"><div><b>Abrir siempre en el lector</b><small style="white-space:normal">Apagado: las noticias sin resumen (marcadas «Web») se abren directamente en su web.</small></div><label class="sw"><input type="checkbox" data-pf="sr" aria-label="Abrir siempre en el lector"><span></span></label></div><div class="row"><div><b>Ocultar imágenes</b><small style="white-space:normal">Lista más compacta y menos datos.</small></div><label class="sw"><input type="checkbox" data-pf="np" aria-label="Ocultar imágenes"><span></span></label></div><div class="row"><div><b>Atenuar noticias leídas</b><small style="white-space:normal">Las ya abiertas se ven más apagadas.</small></div><label class="sw"><input type="checkbox" data-pf="dr" aria-label="Atenuar leídas"><span></span></label></div><div class="row"><div><b>Invertir el deslizamiento</b><small style="white-space:normal">Izquierda guarda y derecha descarta.</small></div><label class="sw"><input type="checkbox" data-pf="sw" aria-label="Invertir deslizamiento"><span></span></label></div></div></section>
       </div>
       <div id="pC" hidden>
@@ -511,7 +513,7 @@ main .card .ph{border-radius:0;background:var(--tint);aspect-ratio:16/9}.card .p
           <div class="seg" id="sg-rf"><button data-v="30">30 min</button><button data-v="60">1 hora</button><button data-v="0">Nunca</button></div></section><section class="set"><h3>Noticias por fuente</h3><p>Cuántas páginas de cada fuente se descargan. Más páginas = más noticias, pero tarda más. Si una web no permite páginas, solo se cargan sus últimas.</p>
           <div class="seg" id="sg-dp"><button data-v="1">Últimas</button><button data-v="3">Amplio</button><button data-v="8">Máximo</button></div></section><section class="set"><h3>Almacenamiento</h3><p id="stg">Calculando…</p></section>
         <details id="lgd" class="set" style="margin-top:4px"><summary style="font:600 15px Inter,sans-serif;cursor:pointer">Registro de actividad</summary><p style="margin:6px 0 10px">Qué pasó en cada actualización y qué fuentes fallaron y por qué. «Copiar» lo prepara en texto para enviarlo.</p><div id="p2"></div></details>
-        <div class="abt"><div class="logo" style="margin:0" role="img" aria-label="Noticiahz"><svg class="lgi" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="15" fill="#0a9d5c"/><path class="n" d="M21.5 17.5V50M21.5 34C21.5 25 27 22 33 22C40 22 44 26.5 44 33V50" fill="none" stroke="#06150f" stroke-width="9"/><path class="h" d="M7 41H25L29 29L34 51L38 36L41 41H57" fill="none" stroke="none" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 41H25L29 29L34 51L38 36L41 41H57" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="lw" aria-hidden="true">noticia<em>hz</em></span><svg class="lp" viewBox="0 0 44 24" aria-hidden="true"><path d="M1 13H13L17 2L23 21L27 8L30 13H43"/></svg></div><span>Diseñado y creado por <strong>Krahz</strong></span><p class="hint" id="ver"></p></div>
+        <div class="abt"><div class="logo" style="margin:0" role="img" aria-label="Noticiahz"><svg class="lgi" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="15" fill="#0a9d5c"/><path class="n" d="M21.5 17.5V50M21.5 34C21.5 25 27 22 33 22C40 22 44 26.5 44 33V50" fill="none" stroke="#06150f" stroke-width="9"/><path class="h" d="M7 41H25L29 29L34 51L38 36L41 41H57" fill="none" stroke="none" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 41H25L29 29L34 51L38 36L41 41H57" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="lw" aria-hidden="true">noticia<em>hz</em></span><svg class="lp" viewBox="0 0 44 24" aria-hidden="true"><path d="M1 13H13L17 2L23 21L27 8L30 13H43"/></svg></div><span>Diseñado y creado por <strong>Krahz</strong></span><p class="hint" id="ver"></p><button class="tb" id="chg" style="color:var(--em)"><svg class="i"><use href="#ck"/></svg>Novedades</button></div>
       </div>
     </div>
   </div>
@@ -1015,10 +1017,18 @@ function trBar(){const now=Date.now(),L=dedupeC(trList());return`<div class="trb
  return`<div class="trs ${S.tf===t.id?'on':''}"><button class="trf" data-tf="${esc(t.id)}" title="${esc(t.t)}"><b>${esc(t.w.join(' + '))}</b><small>${n} ${n===1?'noticia':'noticias'} · caduca en ${left} ${left===1?'día':'días'} sin novedades</small></button><button class="ib trx" data-tx="${esc(t.id)}" aria-label="Dejar de seguir"><svg class="i"><use href="#x"/></svg></button></div>`}).join('')}</div>`}
 const pos=()=>S.V.findIndex(x=>x.id===S.cur.id);
 function go(d){const n=S.V[pos()+d];if(n)open(n)}
+// Orden de la barra del lector: lista de botones visibles (S.pf.rb). «Volver» siempre está.
+const RB={bm:['dbm','Guardar'],fw:['dfw','Seguir'],p:['dp','Anterior'],n:['dnx','Siguiente'],sh:['dsh','Compartir'],x:['dx','Volver']},RB0=['bm','fw','p','n','x'];
+const rbOn=()=>{const v=Array.isArray(S.pf.rb)?S.pf.rb.filter(k=>RB[k]):RB0;return v.includes('x')?v:[...v,'x']};
+function rbApply(){const nav=$('.db'),on=rbOn();Object.keys(RB).forEach(k=>{$('#'+RB[k][0]).hidden=!on.includes(k)});on.forEach(k=>nav.appendChild($('#'+RB[k][0])))}
+function rbUi(){const on=rbOn(),all=[...on,...Object.keys(RB).filter(k=>!on.includes(k))];
+ $('#rbl').innerHTML=`<div class="gc rbg">${all.map(k=>{const v=on.includes(k),i=on.indexOf(k);return`<div class="row"><label class="sw"><input type="checkbox" data-rbt="${k}" ${v?'checked':''} ${k==='x'?'disabled':''} aria-label="Mostrar ${RB[k][1]}"><span></span></label><div><b>${RB[k][1]}</b>${k==='x'?'<small>Siempre visible</small>':''}</div>${v?`<button class="gb" data-rbm="${k}" data-d="-1" aria-label="Mover a la izquierda" ${i===0?'disabled':''}><svg class="i"><use href="#u"/></svg></button><button class="gb" data-rbm="${k}" data-d="1" aria-label="Mover a la derecha" ${i===on.length-1?'disabled':''}><svg class="i"><use href="#dn"/></svg></button>`:''}</div>`}).join('')}</div>`}
+$('#rbl').addEventListener('click',e=>{const m=e.target.closest('[data-rbm]');if(!m)return;const on=rbOn(),i=on.indexOf(m.dataset.rbm),j=i+ +m.dataset.d;if(i<0||j<0||j>=on.length)return;[on[i],on[j]]=[on[j],on[i]];S.pf.rb=on;savePf();rbApply();rbUi()});
+$('#rbl').addEventListener('change',e=>{const k=e.target.dataset.rbt;if(!k)return;let on=rbOn();on=e.target.checked?[...on.filter(x=>x!=='x'),k,'x']:on.filter(x=>x!==k);S.pf.rb=on;savePf();rbApply();rbUi()});
 function rdBar(a){if(!a)return;const sv=!!S.fav[a.id],fw=!!trOf(a);$('#dbm').classList.toggle('on',sv);$('#dbm span').textContent=sv?'Guardada':'Guardar';$('#dfw').classList.toggle('on',fw);$('#dfw span').textContent=fw?'Siguiendo':'Seguir'}
 function bodyOf(a){const b=a.html?clean(a.html,a.img):'';return txt(b)||/<img/i.test(b)?b:`<p>${esc(a.snip||(vid(a)?'Sin descripción. Abre el vídeo para verlo.':'Sin vista previa. Abre el artículo completo para leerlo.'))}</p>`}
 function open(a){
- S.cur=a;(S.rdo=S.rdo||new Set()).add(a.id);markRead(a);try{speechSynthesis.cancel()}catch(e){}$('#dt')?.classList.remove('on');$('#rp').style.width=0;const k=pos();$('#dp').disabled=k<1;$('#dn').disabled=k<0||k>=S.V.length-1;
+ S.cur=a;(S.rdo=S.rdo||new Set()).add(a.id);markRead(a);try{speechSynthesis.cancel()}catch(e){}$('#dt')?.classList.remove('on');$('#rp').style.width=0;const k=pos();$('#dp').disabled=k<1;$('#dnx').disabled=k<0||k>=S.V.length-1;
  let body=bodyOf(a);if(!a.html&&!S.bodyOk&&S.bodyP)S.bodyP.then(()=>{if(S.cur===a&&a.html){const el=$('#art .body');if(el)el.innerHTML=bodyOf(a)}});const im=a.img?`<img class="hi" src="${esc(a.img)}" alt="" referrerpolicy="no-referrer" onerror="this.remove()">`:'';
  $('#art').innerHTML=`<div class="meta"><span class="chip">${esc(a.src)}</span><span>${new Date(a.date).toLocaleString('es-ES',{dateStyle:'long',timeStyle:'short'})}</span>${vid(a)?'<span>▶ Vídeo</span>':''}${'speechSynthesis' in window?'<button class="ttsb" id="dt" aria-label="Escuchar la noticia"><svg class="i"><use href="#v"/></svg>Escuchar</button>':''}</div>
  <h2>${esc(a.title)}</h2>${a.img?(vid(a)?`<a class="vh" href="${esc(a.link)}" target="_blank" rel="noopener noreferrer" aria-label="${esc(act(a).t)}">${im}<span class="pl"></span></a>`:im):''}
@@ -1082,7 +1092,7 @@ function renCat(o){const n=(prompt('Nuevo nombre de la categoría',o)||'').trim(
 // Diálogo de confirmación con el estilo de la app (sustituye a confirm()). Devuelve una promesa true/false.
 function ask(msg,o={}){return new Promise(res=>{const ov=document.createElement('div'),d=document.createElement('div');ov.className='ov show';ov.id='askov';d.className='askd';d.setAttribute('role','alertdialog');d.setAttribute('aria-modal','true');
  d.innerHTML=`${o.title?`<h3>${esc(o.title)}</h3>`:''}<p></p>${o.checks?`<div class="askq"><button type="button" data-all="1">Todas</button><button type="button" data-all="0">Ninguna</button></div><div class="askc">${o.checks.map(c=>`<label><input type="checkbox" value="${esc(c.v)}" ${c.on?'checked':''}><span>${esc(c.label)}</span></label>`).join('')}</div>`:''}${o.input?`<input class="aski" maxlength="${o.input.max||40}" placeholder="${esc(o.input.ph||'')}" autocomplete="off" enterkeyhint="done">`:''}<div class="askb"><button class="btn o" data-a="0">${esc(o.no||'Cancelar')}</button><button class="btn${o.danger?' dg':''}" data-a="1">${esc(o.ok||'Aceptar')}</button></div>`;
- d.querySelector('p').textContent=msg;d.querySelector('p').hidden=!msg;const inp=d.querySelector('.aski'),prev=document.activeElement;
+ d.querySelector('p').textContent=msg;d.querySelector('p').hidden=!msg;if(o.html)d.querySelector('p').insertAdjacentHTML('afterend',o.html);if(o.single)d.querySelector('[data-a="0"]').remove();const inp=d.querySelector('.aski'),prev=document.activeElement;
  const end=v=>{removeEventListener('keydown',kd,true);ov.remove();d.remove();try{prev&&prev.focus&&prev.focus({preventScroll:true})}catch(e){}res(v)},kd=e=>{if(e.key==='Escape'){e.stopPropagation();e.preventDefault();end(false)}};
  ov.onclick=()=>end(false);d.onclick=e=>{const al=e.target.closest('[data-all]');if(al){d.querySelectorAll('.askc input').forEach(i=>i.checked=al.dataset.all==='1');return}const b=e.target.closest('[data-a]');if(b){if(b.dataset.a==='1'&&o.checks){const v=[...d.querySelectorAll('.askc input:checked')].map(i=>i.value);if(!v.length)return;end(v);return}if(b.dataset.a==='1'&&inp){const v=inp.value.trim();if(!v){inp.focus();return}end(v)}else end(b.dataset.a==='1')}};
  if(inp)inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();d.querySelector('[data-a="1"]').click()}});addEventListener('keydown',kd,true);document.body.append(ov,d);(inp||d.querySelector(o.danger?'[data-a="0"]':'[data-a="1"]')).focus()})} // con o.input devuelve el texto escrito (o false)
@@ -1091,7 +1101,7 @@ async function delCat(c){const k=S.src.filter(x=>x.cat===c).length;if(!await ask
 const saveSrc=nr=>{if(!nr)S.dirty=1;syncCats();if(!ls.set('nz_src',S.src))toast('No se pudieron guardar las fuentes: el almacenamiento del navegador está lleno');srcs()};
 const PN={1:'F',6:'A',7:'C',8:'V',9:'B'};
 function tab(n){[1,6,7,8,9].forEach(k=>{$('#t'+k).classList.toggle('on',n===k);$('#p'+PN[k]).hidden=n!==k});if(n>1)tabInit();try{$('#t'+n).scrollIntoView({block:'nearest',inline:'center'})}catch(e){}}
-const tabInit=()=>{lgDraw();stUi();$('#ver').textContent='Versión '+VER;segs();cdTxt();syncPf();mwUi();syncAz();bkTxt();tpUi();lsUi();csnTxt();swUi()};
+const tabInit=()=>{lgDraw();stUi();rbUi();$('#ver').textContent='Versión '+VER;segs();cdTxt();syncPf();mwUi();syncAz();bkTxt();tpUi();lsUi();csnTxt();swUi()};
 function sub(k,lazy){const M={l:'p1',r:'p5',c:'p4',d:'pD'};for(const x in M){$('#'+M[x]).hidden=k!==x;const b=$('#sgF [data-s="'+x+'"]');if(b)b.classList.toggle('on',k===x)}
  const run=()=>{if(k==='r')revUi();else if(k==='c')renderCats();else if(k==='d')dsUi();else srcs()};if(lazy)requestAnimationFrame(()=>setTimeout(run,0));else run()} // lazy: primero se abre la ventana, luego se pinta la lista
 
@@ -1167,7 +1177,7 @@ document.addEventListener('keydown',e=>{
   if(e.key==='r')refresh();
  }
 });
-$('#dp').onclick=()=>go(-1);$('#dn').onclick=()=>go(1);$('#up').onclick=()=>scrollTo({top:0,behavior:'smooth'});
+$('#dp').onclick=()=>go(-1);$('#dnx').onclick=()=>go(1);$('#up').onclick=()=>scrollTo({top:0,behavior:'smooth'});
 let tx=0,ty=0,ly=0;
 $('#dr').addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY},{passive:true});
 $('#dr').addEventListener('touchend',e=>{const t=e.changedTouches[0],dx=t.clientX-tx,dy=t.clientY-ty;if(Math.abs(dx)>90&&Math.abs(dy)<45)go(dx<0?1:-1)},{passive:true});
@@ -1304,7 +1314,7 @@ render(true);
  const tI=performance.now();S.tsc=Math.round(tI);const [n,f,r,dd,sn]=await Promise.all([bigGet('nz_news',[]),bigGet('nz_fav',{}),bigGet('nz_rd',[]),bigGet('nz_dis',[]),bigGet('nz_seen',[])]);S.tdb=Math.round(performance.now()-tI);
  const safe=(f,d)=>{try{return f()}catch(e){errLog('Datos guardados: '+e.message);return d}};
  S.news=(Array.isArray(n)?n:[]).filter(a=>a&&typeof a.id==='string'&&a.id&&typeof a.title==='string'&&isFinite(a.date));{const g=Date.now();S.news.forEach(a=>{if(!a.got)a.got=g})} // noticias de antes de este cambio: cuentan como descargadas hoy, no se recorta nada aún
- S.news.forEach(a=>{if(MOJ.test(a.title||'')){a.title=fixMoj(a.title);a.snip=fixMoj(a.snip);if(a.html)a.html=fixMoj(a.html)}});S.fav=f&&typeof f==='object'&&!Array.isArray(f)?f:{};S.rd=new Set(Array.isArray(r)?r:[]);S.dis=safe(()=>new Map((Array.isArray(dd)?dd:[]).filter(x=>Array.isArray(x)&&x.length===2)),new Map());S.seen=safe(()=>new Map((Array.isArray(sn)?sn:[]).filter(x=>Array.isArray(x)&&x.length===2)),new Map());S.ready=1;try{trPrune()}catch(e){}snapUp();S.t0=Math.round(performance.now());
+ S.news.forEach(a=>{if(MOJ.test(a.title||'')){a.title=fixMoj(a.title);a.snip=fixMoj(a.snip);if(a.html)a.html=fixMoj(a.html)}});S.fav=f&&typeof f==='object'&&!Array.isArray(f)?f:{};S.rd=new Set(Array.isArray(r)?r:[]);S.dis=safe(()=>new Map((Array.isArray(dd)?dd:[]).filter(x=>Array.isArray(x)&&x.length===2)),new Map());S.seen=safe(()=>new Map((Array.isArray(sn)?sn:[]).filter(x=>Array.isArray(x)&&x.length===2)),new Map());S.ready=1;try{trPrune()}catch(e){}try{rbApply()}catch(e){errLog('Barra del lector: '+e.message)}snapUp();S.t0=Math.round(performance.now());
  if(S.news.length)render();else render(true);S.tp=Math.round(performance.now());shareIn();
  // Textos completos: si la lista vieja ya los traía dentro (formato anterior), no hay nada que leer
  S.bodyP=(S.news.some(a=>a.html)?Promise.resolve(null):DB.get('nz_body').catch(()=>null)).then(b=>{
@@ -1621,6 +1631,21 @@ $('#pD').addEventListener('click',e=>{
  const hd=e.target.closest('[data-dshide]');if(hd){DS.hide.push(hd.dataset.dshide);ls.set('nz_dx',DS.hide.slice(-300));dsUi();toast('No volverá a salir en Descubrir');return}
  const ad=e.target.closest('[data-dsadd]');if(ad){const x=DS.res.find(y=>y.h===ad.dataset.dsadd);if(!x)return;resetForm();$('#an').value=x.name;$('#au').value='https://'+x.h+'/';fillCats(dsCat([...x.t][0]));$('#fr').hidden=false;$('#aa').click();return}
  const df=e.target.closest('[data-dsdef]');if(df){const d=DEFAULTS.find(y=>y.id===df.dataset.dsdef);if(!d)return;if(!S.cats.includes(d.cat)){S.cats.push(d.cat);ls.set('nz_cats',S.cats)}S.src.push({...d,on:true});saveSrc();dsUi();toast(`«${d.name}» añadida`);S.ft[d.id]=0;load()}});
+// ---- Novedades: resumen de lo que ha cambiado en cada versión (la primera es siempre la actual) ----
+const CHANGES=[
+ [VER,['El lector tiene la barra de acciones abajo, como el feed, y puedes elegir su orden en Ajustes → Apariencia','Las noticias sin resumen se marcan «Web» y se abren directamente en su página','Exportar fuentes deja elegir qué categorías incluir','Al comprobar una fuente con aviso, solo queda «Guardar así»','Nueva categoría y confirmaciones con ventanas propias de la app','Este apartado de Novedades']],
+ ['2026-10-23-1',['Abrir y cerrar Ajustes y el lector responde mucho más rápido','Las primeras fotos del feed aparecen antes']],
+ ['2026-10-23-0',['Seguir una noticia: etiqueta «Siguiendo» y pestaña con cada historia durante 7 días']],
+ ['2026-10-22-2',['Al cerrar Ajustes se borra lo que quedó a medias (búsquedas, textos)']],
+ ['2026-10-22-1',['El icono instalado puede tomar el color de la app']],
+ ['2026-10-22-0',['Si Google News bloquea, las fuentes se cargan vía Bing Noticias']],
+ ['2026-10-21-10',['Descubrir fuentes nuevas según tus temas','La pestaña «Backup» pasa a llamarse «Datos»']],
+ ['2026-10-21-9',['Aviso de versión nueva más claro']],
+ ['2026-10-21-8',['La app abre unas 3 veces más rápido']],
+ ['2026-10-21-7',['Las fuentes que publican poco ya no pierden sus noticias']],
+ ['2026-10-21-6',['Protección ante fallos: la app se recupera sola y explica los errores']],
+];
+$('#chg').onclick=()=>ask('',{title:'Novedades',ok:'Cerrar',single:1,html:`<div class="chgl">${CHANGES.map(([v,t],i)=>`<section><h4>${esc(v)}${i===0?' <small>· la que tienes</small>':''}</h4><ul>${t.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></section>`).join('')}</div>`});
 // ---- Revisión de fuentes ----
 let rvF='p',rvN=40;
 function revUi(){const now=Date.now(),m=new Map();S.src.forEach(x=>m.set(x.name,{x,n:0,n30:0,last:0,op:0,sv:0,ds:0}));

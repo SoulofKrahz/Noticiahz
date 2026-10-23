@@ -62,6 +62,8 @@ async function run(browser, label, viewport, mobile) {
   await p.goto(BASE); await idle();
   const n = await p.evaluate(() => document.querySelectorAll('#grid .card').length);
   ok(n > 10, `carga noticias de los feeds (${n} tarjetas)`);
+  const dids = await p.evaluate(() => { const c = {}; document.querySelectorAll('[id]').forEach(e => c[e.id] = (c[e.id] || 0) + 1); return Object.keys(c).filter(k => c[k] > 1) });
+  ok(!dids.length, `no hay identificadores repetidos (${dids.join(', ') || 'ninguno'})`);
   ok(await p.evaluate(() => [...document.querySelectorAll('#grid .card')].every(c => !/fixed|absolute/.test(getComputedStyle(c).position))), 'ninguna tarjeta queda flotando (choque de nombres de clase)');
   ok(await p.evaluate(() => /^\d{4}-\d\d-\d\d-[\d.]+$/.test(VER)), 'VER tiene el formato fecha-N');
 
@@ -91,6 +93,7 @@ async function run(browser, label, viewport, mobile) {
   ok(np && np.web && np.mark && !np.reader, `una noticia sin resumen va marcada «Web» y abre directamente la web (${JSON.stringify(np)})`);
   await p.evaluate(() => document.querySelector('#grid .card:not(.nwb) h3').click()); await p.waitForTimeout(400);
   ok(await p.evaluate(() => document.querySelector('#dr').classList.contains('show')), 'abre el lector');
+  ok(await p.evaluate(() => { const a = S.cur; document.querySelector('#dnx').click(); const b = S.cur; document.querySelector('#dp').click(); return a !== b && S.cur === a }), 'Siguiente y Anterior cambian de noticia en el lector');
   await p.keyboard.press('Escape'); await p.waitForTimeout(300);
   ok(await p.evaluate(() => !document.querySelector('#dr').classList.contains('show')), 'cierra el lector con Esc');
 
@@ -150,6 +153,11 @@ async function run(browser, label, viewport, mobile) {
     document.querySelector('.askd [data-a="1"]').click(); await new Promise(r => setTimeout(r, 400)); const cats = [...out.matchAll(/category="([^"]*)"/g)].map(m => m[1]);
     return { n: boxes.length, drop, has: cats.includes(drop.replace(/&/g, '&amp;')), total: cats.length, all: S.src.length } });
   ok(ex.n > 2 && !ex.has && ex.total > 0 && ex.total < ex.all, `exportar fuentes deja quitar categorías (${JSON.stringify(ex)})`);
+  // 6g) Barra del lector: orden por defecto, mover y ocultar; Novedades
+  const rb = await p.evaluate(async () => { const ver = VER; const ord = () => [...document.querySelectorAll('.db button')].filter(b => !b.hidden).map(b => b.id).join(','); const r = { def: ord() };
+    tab(6); document.querySelector('[data-rbt="sh"]').click(); r.withSh = ord(); document.querySelector('[data-rbm="x"][data-d="-1"]').click(); r.moved = ord(); delete S.pf.rb; savePf(); rbApply(); r.back = ord();
+    tab(8); document.querySelector('#chg').click(); await new Promise(r => setTimeout(r, 200)); r.chg = document.querySelectorAll('.chgl section').length; r.cur = (document.querySelector('.chgl h4') || {}).textContent || ''; r.ver = ver; document.querySelector('.askd [data-a="1"]').click(); return r });
+  ok(rb.def === 'dbm,dfw,dp,dnx,dx' && rb.withSh === 'dbm,dfw,dp,dnx,dsh,dx' && rb.moved === 'dbm,dfw,dp,dnx,dx,dsh' && rb.back === rb.def && rb.chg > 5 && rb.cur.includes(rb.ver), `barra del lector configurable y Novedades (${JSON.stringify(rb)})`);
   // 6b) El color elegido va a la cookie nz_ic (el manifest no cambia de dirección); un color libre usa el más parecido
   const ico = await p.evaluate(() => { const m = () => document.querySelector('link[rel=manifest]').getAttribute('href'), ck = () => (document.cookie.match(/nz_ic=([a-z]*)/) || [])[1];
     document.querySelector('#sws .swc[data-i="2"]').click(); const r = [m(), ck(), nzIco(200, .9), nzIco(10, .1), nzIco(150, .8)]; document.querySelector('#sws .swc[data-i="0"]').click(); r.push(m(), ck()); return r });
