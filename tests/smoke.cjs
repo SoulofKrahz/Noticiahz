@@ -111,6 +111,8 @@ async function run(browser, label, viewport, mobile) {
   ok(ro.open && /No carga: el sitio bloquea al proxy \(403\)/.test(ro.msg) && ro.ak === 'Guardar igualmente', `una fuente que falla no cierra la ventana y dice por qué (${ro.msg.slice(0, 60)})`);
   const vi = await tryAdd('Viejo', 'https://viejo.test/feed/');
   ok(vi.open && /warn/.test(vi.cls) && /lo último que ha publicado es del/.test(vi.msg), `una web que no publica avisa en vez de cerrarse (${vi.msg.slice(0, 70)})`);
+  const aw = await p.evaluate(() => { const r = { aaHidden: document.querySelector('#aa').hidden, akPrimary: !document.querySelector('#ak').classList.contains('o') }; const u = document.querySelector('#au'); u.value = 'https://otra.test/feed/'; u.dispatchEvent(new Event('input', { bubbles: true })); r.aaBack = !document.querySelector('#aa').hidden; r.akGone = document.querySelector('#ak').hidden; return r });
+  ok(aw.aaHidden && aw.akPrimary && aw.aaBack && aw.akGone, `tras un aviso solo queda «Guardar así»; al cambiar la dirección vuelve «Comprobar» (${JSON.stringify(aw)})`);
   const sb = await tryAdd('SoloBing', 'https://www.bingok.test/');
   ok(sb.open && /Bing Noticias/.test(sb.msg) && sb.ak === 'Guardar así', `si la web y Google fallan, ofrece cargarla vía Bing (${sb.msg.slice(0, 60)})`);
   const gb = await p.evaluate(async () => { const a = await getFeed({ name: 'GB', cat: 'Local', url: 'https://news.google.com/rss/search?q=site:bingok.test+when:3d&hl=es&gl=ES&ceid=ES:es' }); return a ? { n: a.length, real: a.every(x => /^https:\/\/bingok\.test\//.test(x.link)) } : null });

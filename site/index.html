@@ -1184,7 +1184,7 @@ $('#sl').addEventListener('click',async e=>{
 });
 const fm=(m,c='')=>{const e=$('#fm');e.hidden=!m;e.className='w fm '+c;e.textContent=m||''};
 function editSrc(i){const f=S.src[i];if(!f)return;resetForm();S.edit=i;$('#an').value=f.name;$('#au').value=f.url;$('#ac').value=f.cat;$('#ft').textContent='Editar fuente';$('#aa').textContent='Comprobar y guardar';$('#fr').hidden=false}
-function resetForm(){S.edit=null;S.pend=null;S.ck=(S.ck||0)+1;$('#aa').disabled=false;$('#ak').textContent='Guardar igualmente';$('#an').value=$('#au').value='';fillCats(defCat());$('#ft').textContent='Añadir fuente';$('#aa').textContent='Comprobar y añadir';$('#ak').hidden=true;$('#fr').hidden=true;fm('')}
+function resetForm(){S.edit=null;S.pend=null;S.ck=(S.ck||0)+1;$('#aa').disabled=false;akSet(0);$('#ak').textContent='Guardar igualmente';$('#an').value=$('#au').value='';fillCats(defCat());$('#ft').textContent='Añadir fuente';$('#aa').textContent='Comprobar y añadir';$('#ak').hidden=true;$('#fr').hidden=true;fm('')}
 function commit(f,items){
  const ed=S.edit!==null;let x;
  if(ed){S.news=S.news.filter(a=>a.src!==S.src[S.edit].name);x=S.src[S.edit]={...S.src[S.edit],...f}}else{x={id:'u'+Date.now(),on:true,...f};S.src.push(x)}
@@ -1213,15 +1213,18 @@ $('#aa').onclick=async()=>{
  commit(f,r.items);
  toast(found?`Feed detectado automáticamente (${n} noticias)`:`${n} noticias encontradas`);
 };
-function akSet(t){$('#ak').hidden=!t;if(t)$('#ak').textContent=t}
-$('#ak').onclick=()=>{if(!S.pend)return;const{f,items}=S.pend;commit(f,items);toast(S.edit===null?'Fuente añadida':'Fuente actualizada')};
+function akSet(t){$('#ak').hidden=!t;if(t)$('#ak').textContent=t;$('#ak').classList.toggle('o',!t);$('#aa').hidden=!!t} // con aviso, «Comprobar» se oculta: repetirlo daría el mismo resultado
+const aaMain=()=>{if(!$('#aa').hidden)$('#aa').click();else if(!$('#ak').hidden)$('#ak').click()};
+$('#ak').onclick=()=>{if(!S.pend)return;const{f,items}=S.pend;f.name=$('#an').value.trim();f.cat=$('#ac').value.trim()||'General';const o=S.src.filter((x,i)=>i!==S.edit);
+ if(!f.name)return fm('Escribe un nombre para la fuente.','err');if(o.some(x=>srcKey(x)===srcKey(f)))return fm('Ya tienes una fuente con ese nombre.','err');commit(f,items);toast(S.edit===null?'Fuente añadida':'Fuente actualizada')};
 $('#ac2').onclick=resetForm;
 $('#sq').addEventListener('input',e=>{S.sq=e.target.value;srcs()});
 $('#adb').onclick=()=>{const was=!$('#fr').hidden&&S.edit===null;resetForm();$('#fr').hidden=was};
 function clearF(){S.q='';$('#q').value='';S.un=false;S.fo=false;S.pe=0;S.so='mix';S.sf='Todas';render()}
 $('#af').addEventListener('click',e=>{const b=e.target.closest('[data-k]');if(!b)return;const k=b.dataset.k;if(k==='all')return clearF();if(k==='q'){S.q='';$('#q').value=''}if(k==='un')S.un=false;if(k==='fo')S.fo=false;if(k==='pe')S.pe=0;if(k==='so')S.so='mix';render()});
 let sy=0;$('.mh').addEventListener('touchstart',e=>{sy=e.touches[0].clientY},{passive:true});$('.mh').addEventListener('touchend',e=>{if(e.changedTouches[0].clientY-sy>70)closeAll()},{passive:true});
-$('#fr').addEventListener('keydown',e=>{if(e.key==='Enter')$('#aa').click()});
+$('#fr').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id!=='an'&&e.target.id!=='au')aaMain()});
+$('#au').addEventListener('input',()=>{if(S.pend||!$('#ak').hidden){S.pend=null;akSet(0);fm('')}}); // otra dirección: hay que volver a comprobar
 $('#rs').onclick=()=>{resetForm();S.src=DEFAULTS.map(d=>({...d}));S.news=[];saveSrc();toast('Fuentes restauradas');load()};
 
 $('#sh').onclick=()=>{reseed();render();scrollTo({top:0,behavior:'smooth'});toast('Noticias mezcladas de nuevo')};
@@ -1425,7 +1428,7 @@ $('#qx').onclick=()=>{S.q='';$('#q').value='';$('#q2').value='';qOpen(false);ren
 let q2t;$('#q2').addEventListener('input',e=>{S.q=e.target.value;$('#q').value=e.target.value;clearTimeout(q2t);q2t=setTimeout(render,160)});
 $('#q2').addEventListener('keydown',e=>{if(e.key==='Enter')e.target.blur()});
 // Formulario de fuente: Intro en el nombre pasa a la dirección; Intro en la dirección comprueba y guarda
-$('#an').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('#au').focus()}});$('#au').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('#aa').click()}});
+$('#an').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('#au').focus()}});$('#au').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();aaMain()}});
 // App instalable: service worker (solo con https)
 if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){const had=!!navigator.serviceWorker.controller;
  navigator.serviceWorker.addEventListener('controllerchange',()=>{if(!had)return;if(window.__upd===1){window.__upd=2;location.reload()}else if(window.__chk)window.__chk()});
