@@ -131,6 +131,14 @@ async function run(browser, label, viewport, mobile) {
     const had = document.querySelectorAll('#dsr .dsi').length; closeAll(); await new Promise(r => setTimeout(r, 300)); document.querySelector('#st').click(); await new Promise(r => setTimeout(r, 300));
     const r = { had, tab1: !document.querySelector('#p1').hidden || !document.querySelector('#pF').hidden, res: document.querySelectorAll('#dsr .dsi').length, dsi: document.querySelector('#dsi').value, tpi: document.querySelector('#tpi').value }; closeAll(); await new Promise(r => setTimeout(r, 300)); return r });
   ok(rs.had > 0 && rs.res === 0 && !rs.dsi && !rs.tpi, `al cerrar Ajustes se borran búsquedas y textos a medias (${JSON.stringify(rs)})`);
+  // 6e) Seguir una noticia: palabras propuestas, etiqueta, pestaña Siguiendo, dejar de seguir y caducidad
+  const fw = await p.evaluate(async () => { closeAll(); await new Promise(r => setTimeout(r, 300)); const a = S.news.find(x => /^La IA /.test(x.title)); trOpen(a); const sug = AM.tr.on.length;
+    AM.tr.on = []; trDraw(); document.querySelector('#tri').value = 'IA'; document.querySelector('#tra').click(); const cnt = document.querySelector('.trn').textContent; document.querySelector('#trgo').click(); await new Promise(r => setTimeout(r, 400));
+    const tab = [...document.querySelectorAll('#tabs .tab')].some(b => /Siguiendo/.test(b.textContent)), lab = document.querySelectorAll('#grid .trm').length;
+    S.cat = 'Siguiendo'; render(); const all = S.V.every(x => /\bIA\b/.test(x.title + ' ' + x.snip)), n = S.V.length, bar = !!document.querySelector('.trb .trf');
+    TR.list.push({ id: 'viejo', t: 'x', w: ['zzzqqq'], c: Date.now() - 8 * 864e5, l: Date.now() - 8 * 864e5 }); trPrune(); const pruned = !TR.list.some(t => t.id === 'viejo');
+    TR.list = []; trSave(); render(); return { sug, cnt, tab, lab, all, n, bar, pruned, back: S.cat } });
+  ok(fw.tab && fw.lab > 0 && fw.all && fw.n > 0 && fw.bar && fw.pruned && fw.back === 'Todas' && /coinciden/.test(fw.cnt), `seguir una noticia: etiqueta, pestaña, solo lo que coincide y caducidad (${JSON.stringify(fw)})`);
   // 6b) El color elegido va a la cookie nz_ic (el manifest no cambia de dirección); un color libre usa el más parecido
   const ico = await p.evaluate(() => { const m = () => document.querySelector('link[rel=manifest]').getAttribute('href'), ck = () => (document.cookie.match(/nz_ic=([a-z]*)/) || [])[1];
     document.querySelector('#sws .swc[data-i="2"]').click(); const r = [m(), ck(), nzIco(200, .9), nzIco(10, .1), nzIco(150, .8)]; document.querySelector('#sws .swc[data-i="0"]').click(); r.push(m(), ck()); return r });
