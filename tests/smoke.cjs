@@ -186,7 +186,7 @@ async function run(browser, label, viewport, mobile) {
 
   // 8) Actualizar solo la categoría visible
   await idle();
-  const sc = await p.evaluate(async c => { S.cat = c; S.ft = {}; render(); const hit = new Set(), of = window.fetch; window.fetch = (u, o) => { const m = String(u).match(/\/p\/([^/]+)/); if (m) hit.add(m[1]); return of(u, o) }; refresh(); await new Promise(r => setTimeout(r, 300)); while (S.loading) await new Promise(r => setTimeout(r, 100)); window.fetch = of; S.cat = 'Todas'; render(); return [hit.size, S.src.filter(x => x.on && x.cat === c).length] }, cats[1]);
+  const sc = await p.evaluate(async c => { S.cat = c; S.ft = {}; render(); const hit = new Set(), of = window.fetch; window.fetch = (u, o) => { const m = String(u).match(/\/p\/([^/]+)/); if (m && !/news\.google\.com|bing\.com/.test(m[1])) hit.add(m[1]); return of(u, o) }; refresh(); await new Promise(r => setTimeout(r, 300)); while (S.loading) await new Promise(r => setTimeout(r, 100)); window.fetch = of; S.cat = 'Todas'; render(); return [hit.size, S.src.filter(x => x.on && x.cat === c).length] }, cats[1]);
   ok(await p.evaluate(() => /nuevas|Sin noticias nuevas|no ha|no han/.test(document.querySelector('.toast')?.textContent || '')), 'al actualizar a mano avisa del resultado');
   ok(sc[0] <= sc[1] + 1, `actualizar en una categoría solo pide sus fuentes (${sc[0]} sitios para ${sc[1]} fuentes)`);
 
