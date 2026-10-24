@@ -598,6 +598,7 @@ const DEFAULTS=[
  {id:"expansion",name:"Expansión",cat:"Economía",on:true,url:"https://e00-expansion.uecdn.es/rss/portada.xml"},
  {id:"mundodeportivo",name:"Mundo Deportivo",cat:"Deportes",on:true,url:"https://www.mundodeportivo.com/rss/home.xml"},
  {id:"cochesnetnoticias",name:"Coches.net Noticias",cat:"Motor",on:true,url:"https://www.coches.net/noticias/rss/"},
+ {id:"derechodelared",name:"Derecho de la Red",cat:"Ciberseguridad",on:true,url:"https://derechodelared.com/feed/"},
  {id:"hackplayers",name:"HackPlayers",cat:"Ciberseguridad",on:true,url:"https://www.hackplayers.com/feeds/posts/default"},
  {id:"3djuegos",name:"3DJuegos",cat:"Videojuegos",on:true,url:"https://www.3djuegos.com/feedburner.xml"},
  {id:"elordenmundial",name:"El Orden Mundial",cat:"Curiosidades y Ciencia",on:true,url:"https://elordenmundial.com/feed/"},
@@ -632,7 +633,7 @@ const DEFAULTS=[
  {id:"elplural",name:"El Plural",cat:"General",on:true,url:"https://www.elplural.com/feed/"},
  {id:"agenciaefe",name:"Agencia EFE",cat:"General",on:true,url:"https://efe.com/news-sitemap.xml"},
  {id:"europapressnacional",name:"Europa Press Nacional",cat:"General",on:true,url:"https://www.europapress.es/rss/rss.aspx?ch=94"},
- {id:"dwnews",name:"DW News",cat:"Mundo",on:true,url:"https://www.dw.com/de/news-sitemap.xml"},
+ {id:"dwnews",name:"DW News",cat:"Mundo",on:true,url:"https://www.dw.com/es/news-sitemap.xml"},
  {id:"nytimes",name:"NYTimes",cat:"Mundo",on:true,url:"https://www.nytimes.com/sitemaps/new/news.xml.gz"},
  {id:"losangelestimes",name:"Los Angeles Times",cat:"Mundo",on:true,url:"https://www.latimes.com/index.rss"},
  {id:"gizmodo",name:"Gizmodo",cat:"Tecnología",on:true,url:"https://www.bing.com/news/search?q=site%3Agizmodo.com&format=rss&setmkt=es-ES&setlang=es&cc=ES"},
@@ -799,7 +800,7 @@ async function pool(items,n,fn){let i=0;await Promise.all(Array.from({length:Mat
 function timed(fn,ms=10000){const c=new AbortController();const id=setTimeout(()=>c.abort(),ms);return fn(c.signal).finally(()=>clearTimeout(id))}
 
 // Proxy propio: /p/<host>/… lo atiende _worker.js (Cloudflare Pages). Ningún servicio de terceros ve qué lees.
-const VER='2026-10-24-0';
+const VER='2026-10-24-1';
 if(!ls.get('nz_fu',0))ls.set('nz_fu',Date.now());
 const px=u=>{const x=new URL(u);return '/p/'+x.host+x.pathname+x.search};
 // Si la respuesta de error no lleva la marca X-Nz, no la dio nuestro proxy sino Cloudflare (límite diario gratuito o caída): se anota como 'cf'
@@ -1668,7 +1669,7 @@ $('#pD').addEventListener('click',e=>{
  const df=e.target.closest('[data-dsdef]');if(df){const d=DEFAULTS.find(y=>y.id===df.dataset.dsdef);if(!d)return;if(!S.cats.includes(d.cat)){S.cats.push(d.cat);ls.set('nz_cats',S.cats)}S.src.push({...d,on:true});saveSrc();dsUi();toast(`«${d.name}» añadida`);S.ft[d.id]=0;load()}});
 // ---- Novedades: resumen de lo que ha cambiado en cada versión (la primera es siempre la actual) ----
 const CHANGES=[
- [VER,['Fuentes predeterminadas actualizadas: 92 fuentes, con 28 nuevas (RTVE, Cadena SER, Agencia EFE, Maldita, National Geographic, Muy Interesante, La Tribu Hip Hop…) y la categoría Viajes']],
+ [VER,['Fuentes predeterminadas actualizadas: 93 fuentes, con 29 nuevas (RTVE, Cadena SER, Agencia EFE, Maldita, National Geographic, Muy Interesante, La Tribu Hip Hop…) y la categoría Viajes; DW News en español']],
  ['2026-10-23-4',['El lector tiene la barra de acciones abajo, como el feed; su orden se elige en Ajustes → Apariencia','El botón «Siguiente» del lector ya funciona','Las noticias sin resumen llevan la marca «Web»: se abren en su página y quedan como leídas (en el menú de pulsación larga puedes verlas en el lector)','El total de noticias va en el chip «Todas», como en cada fuente; debajo, solo las nuevas','Exportar fuentes deja elegir qué categorías incluir','Al comprobar una fuente con aviso, solo queda «Guardar así»','Ventanas propias de la app para crear categorías y confirmar','Este apartado de Novedades']],
  ['2026-10-23-1',['Abrir y cerrar Ajustes y el lector responde mucho más rápido','Las primeras fotos del feed aparecen antes']],
  ['2026-10-23-0',['Seguir una noticia: etiqueta «Siguiendo» y pestaña con cada historia durante 7 días']],
