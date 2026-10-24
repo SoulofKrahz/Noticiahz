@@ -631,7 +631,7 @@ const DEFAULTS=[
  {id:"diariopublico",name:"Diario Público",cat:"General",on:true,url:"https://www.bing.com/news/search?q=site%3Apublico.es&format=rss&setmkt=es-ES&setlang=es&cc=ES"},
  {id:"cincodias",name:"Cinco Días",cat:"Economía",on:true,url:"https://cincodias.elpais.com/sitemaps/news.xml"},
  {id:"elplural",name:"El Plural",cat:"General",on:true,url:"https://www.elplural.com/feed/"},
- {id:"agenciaefe",name:"Agencia EFE",cat:"General",on:true,url:"https://efe.com/news-sitemap.xml"},
+ {id:"agenciaefe",name:"Agencia EFE",cat:"General",on:true,url:"https://www.bing.com/news/search?q=site%3Aefe.com&format=rss&setmkt=es-ES&setlang=es&cc=ES"},
  {id:"europapressnacional",name:"Europa Press Nacional",cat:"General",on:true,url:"https://www.europapress.es/rss/rss.aspx?ch=94"},
  {id:"dwnews",name:"DW News",cat:"Mundo",on:true,url:"https://www.dw.com/es/news-sitemap.xml"},
  {id:"nytimes",name:"NYTimes",cat:"Mundo",on:true,url:"https://www.nytimes.com/sitemaps/new/news.xml.gz"},
@@ -800,7 +800,7 @@ async function pool(items,n,fn){let i=0;await Promise.all(Array.from({length:Mat
 function timed(fn,ms=10000){const c=new AbortController();const id=setTimeout(()=>c.abort(),ms);return fn(c.signal).finally(()=>clearTimeout(id))}
 
 // Proxy propio: /p/<host>/… lo atiende _worker.js (Cloudflare Pages). Ningún servicio de terceros ve qué lees.
-const VER='2026-10-24-1';
+const VER='2026-10-24-2';
 if(!ls.get('nz_fu',0))ls.set('nz_fu',Date.now());
 const px=u=>{const x=new URL(u);return '/p/'+x.host+x.pathname+x.search};
 // Si la respuesta de error no lleva la marca X-Nz, no la dio nuestro proxy sino Cloudflare (límite diario gratuito o caída): se anota como 'cf'
@@ -1629,7 +1629,7 @@ $('#am').addEventListener('click',async e=>{const a=AM.a;if(!a)return;
 const DS={q:ls.get('nz_dq',['tecnología','ciencia','historia','rap español','Mallorca','España']),hide:ls.get('nz_dx',[]),res:null,busy:0};
 const baseHost=u=>{try{return new URL(u).hostname.replace(/^(www|m|amp)\./,'')}catch{return''}};
 // ¿Ya la tienes? Por web (también subdominios) o por nombre
-function dsHave(h,name){const n=n2(name).replace(/[^a-z0-9]/g,'');return S.src.some(x=>{const b=baseHost(x.url);return b&&(b===h||b.endsWith('.'+h)||h.endsWith('.'+b))||n&&n2(x.name).replace(/[^a-z0-9]/g,'')===n})}
+function dsHave(h,name){const n=n2(name).replace(/[^a-z0-9]/g,'');return S.src.some(x=>{const b=searchSite(x.url)||baseHost(x.url);return b&&(b===h||b.endsWith('.'+h)||h.endsWith('.'+b))||n&&n2(x.name).replace(/[^a-z0-9]/g,'')===n})}
 // Categoría probable según el tema: la que se llame parecido o una equivalencia habitual
 function dsCat(t){const k=n2(t),syn={mallorca:'local',baleares:'local',palma:'local',espana:'actualidad',nacional:'actualidad',rap:'musica','hip hop':'musica',ciencia:'ciencia',tecnologia:'tecnologia',historia:'historia'};
  const w=[k,...Object.keys(syn).filter(x=>k.includes(x)).map(x=>syn[x])];for(const q of w){const c=S.cats.find(c=>{const m=n2(c);return m===q||m.includes(q)||q.includes(m)});if(c)return c}return defCat()}
@@ -1657,7 +1657,7 @@ function dsUi(){
  $('#dsl').innerHTML=DS.q.map(w=>`<button class="ac" data-dq="${esc(w)}">${esc(w)}<svg class="i"><use href="#x"/></svg></button>`).join('')||'<span class="hint" style="margin:0">Sin temas.</span>';
  const r=DS.res?DS.res.filter(x=>!DS.hide.includes(x.h)&&!dsHave(x.h,x.name)):null,top=r?r.slice(0,25):[];
  $('#dsr').innerHTML=!r?'':top.length?`<h4 class="dsh">${r.length} ${r.length===1?'medio nuevo':'medios nuevos'}${r.length>25?' · los 25 que más publican sobre tus temas':''}${DS.via?' · vía '+esc(DS.via):''}</h4><div class="gc">${top.map(x=>`<div class="row dsi"><div><div class="nl"><b>${esc(x.name)}</b></div><small class="rvm">${esc(x.h)} · ${x.n} ${x.n===1?'noticia':'noticias'} en 7 días · ${esc([...x.t].join(', '))}</small>${x.ex.map(e=>`<a class="dse" href="${esc(e.li)}" target="_blank" rel="noopener noreferrer">${esc(e.ti)}</a>`).join('')}</div><div class="dsbt"><button class="btn" data-dsadd="${esc(x.h)}">Añadir</button><button class="tb" data-dshide="${esc(x.h)}">Ocultar</button></div></div>`).join('')}</div>`:'<p class="hint" style="margin:12px 4px">No hay medios nuevos para estos temas: ya tienes los que más publican. Prueba con temas más concretos.</p>';
- const miss=DEFAULTS.filter(d=>!S.src.some(x=>x.id===d.id||x.url===d.url));
+ const miss=DEFAULTS.filter(d=>!S.src.some(x=>x.id===d.id||x.url===d.url)&&!dsHave(searchSite(d.url)||baseHost(d.url),d.name));
  $('#dsd').innerHTML=miss.length?`<h4 class="dsh">Predeterminadas que no tienes</h4><div class="gc">${miss.map(d=>`<div class="row"><div><div class="nl"><b>${esc(d.name)}</b></div><small class="rvm">${esc(d.cat)} · ${esc(baseHost(d.url))}</small></div><button class="btn o" data-dsdef="${esc(d.id)}" style="margin:0">Añadir</button></div>`).join('')}</div>`:''}
 $('#dsb').onclick=dsSearch;
 const dsAddQ=()=>{const v=$('#dsi').value.trim();if(!v)return;if(!DS.q.some(x=>n2(x)===n2(v))){DS.q.push(v);ls.set('nz_dq',DS.q)}$('#dsi').value='';dsUi()};
@@ -1666,10 +1666,10 @@ $('#pD').addEventListener('click',e=>{
  const q=e.target.closest('[data-dq]');if(q){DS.q=DS.q.filter(x=>x!==q.dataset.dq);ls.set('nz_dq',DS.q);dsUi();return}
  const hd=e.target.closest('[data-dshide]');if(hd){DS.hide.push(hd.dataset.dshide);ls.set('nz_dx',DS.hide.slice(-300));dsUi();toast('No volverá a salir en Descubrir');return}
  const ad=e.target.closest('[data-dsadd]');if(ad){const x=DS.res.find(y=>y.h===ad.dataset.dsadd);if(!x)return;resetForm();$('#an').value=x.name;$('#au').value='https://'+x.h+'/';fillCats(dsCat([...x.t][0]));$('#fr').hidden=false;$('#aa').click();return}
- const df=e.target.closest('[data-dsdef]');if(df){const d=DEFAULTS.find(y=>y.id===df.dataset.dsdef);if(!d)return;if(!S.cats.includes(d.cat)){S.cats.push(d.cat);ls.set('nz_cats',S.cats)}S.src.push({...d,on:true});saveSrc();dsUi();toast(`«${d.name}» añadida`);S.ft[d.id]=0;load()}});
+ const df=e.target.closest('[data-dsdef]');if(df){const d=DEFAULTS.find(y=>y.id===df.dataset.dsdef);if(!d)return;if(!S.cats.includes(d.cat)){S.cats.push(d.cat);ls.set('nz_cats',S.cats)}resetForm();$('#an').value=d.name;$('#au').value=d.url;fillCats(d.cat);$('#fr').hidden=false;$('#aa').click()}});
 // ---- Novedades: resumen de lo que ha cambiado en cada versión (la primera es siempre la actual) ----
 const CHANGES=[
- [VER,['Fuentes predeterminadas actualizadas: 93 fuentes, con 29 nuevas (RTVE, Cadena SER, Agencia EFE, Maldita, National Geographic, Muy Interesante, La Tribu Hip Hop…) y la categoría Viajes; DW News en español']],
+ [VER,['Fuentes predeterminadas actualizadas: 93 fuentes, con 29 nuevas (RTVE, Cadena SER, Agencia EFE, Maldita, National Geographic, Muy Interesante, La Tribu Hip Hop…) y la categoría Viajes; DW News en español; Agencia EFE vía Bing','«Predeterminadas que no tienes» ya no sugiere fuentes que tienes por otra dirección, y al añadirlas las comprueba primero']],
  ['2026-10-23-4',['El lector tiene la barra de acciones abajo, como el feed; su orden se elige en Ajustes → Apariencia','El botón «Siguiente» del lector ya funciona','Las noticias sin resumen llevan la marca «Web»: se abren en su página y quedan como leídas (en el menú de pulsación larga puedes verlas en el lector)','El total de noticias va en el chip «Todas», como en cada fuente; debajo, solo las nuevas','Exportar fuentes deja elegir qué categorías incluir','Al comprobar una fuente con aviso, solo queda «Guardar así»','Ventanas propias de la app para crear categorías y confirmar','Este apartado de Novedades']],
  ['2026-10-23-1',['Abrir y cerrar Ajustes y el lector responde mucho más rápido','Las primeras fotos del feed aparecen antes']],
  ['2026-10-23-0',['Seguir una noticia: etiqueta «Siguiendo» y pestaña con cada historia durante 7 días']],

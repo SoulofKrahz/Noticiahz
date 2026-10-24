@@ -160,6 +160,11 @@ async function run(browser, label, viewport, mobile) {
     tab(6); document.querySelector('[data-rbt="sh"]').click(); r.withSh = ord(); document.querySelector('[data-rbm="x"][data-d="-1"]').click(); r.moved = ord(); delete S.pf.rb; savePf(); rbApply(); r.back = ord();
     tab(8); document.querySelector('#chg').click(); await new Promise(r => setTimeout(r, 200)); r.chg = document.querySelectorAll('.chgl section').length; r.cur = (document.querySelector('.chgl h4') || {}).textContent || ''; r.ver = ver; document.querySelector('.askd [data-a="1"]').click(); return r });
   ok(rb.def === 'dbm,dfw,dp,dnx,dx' && rb.withSh === 'dbm,dfw,dp,dnx,dsh,dx' && rb.moved === 'dbm,dfw,dp,dnx,dx,dsh' && rb.back === rb.def && rb.chg > 5 && rb.cur.includes(rb.ver), `barra del lector configurable y Novedades (${JSON.stringify(rb)})`);
+  // 6h) Predeterminadas que no tienes: no sugiere lo que ya tienes por otra vía y añadir pasa por la comprobación
+  const pd = await p.evaluate(async () => { S.src = S.src.filter(x => x.id !== 'derechodelared' && x.id !== 'agenciaefe'); S.src.push({ id: 'u1', name: 'EFE mía', cat: 'General', on: true, url: 'https://www.bing.com/news/search?q=site%3Aefe.com&format=rss' }); saveSrc();
+    document.querySelector('#st').click(); await new Promise(r => setTimeout(r, 300)); sub('d'); const t = document.querySelector('#dsd').textContent; const r = { efe: /Agencia EFE/.test(t), der: /Derecho de la Red/.test(t) };
+    document.querySelector('[data-dsdef="derechodelared"]').click(); await new Promise(r => setTimeout(r, 1500)); r.added = S.src.some(x => x.name === 'Derecho de la Red'); closeAll(); await new Promise(r => setTimeout(r, 400)); return r });
+  ok(!pd.efe && pd.der && pd.added, `«Predeterminadas que no tienes» no repite lo que ya tienes y comprueba al añadir (${JSON.stringify(pd)})`);
   // 6b) El color elegido va a la cookie nz_ic (el manifest no cambia de dirección); un color libre usa el más parecido
   const ico = await p.evaluate(() => { const m = () => document.querySelector('link[rel=manifest]').getAttribute('href'), ck = () => (document.cookie.match(/nz_ic=([a-z]*)/) || [])[1];
     document.querySelector('#sws .swc[data-i="2"]').click(); const r = [m(), ck(), nzIco(200, .9), nzIco(10, .1), nzIco(150, .8)]; document.querySelector('#sws .swc[data-i="0"]').click(); r.push(m(), ck()); return r });
