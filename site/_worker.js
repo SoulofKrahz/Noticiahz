@@ -80,9 +80,24 @@ async function proxy(req, url, env) {
   });
 }
 
+// Icono de la app instalada según el color con el que se instaló: la página guarda el color en la cookie nz_ic mientras la
+// app NO está instalada y la congela al instalarla. Aquí se sirve, en la dirección de siempre, el manifest de ese color.
+const COLORS = ['turquesa', 'azul', 'indigo', 'violeta', 'rosa', 'coral', 'naranja', 'ambar', 'grafito'];
+async function manifest(req, url, env) {
+  const m = (req.headers.get('Cookie') || '').match(/(?:^|;\s*)nz_ic=([a-z]+)/);
+  const k = m && COLORS.includes(m[1]) ? m[1] : '';
+  const r = await env.ASSETS.fetch(new Request(new URL(k ? `/manifest-${k}.webmanifest` : '/manifest.webmanifest', url), req));
+  const h = new Headers(r.headers);
+  h.set('Content-Type', 'application/manifest+json');
+  h.set('Cache-Control', 'no-cache');
+  h.set('Vary', 'Cookie');
+  return new Response(r.body, { status: r.status, headers: h });
+}
+
 export default {
   async fetch(req, env) {
     const url = new URL(req.url);
+    if (url.pathname === '/manifest.webmanifest') return manifest(req, url, env);
     if (url.pathname.startsWith('/p/')) {
       try { return await proxy(req, url, env); } catch (e) { return txt('Error interno del proxy', 502); }
     }

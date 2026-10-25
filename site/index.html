@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
-<link rel="manifest" href="manifest.webmanifest">
+<link rel="manifest" href="manifest.webmanifest" crossorigin="use-credentials">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Noticiahz">
 <title>Noticiahz — Tus noticias, en un solo sitio</title>
@@ -28,7 +28,17 @@
   +'html[data-theme=dark]{--bg:'+hx(bgD)+';--card:'+hx(cdD)+';--bd:'+hx(bdD)+';--tx:'+hx(txD)+';--mu:'+hx(muD)+';--em:'+hx(emD)+';--em2:'+hx(e2D)+';--tint:hsla('+Math.round(h)+','+Math.round(s*80)+'%,48%,.14);--onem:'+hx(onD)+lv(ltD,e2D)+'}';
  return{css:css,barL:hx(em),barD:hx(bgD),fav:hx(e2),lt:lt}};
 window.nzApply=function(h,s){var st=document.getElementById('acs');if(h==null||isNaN(h)){if(st)st.remove();window.nzLast=null;return null}var a=nzAcc(+h,s==null?.85:+s);if(!st){st=document.createElement('style');st.id='acs';document.head.appendChild(st)}st.textContent=a.css;window.nzLast=a;return a};
-try{var q=JSON.parse(localStorage.getItem('nz_pf'))||{};if(q.ah!=null)nzApply(q.ah,q.as)}catch(e){}try{if(/(^|;\s*)nz_ic=/.test(document.cookie))document.cookie='nz_ic=;path=/;max-age=0'}catch(e){}</script>
+// Icono instalado: toma el color que tengas AL INSTALAR y luego queda congelado (cambiarlo después obliga a Chrome a
+// reinstalar la app por debajo, y eso falló). Cookie nz_ic = color del icono; nz_icl = congelado (la app está instalada).
+window.nzIco=function(h,s){if(h==null||isNaN(h))return'';h=+h;s=s==null?.85:+s;if(s<.3)return'grafito';var P=[['',152],['turquesa',185],['azul',214],['indigo',243],['violeta',272],['rosa',328],['coral',6],['naranja',27],['ambar',42]],b=P[0],d=1e9;P.forEach(function(x){var e=Math.abs(h-x[1])%360;e=Math.min(e,360-e);if(e<d){d=e;b=x}});return b[0]};
+window.nzCk=function(k,v){var c=k+'='+v+';path=/;max-age='+(v===''?0:31536000)+';SameSite=Lax'+(location.protocol==='https:'?';Secure':'');try{document.cookie=c}catch(e){}};
+window.nzLocked=function(){return /(^|;\s*)nz_icl=1/.test(document.cookie)};
+window.nzInApp=function(){try{return matchMedia('(display-mode: standalone), (display-mode: fullscreen), (display-mode: minimal-ui)').matches||navigator.standalone===true}catch(e){return false}};
+window.nzMan=function(h,s){if(nzInApp()){if(!nzLocked())nzCk('nz_icl','1');return}if(nzLocked())return;nzCk('nz_ic',nzIco(h,s)||'')};
+try{var q=JSON.parse(localStorage.getItem('nz_pf'))||{};if(q.ah!=null)nzApply(q.ah,q.as);nzMan(q.ah,q.as)}catch(e){}
+// Si Chrome ofrece instalar, es que la app no está instalada: se descongela y el icono vuelve a seguir el color. Al instalar, se congela.
+addEventListener('beforeinstallprompt',function(){if(nzLocked()){nzCk('nz_icl','');try{var q=JSON.parse(localStorage.getItem('nz_pf'))||{};nzMan(q.ah,q.as)}catch(e){}}});
+addEventListener('appinstalled',function(){nzCk('nz_icl','1')});</script>
 <script>try{var p=JSON.parse(localStorage.getItem('nz_pf'))||{},t=p.th;if(t!=='dark'&&t!=='light')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t;document.documentElement.style.setProperty('--fs',p.fs||1)}catch(e){}</script>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='15' fill='%230a9d5c'/><path d='M21.5 17.5V50M21.5 34C21.5 25 27 22 33 22C40 22 44 26.5 44 33V50' fill='none' stroke='%2306150f' stroke-width='9'/><path d='M7 41H25L29 29L34 51L38 36L41 41H57' fill='none' stroke='white' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'/></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400..700&family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..700&display=swap" rel="stylesheet">
@@ -487,7 +497,7 @@ main .card .ph{border-radius:0;background:var(--tint);aspect-ratio:16/9}.card .p
         <section class="set"><h3>Tema y color</h3><p>Se aplica al instante y se guarda en este dispositivo.</p>
           <div class="seg" id="sg-th"><button data-v="auto">Automático</button><button data-v="light">Claro</button><button data-v="dark">Oscuro</button></div>
           <div class="sws" id="sws" role="radiogroup" aria-label="Color de la app"></div>
-          <div class="row" style="border:0;padding:14px 0 0"><div><b id="swn">Esmeralda</b><small style="white-space:normal">Color personalizado: la app ajusta el contraste sola.</small></div><input type="color" id="acc" aria-label="Color personalizado" style="width:46px;height:38px;border:1px solid var(--bd);border-radius:10px;background:none;padding:2px;flex:none"></div></section><section class="set"><h3>Barra del lector</h3><p>Qué botones salen abajo al leer una noticia y en qué orden (de izquierda a derecha).</p><div id="rbl"></div></section><section class="set"><h3>Lectura</h3><p>Tamaño del texto de las noticias.</p>
+          <div class="row" style="border:0;padding:14px 0 0"><div><b id="swn">Esmeralda</b><small style="white-space:normal">Color personalizado: la app ajusta el contraste sola. <span id="icn"></span></small></div><input type="color" id="acc" aria-label="Color personalizado" style="width:46px;height:38px;border:1px solid var(--bd);border-radius:10px;background:none;padding:2px;flex:none"></div></section><section class="set"><h3>Barra del lector</h3><p>Qué botones salen abajo al leer una noticia y en qué orden (de izquierda a derecha).</p><div id="rbl"></div></section><section class="set"><h3>Lectura</h3><p>Tamaño del texto de las noticias.</p>
           <div class="seg" id="sg-fs"><button data-v="0.9">Pequeño</button><button data-v="1">Normal</button><button data-v="1.15">Grande</button></div></section><section class="set"><h3>Tarjetas</h3><p>Cómo se ven y cómo se manejan las noticias.</p><div class="gc"><div class="row"><div><b>Abrir siempre en el lector</b><small style="white-space:normal">Apagado: los vídeos y las noticias sin resumen (marcados «YouTube» o «Web») se abren directamente.</small></div><label class="sw"><input type="checkbox" data-pf="sr" aria-label="Abrir siempre en el lector"><span></span></label></div><div class="row"><div><b>Ocultar imágenes</b><small style="white-space:normal">Lista más compacta y menos datos.</small></div><label class="sw"><input type="checkbox" data-pf="np" aria-label="Ocultar imágenes"><span></span></label></div><div class="row"><div><b>Atenuar noticias leídas</b><small style="white-space:normal">Las ya abiertas se ven más apagadas.</small></div><label class="sw"><input type="checkbox" data-pf="dr" aria-label="Atenuar leídas"><span></span></label></div><div class="row"><div><b>Invertir el deslizamiento</b><small style="white-space:normal">Izquierda guarda y derecha descarta.</small></div><label class="sw"><input type="checkbox" data-pf="sw" aria-label="Invertir deslizamiento"><span></span></label></div></div></section>
       </div>
       <div id="pC" hidden>
@@ -796,7 +806,7 @@ async function pool(items,n,fn){let i=0;await Promise.all(Array.from({length:Mat
 function timed(fn,ms=10000){const c=new AbortController();const id=setTimeout(()=>c.abort(),ms);return fn(c.signal).finally(()=>clearTimeout(id))}
 
 // Proxy propio: /p/<host>/… lo atiende _worker.js (Cloudflare Pages). Ningún servicio de terceros ve qué lees.
-const VER='2026-10-25-1';
+const VER='2026-10-25-2';
 if(!ls.get('nz_fu',0))ls.set('nz_fu',Date.now());
 const px=u=>{const x=new URL(u);return '/p/'+x.host+x.pathname+x.search};
 // Si la respuesta de error no lleva la marca X-Nz, no la dio nuestro proxy sino Cloudflare (límite diario gratuito o caída): se anota como 'cf'
@@ -1158,7 +1168,7 @@ $('#sb').onclick=()=>{const o=$('.search').classList.toggle('open');$('#sb').cla
 const sysDark=()=>matchMedia('(prefers-color-scheme: dark)').matches;
 const FAV0=document.querySelector('link[rel=icon]').getAttribute('href');
 const barCol=d=>{const a=window.nzLast;return a?(d==='dark'?a.barD:a.barL):(d==='dark'?'#0d1523':'#047857')};
-function applyAccent(){const a=nzApply(S.pf.ah,S.pf.as);document.querySelector('meta[name=theme-color]').content=barCol(document.documentElement.dataset.theme);document.querySelector('link[rel=icon]').setAttribute('href',a?favFor(a):FAV0)}
+function applyAccent(){const a=nzApply(S.pf.ah,S.pf.as);nzMan(S.pf.ah,S.pf.as);document.querySelector('meta[name=theme-color]').content=barCol(document.documentElement.dataset.theme);document.querySelector('link[rel=icon]').setAttribute('href',a?favFor(a):FAV0)}
 function favFor(a){const c='%23'+a.fav.slice(1);let f=FAV0.replace('%230a9d5c',c);if(a.lt)f=f.replace("stroke='%2306150f'","stroke='white'").replace("<path d='M7","<path d='M7 41H25L29 29L34 51L38 36L41 41H57' fill='none' stroke='"+c+"' stroke-width='7.5' stroke-linecap='round' stroke-linejoin='round'/><path d='M7");return f}
 function setTheme(d){const h=document.documentElement;h.classList.add('tm');h.dataset.theme=d;$('#th use').setAttribute('href',d==='dark'?'#sun':'#m');$('#th').title=d==='dark'?'Tema claro':'Tema oscuro';
  document.querySelector('meta[name=theme-color]').content=barCol(d);clearTimeout(setTheme.t);setTheme.t=setTimeout(()=>h.classList.remove('tm'),450)}
@@ -1667,7 +1677,7 @@ $('#pD').addEventListener('click',e=>{
  const df=e.target.closest('[data-dsdef]');if(df){const d=DEFAULTS.find(y=>y.id===df.dataset.dsdef);if(!d)return;if(!S.cats.includes(d.cat)){S.cats.push(d.cat);ls.set('nz_cats',S.cats)}resetForm();$('#an').value=d.name;$('#au').value=d.url;fillCats(d.cat);$('#fr').hidden=false;$('#aa').click()}});
 // ---- Novedades: resumen de lo que ha cambiado en cada versión (la primera es siempre la actual) ----
 const CHANGES=[
- [VER,['Los vídeos de YouTube y Vimeo se abren directamente (marcados «▶ YouTube»); desde el menú de pulsación larga puedes verlos en el lector','En el lector del móvil se ve la miniatura del vídeo (antes salía solo el botón ▶ descolocado)','El icono de la app instalada vuelve a ser fijo: el color se sigue eligiendo y cambia dentro de la app, pero ya no se intenta cambiar el icono (no llegaba a cambiar y podía dejar la app sin abrir)']],
+ [VER,['Al instalar la app, el icono toma el color que tengas en ese momento y ya no cambia (para cambiarlo, reinstálala)','Los vídeos de YouTube y Vimeo se abren directamente (marcados «▶ YouTube»); desde el menú de pulsación larga puedes verlos en el lector','En el lector del móvil se ve la miniatura del vídeo (antes salía solo el botón ▶ descolocado)']],
  ['2026-10-24-2',['Fuentes predeterminadas actualizadas: 93 fuentes, con 29 nuevas (RTVE, Cadena SER, Agencia EFE, Maldita, National Geographic, Muy Interesante, La Tribu Hip Hop…) y la categoría Viajes; DW News en español; Agencia EFE vía Bing','«Predeterminadas que no tienes» ya no sugiere fuentes que tienes por otra dirección, y al añadirlas las comprueba primero']],
  ['2026-10-23-4',['El lector tiene la barra de acciones abajo, como el feed; su orden se elige en Ajustes → Apariencia','El botón «Siguiente» del lector ya funciona','Las noticias sin resumen llevan la marca «Web»: se abren en su página y quedan como leídas (en el menú de pulsación larga puedes verlas en el lector)','El total de noticias va en el chip «Todas», como en cada fuente; debajo, solo las nuevas','Exportar fuentes deja elegir qué categorías incluir','Al comprobar una fuente con aviso, solo queda «Guardar así»','Ventanas propias de la app para crear categorías y confirmar','Este apartado de Novedades']],
  ['2026-10-23-1',['Abrir y cerrar Ajustes y el lector responde mucho más rápido','Las primeras fotos del feed aparecen antes']],
@@ -1705,7 +1715,8 @@ $('#rvl').addEventListener('click',async e=>{
 const PRE=[['Esmeralda',null,null],['Turquesa',185,.85],['Azul',214,.9],['Índigo',243,.8],['Violeta',272,.7],['Rosa',328,.75],['Coral',6,.85],['Naranja',27,.95],['Ámbar',42,.95],['Grafito',215,.12]];
 const hsOf=x=>{const r=parseInt(x.slice(1,3),16)/255,g=parseInt(x.slice(3,5),16)/255,b=parseInt(x.slice(5,7),16)/255,mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn,l=(mx+mn)/2;let h=0;if(d){h=mx===r?((g-b)/d)%6:mx===g?(b-r)/d+2:(r-g)/d+4;h=Math.round(h*60);if(h<0)h+=360}const s=d?d/(1-Math.abs(2*l-1)):0;return[h,Math.max(.1,Math.min(.95,s))]};
 const hexHs=(h,s)=>{const a=s*Math.min(.4,.6),f=n=>{const k=(n+h/30)%12;return .4-a*Math.max(-1,Math.min(k-3,9-k,1))};return'#'+[f(0),f(8),f(4)].map(v=>('0'+Math.round(v*255).toString(16)).slice(-2)).join('')};
-function swUi(){const h=S.pf.ah,s=S.pf.as;let sel=h==null?0:PRE.findIndex((x,i)=>i&&x[1]===h&&Math.abs(x[2]-s)<.005);
+function icnUi(){const e=$('#icn');if(e)e.textContent=nzInApp()||nzLocked()?'El icono de la app instalada se quedó con el color que tenías al instalarla; para cambiarlo, reinstálala.':'Al instalar la app, el icono tomará este color.'}
+function swUi(){icnUi();const h=S.pf.ah,s=S.pf.as;let sel=h==null?0:PRE.findIndex((x,i)=>i&&x[1]===h&&Math.abs(x[2]-s)<.005);
  $('#sws').innerHTML=PRE.map(([n,ph,ps],i)=>`<button class="swc ${i===sel?'on':''}" data-i="${i}" style="background:${ph==null?'#059669':hexHs(ph,ps*.8)}" role="radio" aria-checked="${i===sel}" aria-label="${n}" title="${n}"></button>`).join('');
  $('#swn').textContent=sel>=0?PRE[sel][0]:'Personalizado';if(document.activeElement!==$('#acc'))$('#acc').value=h==null?'#059669':hexHs(h,s*.8)}
 $('#sws').onclick=e=>{const b=e.target.closest('[data-i]');if(!b)return;const[n,h,s]=PRE[+b.dataset.i];if(h==null){delete S.pf.ah;delete S.pf.as}else{S.pf.ah=h;S.pf.as=s}savePf();applyAccent();swUi()};
