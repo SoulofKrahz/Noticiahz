@@ -34,7 +34,10 @@ window.nzIco=function(h,s){if(h==null||isNaN(h))return'';h=+h;s=s==null?.85:+s;i
 window.nzCk=function(k,v){var c=k+'='+v+';path=/;max-age='+(v===''?0:31536000)+';SameSite=Lax'+(location.protocol==='https:'?';Secure':'');try{document.cookie=c}catch(e){}};
 window.nzLocked=function(){return /(^|;\s*)nz_icl=1/.test(document.cookie)};
 window.nzInApp=function(){try{return matchMedia('(display-mode: standalone), (display-mode: fullscreen), (display-mode: minimal-ui)').matches||navigator.standalone===true}catch(e){return false}};
-window.nzMan=function(h,s){if(nzInApp()){if(!nzLocked())nzCk('nz_icl','1');return}if(nzLocked())return;nzCk('nz_ic',nzIco(h,s)||'')};
+// Chrome lee el manifest al cargar la página y no vuelve a pedirlo: al cambiar el color se reinserta el <link> (misma
+// dirección) para que lo vuelva a leer con la cookie nueva y «Instalar» use ya el color elegido, sin recargar.
+window.nzRelink=function(){try{var m=document.querySelector('link[rel=manifest]');if(!m)return;var n=m.cloneNode();m.parentNode.replaceChild(n,m)}catch(e){}};
+window.nzMan=function(h,s){if(nzInApp()){if(!nzLocked())nzCk('nz_icl','1');return}if(nzLocked())return;var k=nzIco(h,s)||'',o=(document.cookie.match(/(?:^|;\s*)nz_ic=([a-z]*)/)||[])[1]||'';nzCk('nz_ic',k);if(k!==o&&document.readyState!=='loading')nzRelink()};
 try{var q=JSON.parse(localStorage.getItem('nz_pf'))||{};if(q.ah!=null)nzApply(q.ah,q.as);nzMan(q.ah,q.as)}catch(e){}
 // Si Chrome ofrece instalar, es que la app no está instalada: se descongela y el icono vuelve a seguir el color. Al instalar, se congela.
 addEventListener('beforeinstallprompt',function(){if(nzLocked()){nzCk('nz_icl','');try{var q=JSON.parse(localStorage.getItem('nz_pf'))||{};nzMan(q.ah,q.as)}catch(e){}}});
@@ -810,7 +813,7 @@ async function pool(items,n,fn){let i=0;await Promise.all(Array.from({length:Mat
 function timed(fn,ms=10000){const c=new AbortController();const id=setTimeout(()=>c.abort(),ms);return fn(c.signal).finally(()=>clearTimeout(id))}
 
 // Proxy propio: /p/<host>/… lo atiende _worker.js (Cloudflare Pages). Ningún servicio de terceros ve qué lees.
-const VER='2026-10-25-3';
+const VER='2026-10-25-4';
 if(!ls.get('nz_fu',0))ls.set('nz_fu',Date.now());
 const px=u=>{const x=new URL(u);return '/p/'+x.host+x.pathname+x.search};
 // Si la respuesta de error no lleva la marca X-Nz, no la dio nuestro proxy sino Cloudflare (límite diario gratuito o caída): se anota como 'cf'

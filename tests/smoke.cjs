@@ -48,6 +48,7 @@ async function run(browser, label, viewport, mobile) {
       if (/viejo\.test/.test(host)) return r.fulfill({ status: 200, contentType: 'application/rss+xml', body: rss(host).replace(/<pubDate>[^<]*/g, '<pubDate>' + new Date(Date.now() - 400 * 864e5).toUTCString()) });
       return r.fulfill({ status: 200, contentType: 'application/rss+xml', body: rss(host) });
     }
+    if (rel === 'manifest.webmanifest') { const m = (r.request().headers()['cookie'] || '').match(/(?:^|;\s*)nz_ic=([a-z]+)/); return r.fulfill({ status: 200, contentType: 'application/manifest+json', headers: { 'Cache-Control': 'no-cache' }, body: fs.readFileSync(path.join(SITE, m ? 'manifest-' + m[1] + '.webmanifest' : 'manifest.webmanifest')) }) } // como _worker.js
     const f = path.join(SITE, rel || 'index.html');
     if (!f.startsWith(SITE) || !fs.existsSync(f) || fs.statSync(f).isDirectory()) return r.fulfill({ status: 404, body: 'no' });
     return r.fulfill({ status: 200, contentType: MIME[path.extname(f).slice(1)] || 'application/octet-stream', body: fs.readFileSync(f) });
@@ -178,6 +179,11 @@ async function run(browser, label, viewport, mobile) {
     navigator.getInstalledRelatedApps = () => Promise.resolve([]); const r = { res: await nzCheck(), unlocked: !nzLocked(), color: ck() };
     nzCk('nz_icl', '1'); navigator.getInstalledRelatedApps = () => Promise.resolve([{ platform: 'webapp' }]); r.stays = (await nzCheck()) === false && nzLocked(); delete S.pf.ah; delete S.pf.as; savePf(); nzApply(); nzCk('nz_icl', ''); nzMan(); return r });
   ok(un.res === true && un.unlocked && un.color === 'naranja' && un.stays, `tras desinstalar, el icono vuelve a seguir el color aunque Chrome no avise (${JSON.stringify(un)})`);
+  const cdpM = await p.context().newCDPSession(p), icM = async () => (JSON.parse((await cdpM.send('Page.getAppManifest')).data || '{}').icons || [])[0]?.src;
+  await p.evaluate(() => document.querySelector('#sws .swc[data-i="2"]').click()); await p.waitForTimeout(500); const m1 = await icM();
+  await p.evaluate(() => document.querySelector('#sws .swc[data-i="4"]').click()); await p.waitForTimeout(500); const m2 = await icM();
+  await p.evaluate(() => document.querySelector('#sws .swc[data-i="0"]').click());
+  ok(m1 === 'ic/azul-192.png' && m2 === 'ic/violeta-192.png', `«Instalar» usa el color recién elegido sin recargar (${m1} → ${m2})`);
   ok(ico.libre === 'azul' && ico.congelado === 'azul' && ico.lock && ico.desc === 'turquesa' && ico.unlock && ico.verde === '' && ico.link === 'manifest.webmanifest', `el icono toma el color al instalar y luego no cambia (${JSON.stringify(ico)})`);
   // 7) Copia de seguridad: exportar y restaurar sin duplicar
   const bk = await p.evaluate(() => new Promise(res => { const o = URL.createObjectURL; URL.createObjectURL = b => { b.text().then(t => res(t)); URL.createObjectURL = o; return o.call(URL, b) }; document.querySelector('#bx').click() }));
