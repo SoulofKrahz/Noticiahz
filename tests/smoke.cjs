@@ -174,6 +174,10 @@ async function run(browser, label, viewport, mobile) {
   // 6b) Icono: sigue el color mientras la app no está instalada; al instalar se congela; si Chrome vuelve a ofrecer instalar, se descongela
   const ico = await p.evaluate(() => { const ck = () => (document.cookie.match(/(?:^|;\s*)nz_ic=([a-z]*)/) || [])[1] || ''; const sw = i => document.querySelector(`#sws .swc[data-i="${i}"]`).click(); const r = {};
     sw(2); r.libre = ck(); dispatchEvent(new Event('appinstalled')); sw(1); r.congelado = ck(); r.lock = nzLocked(); dispatchEvent(new Event('beforeinstallprompt')); r.desc = ck(); r.unlock = !nzLocked(); sw(0); r.verde = ck(); r.link = document.querySelector('link[rel=manifest]').getAttribute('href'); return r });
+  const un = await p.evaluate(async () => { const ck = () => (document.cookie.match(/(?:^|;\s*)nz_ic=([a-z]*)/) || [])[1] || ''; nzCk('nz_icl', '1'); S.pf.ah = 27; S.pf.as = .95; savePf(); nzApply(27, .95);
+    navigator.getInstalledRelatedApps = () => Promise.resolve([]); const r = { res: await nzCheck(), unlocked: !nzLocked(), color: ck() };
+    nzCk('nz_icl', '1'); navigator.getInstalledRelatedApps = () => Promise.resolve([{ platform: 'webapp' }]); r.stays = (await nzCheck()) === false && nzLocked(); delete S.pf.ah; delete S.pf.as; savePf(); nzApply(); nzCk('nz_icl', ''); nzMan(); return r });
+  ok(un.res === true && un.unlocked && un.color === 'naranja' && un.stays, `tras desinstalar, el icono vuelve a seguir el color aunque Chrome no avise (${JSON.stringify(un)})`);
   ok(ico.libre === 'azul' && ico.congelado === 'azul' && ico.lock && ico.desc === 'turquesa' && ico.unlock && ico.verde === '' && ico.link === 'manifest.webmanifest', `el icono toma el color al instalar y luego no cambia (${JSON.stringify(ico)})`);
   // 7) Copia de seguridad: exportar y restaurar sin duplicar
   const bk = await p.evaluate(() => new Promise(res => { const o = URL.createObjectURL; URL.createObjectURL = b => { b.text().then(t => res(t)); URL.createObjectURL = o; return o.call(URL, b) }; document.querySelector('#bx').click() }));

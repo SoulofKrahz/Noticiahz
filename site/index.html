@@ -38,7 +38,11 @@ window.nzMan=function(h,s){if(nzInApp()){if(!nzLocked())nzCk('nz_icl','1');retur
 try{var q=JSON.parse(localStorage.getItem('nz_pf'))||{};if(q.ah!=null)nzApply(q.ah,q.as);nzMan(q.ah,q.as)}catch(e){}
 // Si Chrome ofrece instalar, es que la app no está instalada: se descongela y el icono vuelve a seguir el color. Al instalar, se congela.
 addEventListener('beforeinstallprompt',function(){if(nzLocked()){nzCk('nz_icl','');try{var q=JSON.parse(localStorage.getItem('nz_pf'))||{};nzMan(q.ah,q.as)}catch(e){}}});
-addEventListener('appinstalled',function(){nzCk('nz_icl','1')});</script>
+addEventListener('appinstalled',function(){nzCk('nz_icl','1')});
+// En el navegador, si el icono está congelado pero Chrome dice que la app ya no está instalada, se descongela
+// (beforeinstallprompt no siempre llega justo después de desinstalar). Necesita related_applications en el manifest.
+window.nzUnlock=function(){nzCk('nz_icl','');try{var q=JSON.parse(localStorage.getItem('nz_pf'))||{};nzMan(q.ah,q.as)}catch(e){}};
+window.nzCheck=function(){if(nzInApp()||!nzLocked()||!navigator.getInstalledRelatedApps)return Promise.resolve(null);return navigator.getInstalledRelatedApps().then(function(l){if(!l||!l.length){nzUnlock();return true}return false}).catch(function(){return null})};nzCheck();</script>
 <script>try{var p=JSON.parse(localStorage.getItem('nz_pf'))||{},t=p.th;if(t!=='dark'&&t!=='light')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t;document.documentElement.style.setProperty('--fs',p.fs||1)}catch(e){}</script>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='15' fill='%230a9d5c'/><path d='M21.5 17.5V50M21.5 34C21.5 25 27 22 33 22C40 22 44 26.5 44 33V50' fill='none' stroke='%2306150f' stroke-width='9'/><path d='M7 41H25L29 29L34 51L38 36L41 41H57' fill='none' stroke='white' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'/></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400..700&family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..700&display=swap" rel="stylesheet">
@@ -153,7 +157,7 @@ header{transition:transform .25s}header.hd{transform:translateY(-100%)}
 .add .w{grid-column:1/-1}
 #askov{z-index:70}.askd{position:fixed;z-index:71;left:50%;top:50%;transform:translate(-50%,-50%);width:min(420px,calc(100vw - 32px));max-height:calc(100dvh - 48px);overflow-y:auto;background:var(--card);border:1px solid var(--bd);border-radius:18px;padding:20px;box-shadow:0 24px 60px -20px #0009;animation:popin .16s ease-out}
 .askd h3{font:600 19px/1.25 Newsreader,serif;margin:0 0 8px}.askd p{white-space:pre-line;color:var(--mu);font-size:14.5px;line-height:1.5;margin:0 0 18px}.askq{display:flex;gap:8px;margin:0 0 8px}.askq button{font-size:13px;font-weight:600;color:var(--em);padding:4px 2px}.askc{max-height:45dvh;overflow-y:auto;margin:0 0 14px;border:1px solid var(--bd);border-radius:12px;padding:4px 12px}.askc label{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--bd);font-size:14.5px;cursor:pointer}.askc label:last-child{border-bottom:0}.askc input{width:19px;height:19px;accent-color:var(--em);flex:none}
-.rbg .gb:disabled{opacity:.25}
+.rbg .gb:disabled{opacity:.25}.lnk{display:inline;padding:0;font:inherit;font-weight:600;color:var(--em);text-decoration:underline;background:none;border:0;cursor:pointer}
 .chgl{max-height:55dvh;overflow-y:auto;margin:0 0 14px}.chgl section{padding:10px 0;border-bottom:1px solid var(--bd)}.chgl section:last-child{border-bottom:0}.chgl h4{margin:0 0 6px;font:600 14px Inter,sans-serif}.chgl h4 small{color:var(--em);font-weight:600}.chgl ul{margin:0;padding-left:18px;font-size:13.5px;line-height:1.45;color:var(--tx)}.chgl li{margin:3px 0}
 .aski{width:100%;margin:4px 0 14px;padding:11px 12px;border:1px solid var(--bd);border-radius:10px;background:var(--bg);color:var(--tx);font-size:16px}.askb{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}.askb .btn{margin:0;min-width:110px;justify-content:center}
 .btn.dg{background:#c0392b;border-color:#c0392b;color:#fff}
@@ -806,7 +810,7 @@ async function pool(items,n,fn){let i=0;await Promise.all(Array.from({length:Mat
 function timed(fn,ms=10000){const c=new AbortController();const id=setTimeout(()=>c.abort(),ms);return fn(c.signal).finally(()=>clearTimeout(id))}
 
 // Proxy propio: /p/<host>/… lo atiende _worker.js (Cloudflare Pages). Ningún servicio de terceros ve qué lees.
-const VER='2026-10-25-2';
+const VER='2026-10-25-3';
 if(!ls.get('nz_fu',0))ls.set('nz_fu',Date.now());
 const px=u=>{const x=new URL(u);return '/p/'+x.host+x.pathname+x.search};
 // Si la respuesta de error no lleva la marca X-Nz, no la dio nuestro proxy sino Cloudflare (límite diario gratuito o caída): se anota como 'cf'
@@ -1715,7 +1719,8 @@ $('#rvl').addEventListener('click',async e=>{
 const PRE=[['Esmeralda',null,null],['Turquesa',185,.85],['Azul',214,.9],['Índigo',243,.8],['Violeta',272,.7],['Rosa',328,.75],['Coral',6,.85],['Naranja',27,.95],['Ámbar',42,.95],['Grafito',215,.12]];
 const hsOf=x=>{const r=parseInt(x.slice(1,3),16)/255,g=parseInt(x.slice(3,5),16)/255,b=parseInt(x.slice(5,7),16)/255,mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn,l=(mx+mn)/2;let h=0;if(d){h=mx===r?((g-b)/d)%6:mx===g?(b-r)/d+2:(r-g)/d+4;h=Math.round(h*60);if(h<0)h+=360}const s=d?d/(1-Math.abs(2*l-1)):0;return[h,Math.max(.1,Math.min(.95,s))]};
 const hexHs=(h,s)=>{const a=s*Math.min(.4,.6),f=n=>{const k=(n+h/30)%12;return .4-a*Math.max(-1,Math.min(k-3,9-k,1))};return'#'+[f(0),f(8),f(4)].map(v=>('0'+Math.round(v*255).toString(16)).slice(-2)).join('')};
-function icnUi(){const e=$('#icn');if(e)e.textContent=nzInApp()||nzLocked()?'El icono de la app instalada se quedó con el color que tenías al instalarla; para cambiarlo, reinstálala.':'Al instalar la app, el icono tomará este color.'}
+function icnUi(){const e=$('#icn');if(!e)return;const fz=nzInApp()||nzLocked();e.innerHTML=fz?'El icono de la app instalada se quedó con el color que tenías al instalarla; para cambiarlo, reinstálala.'+(nzInApp()?'':' <button class="lnk" id="icu">¿Ya la desinstalaste? Usar este color al instalar</button>'):'Al instalar la app, el icono tomará este color.'}
+document.addEventListener('click',e=>{if(e.target.id==='icu'){nzUnlock();icnUi();toast('Al instalar, el icono tomará este color')}});
 function swUi(){icnUi();const h=S.pf.ah,s=S.pf.as;let sel=h==null?0:PRE.findIndex((x,i)=>i&&x[1]===h&&Math.abs(x[2]-s)<.005);
  $('#sws').innerHTML=PRE.map(([n,ph,ps],i)=>`<button class="swc ${i===sel?'on':''}" data-i="${i}" style="background:${ph==null?'#059669':hexHs(ph,ps*.8)}" role="radio" aria-checked="${i===sel}" aria-label="${n}" title="${n}"></button>`).join('');
  $('#swn').textContent=sel>=0?PRE[sel][0]:'Personalizado';if(document.activeElement!==$('#acc'))$('#acc').value=h==null?'#059669':hexHs(h,s*.8)}

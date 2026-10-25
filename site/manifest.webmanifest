@@ -81,5 +81,11 @@
         }
       ]
     }
+  ],
+  "related_applications": [
+    {
+      "platform": "webapp",
+      "url": "https://noticiahz.pages.dev/manifest.webmanifest"
+    }
   ]
 }
