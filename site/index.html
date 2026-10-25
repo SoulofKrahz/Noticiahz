@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
-<link rel="manifest" href="manifest.webmanifest" crossorigin="use-credentials">
+<link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Noticiahz">
 <title>Noticiahz — Tus noticias, en un solo sitio</title>
@@ -28,11 +28,7 @@
   +'html[data-theme=dark]{--bg:'+hx(bgD)+';--card:'+hx(cdD)+';--bd:'+hx(bdD)+';--tx:'+hx(txD)+';--mu:'+hx(muD)+';--em:'+hx(emD)+';--em2:'+hx(e2D)+';--tint:hsla('+Math.round(h)+','+Math.round(s*80)+'%,48%,.14);--onem:'+hx(onD)+lv(ltD,e2D)+'}';
  return{css:css,barL:hx(em),barD:hx(bgD),fav:hx(e2),lt:lt}};
 window.nzApply=function(h,s){var st=document.getElementById('acs');if(h==null||isNaN(h)){if(st)st.remove();window.nzLast=null;return null}var a=nzAcc(+h,s==null?.85:+s);if(!st){st=document.createElement('style');st.id='acs';document.head.appendChild(st)}st.textContent=a.css;window.nzLast=a;return a};
-// Icono de la app instalada: cada color de la paleta tiene su manifest con iconos de ese color; un color personalizado usa el más parecido.
-window.nzIco=function(h,s){if(h==null||isNaN(h))return'';h=+h;s=s==null?.85:+s;if(s<.3)return'grafito';var P=[['',152],['turquesa',185],['azul',214],['indigo',243],['violeta',272],['rosa',328],['coral',6],['naranja',27],['ambar',42]],b=P[0],d=1e9;P.forEach(function(x){var e=Math.abs(h-x[1])%360;e=Math.min(e,360-e);if(e<d){d=e;b=x}});return b[0]};
-// La dirección del manifest no cambia nunca (Chrome no actualiza el icono si cambia): la app deja el color en una cookie y _worker.js sirve en manifest.webmanifest la versión de ese color
-window.nzMan=function(h,s){var k=nzIco(h,s),a=document.querySelector('link[rel=apple-touch-icon]');try{document.cookie='nz_ic='+(k||'')+';path=/;max-age=31536000;SameSite=Lax'+(location.protocol==='https:'?';Secure':'')}catch(e){}if(a)a.setAttribute('href',k?'ic/'+k+'-apple.png':'apple-touch-icon.png');return k};
-try{var q=JSON.parse(localStorage.getItem('nz_pf'))||{};if(q.ah!=null){nzApply(q.ah,q.as);nzMan(q.ah,q.as)}}catch(e){}</script>
+try{var q=JSON.parse(localStorage.getItem('nz_pf'))||{};if(q.ah!=null)nzApply(q.ah,q.as)}catch(e){}try{if(/(^|;\s*)nz_ic=/.test(document.cookie))document.cookie='nz_ic=;path=/;max-age=0'}catch(e){}</script>
 <script>try{var p=JSON.parse(localStorage.getItem('nz_pf'))||{},t=p.th;if(t!=='dark'&&t!=='light')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t;document.documentElement.style.setProperty('--fs',p.fs||1)}catch(e){}</script>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='15' fill='%230a9d5c'/><path d='M21.5 17.5V50M21.5 34C21.5 25 27 22 33 22C40 22 44 26.5 44 33V50' fill='none' stroke='%2306150f' stroke-width='9'/><path d='M7 41H25L29 29L34 51L38 36L41 41H57' fill='none' stroke='white' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'/></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400..700&family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..700&display=swap" rel="stylesheet">
@@ -491,7 +487,7 @@ main .card .ph{border-radius:0;background:var(--tint);aspect-ratio:16/9}.card .p
         <section class="set"><h3>Tema y color</h3><p>Se aplica al instante y se guarda en este dispositivo.</p>
           <div class="seg" id="sg-th"><button data-v="auto">Automático</button><button data-v="light">Claro</button><button data-v="dark">Oscuro</button></div>
           <div class="sws" id="sws" role="radiogroup" aria-label="Color de la app"></div>
-          <div class="row" style="border:0;padding:14px 0 0"><div><b id="swn">Esmeralda</b><small style="white-space:normal">Color personalizado: la app ajusta el contraste sola. El icono de la app instalada toma el color de la paleta más parecido.</small></div><input type="color" id="acc" aria-label="Color personalizado" style="width:46px;height:38px;border:1px solid var(--bd);border-radius:10px;background:none;padding:2px;flex:none"></div></section><section class="set"><h3>Barra del lector</h3><p>Qué botones salen abajo al leer una noticia y en qué orden (de izquierda a derecha).</p><div id="rbl"></div></section><section class="set"><h3>Lectura</h3><p>Tamaño del texto de las noticias.</p>
+          <div class="row" style="border:0;padding:14px 0 0"><div><b id="swn">Esmeralda</b><small style="white-space:normal">Color personalizado: la app ajusta el contraste sola.</small></div><input type="color" id="acc" aria-label="Color personalizado" style="width:46px;height:38px;border:1px solid var(--bd);border-radius:10px;background:none;padding:2px;flex:none"></div></section><section class="set"><h3>Barra del lector</h3><p>Qué botones salen abajo al leer una noticia y en qué orden (de izquierda a derecha).</p><div id="rbl"></div></section><section class="set"><h3>Lectura</h3><p>Tamaño del texto de las noticias.</p>
           <div class="seg" id="sg-fs"><button data-v="0.9">Pequeño</button><button data-v="1">Normal</button><button data-v="1.15">Grande</button></div></section><section class="set"><h3>Tarjetas</h3><p>Cómo se ven y cómo se manejan las noticias.</p><div class="gc"><div class="row"><div><b>Abrir siempre en el lector</b><small style="white-space:normal">Apagado: las noticias sin resumen (marcadas «Web») se abren directamente en su web.</small></div><label class="sw"><input type="checkbox" data-pf="sr" aria-label="Abrir siempre en el lector"><span></span></label></div><div class="row"><div><b>Ocultar imágenes</b><small style="white-space:normal">Lista más compacta y menos datos.</small></div><label class="sw"><input type="checkbox" data-pf="np" aria-label="Ocultar imágenes"><span></span></label></div><div class="row"><div><b>Atenuar noticias leídas</b><small style="white-space:normal">Las ya abiertas se ven más apagadas.</small></div><label class="sw"><input type="checkbox" data-pf="dr" aria-label="Atenuar leídas"><span></span></label></div><div class="row"><div><b>Invertir el deslizamiento</b><small style="white-space:normal">Izquierda guarda y derecha descarta.</small></div><label class="sw"><input type="checkbox" data-pf="sw" aria-label="Invertir deslizamiento"><span></span></label></div></div></section>
       </div>
       <div id="pC" hidden>
@@ -800,7 +796,7 @@ async function pool(items,n,fn){let i=0;await Promise.all(Array.from({length:Mat
 function timed(fn,ms=10000){const c=new AbortController();const id=setTimeout(()=>c.abort(),ms);return fn(c.signal).finally(()=>clearTimeout(id))}
 
 // Proxy propio: /p/<host>/… lo atiende _worker.js (Cloudflare Pages). Ningún servicio de terceros ve qué lees.
-const VER='2026-10-24-2';
+const VER='2026-10-25-0';
 if(!ls.get('nz_fu',0))ls.set('nz_fu',Date.now());
 const px=u=>{const x=new URL(u);return '/p/'+x.host+x.pathname+x.search};
 // Si la respuesta de error no lleva la marca X-Nz, no la dio nuestro proxy sino Cloudflare (límite diario gratuito o caída): se anota como 'cf'
@@ -1160,7 +1156,7 @@ $('#sb').onclick=()=>{const o=$('.search').classList.toggle('open');$('#sb').cla
 const sysDark=()=>matchMedia('(prefers-color-scheme: dark)').matches;
 const FAV0=document.querySelector('link[rel=icon]').getAttribute('href');
 const barCol=d=>{const a=window.nzLast;return a?(d==='dark'?a.barD:a.barL):(d==='dark'?'#0d1523':'#047857')};
-function applyAccent(){const a=nzApply(S.pf.ah,S.pf.as);nzMan(S.pf.ah,S.pf.as);document.querySelector('meta[name=theme-color]').content=barCol(document.documentElement.dataset.theme);document.querySelector('link[rel=icon]').setAttribute('href',a?favFor(a):FAV0)}
+function applyAccent(){const a=nzApply(S.pf.ah,S.pf.as);document.querySelector('meta[name=theme-color]').content=barCol(document.documentElement.dataset.theme);document.querySelector('link[rel=icon]').setAttribute('href',a?favFor(a):FAV0)}
 function favFor(a){const c='%23'+a.fav.slice(1);let f=FAV0.replace('%230a9d5c',c);if(a.lt)f=f.replace("stroke='%2306150f'","stroke='white'").replace("<path d='M7","<path d='M7 41H25L29 29L34 51L38 36L41 41H57' fill='none' stroke='"+c+"' stroke-width='7.5' stroke-linecap='round' stroke-linejoin='round'/><path d='M7");return f}
 function setTheme(d){const h=document.documentElement;h.classList.add('tm');h.dataset.theme=d;$('#th use').setAttribute('href',d==='dark'?'#sun':'#m');$('#th').title=d==='dark'?'Tema claro':'Tema oscuro';
  document.querySelector('meta[name=theme-color]').content=barCol(d);clearTimeout(setTheme.t);setTheme.t=setTimeout(()=>h.classList.remove('tm'),450)}
@@ -1669,12 +1665,12 @@ $('#pD').addEventListener('click',e=>{
  const df=e.target.closest('[data-dsdef]');if(df){const d=DEFAULTS.find(y=>y.id===df.dataset.dsdef);if(!d)return;if(!S.cats.includes(d.cat)){S.cats.push(d.cat);ls.set('nz_cats',S.cats)}resetForm();$('#an').value=d.name;$('#au').value=d.url;fillCats(d.cat);$('#fr').hidden=false;$('#aa').click()}});
 // ---- Novedades: resumen de lo que ha cambiado en cada versión (la primera es siempre la actual) ----
 const CHANGES=[
- [VER,['Fuentes predeterminadas actualizadas: 93 fuentes, con 29 nuevas (RTVE, Cadena SER, Agencia EFE, Maldita, National Geographic, Muy Interesante, La Tribu Hip Hop…) y la categoría Viajes; DW News en español; Agencia EFE vía Bing','«Predeterminadas que no tienes» ya no sugiere fuentes que tienes por otra dirección, y al añadirlas las comprueba primero']],
+ [VER,['El icono de la app instalada vuelve a ser fijo: el color se sigue eligiendo y cambia dentro de la app, pero ya no se intenta cambiar el icono (no llegaba a cambiar y podía dejar la app sin abrir)']],
+ ['2026-10-24-2',['Fuentes predeterminadas actualizadas: 93 fuentes, con 29 nuevas (RTVE, Cadena SER, Agencia EFE, Maldita, National Geographic, Muy Interesante, La Tribu Hip Hop…) y la categoría Viajes; DW News en español; Agencia EFE vía Bing','«Predeterminadas que no tienes» ya no sugiere fuentes que tienes por otra dirección, y al añadirlas las comprueba primero']],
  ['2026-10-23-4',['El lector tiene la barra de acciones abajo, como el feed; su orden se elige en Ajustes → Apariencia','El botón «Siguiente» del lector ya funciona','Las noticias sin resumen llevan la marca «Web»: se abren en su página y quedan como leídas (en el menú de pulsación larga puedes verlas en el lector)','El total de noticias va en el chip «Todas», como en cada fuente; debajo, solo las nuevas','Exportar fuentes deja elegir qué categorías incluir','Al comprobar una fuente con aviso, solo queda «Guardar así»','Ventanas propias de la app para crear categorías y confirmar','Este apartado de Novedades']],
  ['2026-10-23-1',['Abrir y cerrar Ajustes y el lector responde mucho más rápido','Las primeras fotos del feed aparecen antes']],
  ['2026-10-23-0',['Seguir una noticia: etiqueta «Siguiendo» y pestaña con cada historia durante 7 días']],
  ['2026-10-22-2',['Al cerrar Ajustes se borra lo que quedó a medias (búsquedas, textos)']],
- ['2026-10-22-1',['El icono instalado puede tomar el color de la app']],
  ['2026-10-22-0',['Si Google News bloquea, las fuentes se cargan vía Bing Noticias']],
  ['2026-10-21-10',['Descubrir fuentes nuevas según tus temas','La pestaña «Backup» pasa a llamarse «Datos»']],
  ['2026-10-21-9',['Aviso de versión nueva más claro']],

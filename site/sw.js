@@ -1,5 +1,5 @@
 // Noticiahz — service worker. Si cambias iconos o manifest, sube el número de V.
-const V = 'nz-v66', FONTS = 'nz-fonts';
+const V = 'nz-v67', FONTS = 'nz-fonts';
 const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png', 'apple-touch-icon.png'];
 
 self.addEventListener('install', e => {
@@ -28,8 +28,6 @@ self.addEventListener('fetch', e => {
   if (u.origin === location.origin) {
     if (u.pathname.startsWith('/p/')) return; // noticias y avisos: siempre por red
     if (r.mode === 'navigate') return e.respondWith(page(r, e));
-    // El manifest cambia según el color elegido (lo decide _worker.js por la cookie): siempre de la red, copia solo sin conexión
-    if (u.pathname === '/manifest.webmanifest') return e.respondWith(fetch(r).then(x => { if (x.ok) { const y = x.clone(); caches.open(V).then(c => c.put('manifest.webmanifest', y)) } return x }).catch(() => caches.match('manifest.webmanifest')));
     return e.respondWith(caches.match(r).then(h => h || fetch(r)));
   }
   if (/(^|\.)fonts\.(googleapis|gstatic)\.com$/.test(u.hostname)) {

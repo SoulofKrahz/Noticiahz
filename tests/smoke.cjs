@@ -14,12 +14,11 @@ const ok = (cond, msg) => { if (!cond) fails.push(msg); console.log((cond ? '  �
 
 const HITS = {};
 async function workerTest() {
-  const w = (await import(require('url').pathToFileURL(path.join(SITE, '_worker.js')).href)).default, env = { ASSETS: { fetch: async q => new Response(fs.readFileSync(path.join(SITE, new URL(q.url).pathname))) } };
-  const get = async c => JSON.parse(await (await w.fetch(new Request('https://app.test/manifest.webmanifest', { headers: c ? { Cookie: c } : {} }), env)).text()).icons[0].src;
-  const r = [await get('nz_ic=azul'), await get(''), await get('otra=1; nz_ic=x../'), await get('nz_ic=grafito; z=1')];
-  ok(r[0] === 'ic/azul-192.png' && r[1] === 'icon-192.png' && r[2] === 'icon-192.png' && r[3] === 'ic/grafito-192.png', `el proxy sirve el manifest del color de la cookie (${r.join(', ')})`);
-  const rt = JSON.parse(fs.readFileSync(path.join(SITE, '_routes.json'), 'utf8'));
-  ok(rt.include.includes('/manifest.webmanifest'), '_routes.json pasa el manifest por el proxy');
+  const w = (await import(require('url').pathToFileURL(path.join(SITE, '_worker.js')).href)).default, env = { ASSETS: { fetch: async q => new Response('estático:' + new URL(q.url).pathname) } };
+  const ext = await w.fetch(new Request('https://app.test/p/elpais.com/rss', { headers: { 'Sec-Fetch-Site': 'cross-site' } }), env);
+  const st = await (await w.fetch(new Request('https://app.test/manifest.webmanifest'), env)).text();
+  ok(ext.status === 403 && ext.headers.get('X-Nz') === '1', `el proxy rechaza peticiones de otras webs (${ext.status})`);
+  ok(st === 'estático:/manifest.webmanifest', 'el manifest se sirve tal cual (icono fijo)');
 }
 // Google News simulado para «Descubrir»: medios nuevos y uno que ya está en las fuentes (El País)
 const gn = u => { const q = decodeURIComponent((u.match(/q=([^&+]*)/) || [])[1] || 'x'); const M = [['https://www.mallorcadiario.com', 'mallorcadiario.com'], ['https://www.cronicabalear.es', 'Crónica Balear'], ['https://elpais.com', 'El País'], ['https://hiphopgoldenage.es', 'Hip Hop Golden Age']];
@@ -165,10 +164,9 @@ async function run(browser, label, viewport, mobile) {
     document.querySelector('#st').click(); await new Promise(r => setTimeout(r, 300)); sub('d'); const t = document.querySelector('#dsd').textContent; const r = { efe: /Agencia EFE/.test(t), der: /Derecho de la Red/.test(t) };
     document.querySelector('[data-dsdef="derechodelared"]').click(); await new Promise(r => setTimeout(r, 1500)); r.added = S.src.some(x => x.name === 'Derecho de la Red'); closeAll(); await new Promise(r => setTimeout(r, 400)); return r });
   ok(!pd.efe && pd.der && pd.added, `«Predeterminadas que no tienes» no repite lo que ya tienes y comprueba al añadir (${JSON.stringify(pd)})`);
-  // 6b) El color elegido va a la cookie nz_ic (el manifest no cambia de dirección); un color libre usa el más parecido
-  const ico = await p.evaluate(() => { const m = () => document.querySelector('link[rel=manifest]').getAttribute('href'), ck = () => (document.cookie.match(/nz_ic=([a-z]*)/) || [])[1];
-    document.querySelector('#sws .swc[data-i="2"]').click(); const r = [m(), ck(), nzIco(200, .9), nzIco(10, .1), nzIco(150, .8)]; document.querySelector('#sws .swc[data-i="0"]').click(); r.push(m(), ck()); return r });
-  ok(ico[0] === 'manifest.webmanifest' && ico[1] === 'azul' && ico[2] === 'azul' && ico[3] === 'grafito' && ico[4] === '' && ico[5] === 'manifest.webmanifest' && ico[6] === '', `el color elegido llega al manifest sin cambiar su dirección (${ico.join(', ')})`);
+  // 6b) Cambiar el color no toca el manifest (icono fijo)
+  const ico = await p.evaluate(() => { document.querySelector('#sws .swc[data-i="2"]').click(); const r = [document.querySelector('link[rel=manifest]').getAttribute('href'), /nz_ic=/.test(document.cookie), !!document.querySelector('#acs')]; document.querySelector('#sws .swc[data-i="0"]').click(); return r });
+  ok(ico[0] === 'manifest.webmanifest' && !ico[1] && ico[2], `el color cambia la app sin tocar el icono instalado (${ico.join(', ')})`);
   // 7) Copia de seguridad: exportar y restaurar sin duplicar
   const bk = await p.evaluate(() => new Promise(res => { const o = URL.createObjectURL; URL.createObjectURL = b => { b.text().then(t => res(t)); URL.createObjectURL = o; return o.call(URL, b) }; document.querySelector('#bx').click() }));
   const j = JSON.parse(bk);
