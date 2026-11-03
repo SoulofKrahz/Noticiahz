@@ -12,7 +12,7 @@ on:
 jobs:
   test:
     name: Prueba de humo
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04  # fijo: ubuntu-latest pasó a 26.04 y Playwright 1.55 no tiene Chromium para ella
     timeout-minutes: 10
     permissions:
       contents: read
@@ -28,7 +28,7 @@ jobs:
   deploy:
     name: Publicar
     needs: test
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04  # fijo: ubuntu-latest pasó a 26.04 y Playwright 1.55 no tiene Chromium para ella
     timeout-minutes: 5
     permissions:
       contents: read
