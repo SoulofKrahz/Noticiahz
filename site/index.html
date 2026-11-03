@@ -813,7 +813,7 @@ async function pool(items,n,fn){let i=0;await Promise.all(Array.from({length:Mat
 function timed(fn,ms=10000){const c=new AbortController();const id=setTimeout(()=>c.abort(),ms);return fn(c.signal).finally(()=>clearTimeout(id))}
 
 // Proxy propio: /p/<host>/… lo atiende _worker.js (Cloudflare Pages). Ningún servicio de terceros ve qué lees.
-const VER='2026-10-25-4';
+const VER='2026-11-03-0';
 if(!ls.get('nz_fu',0))ls.set('nz_fu',Date.now());
 const px=u=>{const x=new URL(u);return '/p/'+x.host+x.pathname+x.search};
 // Si la respuesta de error no lleva la marca X-Nz, no la dio nuestro proxy sino Cloudflare (límite diario gratuito o caída): se anota como 'cf'
@@ -1167,7 +1167,9 @@ $('#grid').addEventListener('click',e=>{
  const c=e.target.closest('[data-k]');if(c){const a=S.V[c.dataset.k];if(direct(a))goWeb(a,c);else open(a)}
 });
 $('#grid').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.dataset.k){const a=S.V[e.target.dataset.k];if(direct(a))goWeb(a,e.target);else open(a)}if((e.key==='Delete'||e.key==='Backspace')&&e.target.dataset.k&&S.cat!=='Guardadas'){e.preventDefault();const c=e.target,a=S.V[c.dataset.k];swipeOut(c,-1,()=>dismiss(a))}});
-$('#tabs').addEventListener('click',e=>{const b=e.target.closest('[data-c]');if(b){const ch=S.cat!==b.dataset.c;S.cat=b.dataset.c;render();if(ch&&scrollY>0){const sr=$('#srcs'),t=(sr.hidden?$('#grid'):sr).getBoundingClientRect().top;if(t<0||t>innerHeight)scrollTo({top:0})}}});
+// Al cambiar de categoría o de fuente, la lista nueva empieza desde arriba (antes se quedaba el scroll de la anterior)
+const toTop=()=>{if(scrollY>0)scrollTo({top:0})};
+$('#tabs').addEventListener('click',e=>{const b=e.target.closest('[data-c]');if(b){const ch=S.cat!==b.dataset.c;S.cat=b.dataset.c;render();if(ch)toTop()}});
 let qt;$('#q').addEventListener('input',e=>{S.q=e.target.value;clearTimeout(qt);qt=setTimeout(render,160)});
 const refresh=()=>{reseed();S.alT=0;S.man=true;S.rsc={cat:S.cat,sf:S.sf};load()};
 $('#rf').onclick=refresh;
@@ -1325,7 +1327,7 @@ async function deepen(){
  if(add){S.news.sort((a,b)=>b.date-a.date);saveNews();S.lim+=add;toast(`+${add} noticias más antiguas`)}else toast('No hay más noticias disponibles en estas fuentes');
  render();
 }
-function setSrc(n,top){S.sf=n;render();if(top)scrollTo({top:0,behavior:'smooth'})}
+function setSrc(n,top){const ch=S.sf!==n;S.sf=n;render();if(ch||top)toTop()}
 $('#srcs').addEventListener('click',e=>{const c=e.target.closest('[data-sf]');if(c)setSrc(c.dataset.sf)});
 $('#fb').onclick=()=>{const h=$('#fp').hidden=!$('#fp').hidden;$('#fb').classList.toggle('on',!h)};
 $('#un').onchange=e=>{S.un=e.target.checked;render()};
@@ -1684,7 +1686,8 @@ $('#pD').addEventListener('click',e=>{
  const df=e.target.closest('[data-dsdef]');if(df){const d=DEFAULTS.find(y=>y.id===df.dataset.dsdef);if(!d)return;if(!S.cats.includes(d.cat)){S.cats.push(d.cat);ls.set('nz_cats',S.cats)}resetForm();$('#an').value=d.name;$('#au').value=d.url;fillCats(d.cat);$('#fr').hidden=false;$('#aa').click()}});
 // ---- Novedades: resumen de lo que ha cambiado en cada versión (la primera es siempre la actual) ----
 const CHANGES=[
- [VER,['Al instalar la app, el icono toma el color que tengas en ese momento y ya no cambia (para cambiarlo, reinstálala)','Los vídeos de YouTube y Vimeo se abren directamente (marcados «▶ YouTube»); desde el menú de pulsación larga puedes verlos en el lector','En el lector del móvil se ve la miniatura del vídeo (antes salía solo el botón ▶ descolocado)']],
+ [VER,['Al cambiar de fuente o de categoría, la lista nueva empieza desde arriba']],
+ ['2026-10-25-4',['Al instalar la app, el icono toma el color que tengas en ese momento y ya no cambia (para cambiarlo, reinstálala)','Los vídeos de YouTube y Vimeo se abren directamente (marcados «▶ YouTube»); desde el menú de pulsación larga puedes verlos en el lector','En el lector del móvil se ve la miniatura del vídeo (antes salía solo el botón ▶ descolocado)']],
  ['2026-10-24-2',['Fuentes predeterminadas actualizadas: 93 fuentes, con 29 nuevas (RTVE, Cadena SER, Agencia EFE, Maldita, National Geographic, Muy Interesante, La Tribu Hip Hop…) y la categoría Viajes; DW News en español; Agencia EFE vía Bing','«Predeterminadas que no tienes» ya no sugiere fuentes que tienes por otra dirección, y al añadirlas las comprueba primero']],
  ['2026-10-23-4',['El lector tiene la barra de acciones abajo, como el feed; su orden se elige en Ajustes → Apariencia','El botón «Siguiente» del lector ya funciona','Las noticias sin resumen llevan la marca «Web»: se abren en su página y quedan como leídas (en el menú de pulsación larga puedes verlas en el lector)','El total de noticias va en el chip «Todas», como en cada fuente; debajo, solo las nuevas','Exportar fuentes deja elegir qué categorías incluir','Al comprobar una fuente con aviso, solo queda «Guardar así»','Ventanas propias de la app para crear categorías y confirmar','Este apartado de Novedades']],
  ['2026-10-23-1',['Abrir y cerrar Ajustes y el lector responde mucho más rápido','Las primeras fotos del feed aparecen antes']],
