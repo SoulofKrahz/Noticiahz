@@ -813,7 +813,7 @@ async function pool(items,n,fn){let i=0;await Promise.all(Array.from({length:Mat
 function timed(fn,ms=10000){const c=new AbortController();const id=setTimeout(()=>c.abort(),ms);return fn(c.signal).finally(()=>clearTimeout(id))}
 
 // Proxy propio: /p/<host>/… lo atiende _worker.js (Cloudflare Pages). Ningún servicio de terceros ve qué lees.
-const VER='2026-11-03-0';
+const VER='2026-11-03-1';
 if(!ls.get('nz_fu',0))ls.set('nz_fu',Date.now());
 const px=u=>{const x=new URL(u);return '/p/'+x.host+x.pathname+x.search};
 // Si la respuesta de error no lleva la marca X-Nz, no la dio nuestro proxy sino Cloudflare (límite diario gratuito o caída): se anota como 'cf'
@@ -946,7 +946,7 @@ async function loadRun(){
  $('#upd').textContent='Actualizado a las '+new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
  S.loading=false;S.last=Date.now();try{trPrune()}catch(e){errLog('Seguir: '+e.message)}spinAll(false);loadAlerts();setTimeout(()=>{const r=LG.runs[0];if(r&&Date.now()-r.t<6e4){r.tech=`Técnico: v${VER} · ${S.news.length} noticias en memoria · pintado ${S.rt} ms · arranque ${S.t0} ms (código ${S.tsc} · datos ${S.tdb} · feed visible ${S.tp} · textos ${S.tb} ms)`;lgSave();lgDraw()}},700);
  if(!todo.length)toast('Ya estás al día');else if(Object.values(S.nf||{}).some(f=>f.s==='cf'))toast(`El proxy no responde: posible límite diario de Cloudflare (vuelve a las ${cfReset()})`);else if(!fresh.length)toast(navigator.onLine?'No se pudo conectar. Revisa el registro.':'Sin conexión');else if(bad)toast(`${added?added+' nuevas · ':''}${bad} ${bad===1?'fuente no ha respondido':'fuentes no han respondido'}`);else if(man)toast(added?`${added} ${added===1?'noticia nueva':'noticias nuevas'}`:'Sin noticias nuevas');
- render();
+ render();if(man)toTop(); // actualizar a mano: la lista renovada se ve desde arriba
 }
 
 // Filtros automáticos: agrupa la misma noticia publicada por varias fuentes
@@ -1168,7 +1168,7 @@ $('#grid').addEventListener('click',e=>{
 });
 $('#grid').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.dataset.k){const a=S.V[e.target.dataset.k];if(direct(a))goWeb(a,e.target);else open(a)}if((e.key==='Delete'||e.key==='Backspace')&&e.target.dataset.k&&S.cat!=='Guardadas'){e.preventDefault();const c=e.target,a=S.V[c.dataset.k];swipeOut(c,-1,()=>dismiss(a))}});
 // Al cambiar de categoría o de fuente, la lista nueva empieza desde arriba (antes se quedaba el scroll de la anterior)
-const toTop=()=>{if(scrollY>0)scrollTo({top:0})};
+const toTop=()=>{if(scrollY>0)scrollTo({top:0,behavior:'instant'});requestAnimationFrame(()=>{if(scrollY>0)scrollTo({top:0,behavior:'instant'})})};
 $('#tabs').addEventListener('click',e=>{const b=e.target.closest('[data-c]');if(b){const ch=S.cat!==b.dataset.c;S.cat=b.dataset.c;render();if(ch)toTop()}});
 let qt;$('#q').addEventListener('input',e=>{S.q=e.target.value;clearTimeout(qt);qt=setTimeout(render,160)});
 const refresh=()=>{reseed();S.alT=0;S.man=true;S.rsc={cat:S.cat,sf:S.sf};load()};
@@ -1298,7 +1298,7 @@ $('#fr').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id!=='an'&&
 $('#au').addEventListener('input',()=>{if(S.pend||!$('#ak').hidden){S.pend=null;akSet(0);fm('')}}); // otra dirección: hay que volver a comprobar
 $('#rs').onclick=()=>{resetForm();S.src=DEFAULTS.map(d=>({...d}));S.news=[];saveSrc();toast('Fuentes restauradas');load()};
 
-$('#sh').onclick=()=>{reseed();render();scrollTo({top:0,behavior:'smooth'});toast('Noticias mezcladas de nuevo')};
+$('#sh').onclick=()=>{reseed();render();toTop();toast('Noticias mezcladas de nuevo')};
 $('#so').onchange=e=>{S.so=e.target.value;render()};
 $('#pe').onchange=e=>{S.pe=+e.target.value;render()};
 // Texto completo de todo lo descargado en los últimos 30 días. Solo de lo descargado hace más tiempo se guarda el principio
@@ -1497,7 +1497,7 @@ $('#fb').onclick=$('#b-fb').onclick=()=>$('#fp').hidden?fpOpen(true):fpClose();
 $('#fov').onclick=$('#fx').onclick=fpClose;
 addEventListener('popstate',()=>{if(!$('#fp').hidden)fpOpen(false)});
 $('#b-rf').onclick=refresh;
-$('#b-sh').onclick=()=>{S.so='mix';reseed();render();scrollTo({top:0,behavior:'smooth'});toast('Noticias mezcladas de nuevo')};
+$('#b-sh').onclick=()=>{S.so='mix';reseed();render();toTop();toast('Noticias mezcladas de nuevo')};
 $('#b-st').onclick=()=>$('#st').click();
 const qOpen=o=>{document.body.classList.toggle('qs',o);if(o){$('#q2').value=S.q;$('#q2').focus()}else $('#q2').blur()};
 $('#b-q').onclick=()=>qOpen(true);
@@ -1686,7 +1686,7 @@ $('#pD').addEventListener('click',e=>{
  const df=e.target.closest('[data-dsdef]');if(df){const d=DEFAULTS.find(y=>y.id===df.dataset.dsdef);if(!d)return;if(!S.cats.includes(d.cat)){S.cats.push(d.cat);ls.set('nz_cats',S.cats)}resetForm();$('#an').value=d.name;$('#au').value=d.url;fillCats(d.cat);$('#fr').hidden=false;$('#aa').click()}});
 // ---- Novedades: resumen de lo que ha cambiado en cada versión (la primera es siempre la actual) ----
 const CHANGES=[
- [VER,['Al cambiar de fuente o de categoría, la lista nueva empieza desde arriba']],
+ [VER,['Al cambiar de fuente o de categoría, al actualizar y al mezclar, la lista empieza desde arriba']],
  ['2026-10-25-4',['Al instalar la app, el icono toma el color que tengas en ese momento y ya no cambia (para cambiarlo, reinstálala)','Los vídeos de YouTube y Vimeo se abren directamente (marcados «▶ YouTube»); desde el menú de pulsación larga puedes verlos en el lector','En el lector del móvil se ve la miniatura del vídeo (antes salía solo el botón ▶ descolocado)']],
  ['2026-10-24-2',['Fuentes predeterminadas actualizadas: 93 fuentes, con 29 nuevas (RTVE, Cadena SER, Agencia EFE, Maldita, National Geographic, Muy Interesante, La Tribu Hip Hop…) y la categoría Viajes; DW News en español; Agencia EFE vía Bing','«Predeterminadas que no tienes» ya no sugiere fuentes que tienes por otra dirección, y al añadirlas las comprueba primero']],
  ['2026-10-23-4',['El lector tiene la barra de acciones abajo, como el feed; su orden se elige en Ajustes → Apariencia','El botón «Siguiente» del lector ya funciona','Las noticias sin resumen llevan la marca «Web»: se abren en su página y quedan como leídas (en el menú de pulsación larga puedes verlas en el lector)','El total de noticias va en el chip «Todas», como en cada fuente; debajo, solo las nuevas','Exportar fuentes deja elegir qué categorías incluir','Al comprobar una fuente con aviso, solo queda «Guardar así»','Ventanas propias de la app para crear categorías y confirmar','Este apartado de Novedades']],

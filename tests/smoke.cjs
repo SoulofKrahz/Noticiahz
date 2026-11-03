@@ -65,6 +65,9 @@ async function run(browser, label, viewport, mobile) {
   const n = await p.evaluate(() => document.querySelectorAll('#grid .card').length);
   ok(n > 10, `carga noticias de los feeds (${n} tarjetas)`);
   const sc0 = await p.evaluate(async () => { scrollTo(0, 1500); await new Promise(r => setTimeout(r, 200)); const y0 = scrollY; document.querySelectorAll('#srcs [data-sf]')[1].click(); await new Promise(r => setTimeout(r, 300)); const y1 = scrollY; scrollTo(0, 1200); await new Promise(r => setTimeout(r, 200)); document.querySelectorAll('#tabs [data-c]')[1].click(); await new Promise(r => setTimeout(r, 300)); const y2 = scrollY; document.querySelector('#tabs [data-c="Todas"]').click(); S.sf = 'Todas'; render(); scrollTo(0, 0); return [y0, y1, y2] });
+  const sc1 = await p.evaluate(async () => { scrollTo(0, 1500); await new Promise(r => setTimeout(r, 150)); S.ft = {}; refresh(); await new Promise(r => setTimeout(r, 200)); while (S.loading) await new Promise(r => setTimeout(r, 100)); await new Promise(r => setTimeout(r, 100)); const y1 = scrollY;
+    scrollTo(0, 1500); await new Promise(r => setTimeout(r, 150)); document.querySelector('#b-sh').click(); await new Promise(r => setTimeout(r, 200)); return [y1, scrollY] });
+  ok(sc1[0] === 0 && sc1[1] === 0, `al actualizar y al mezclar se vuelve arriba (${sc1.join(', ')})`);
   ok(sc0[0] > 0 && sc0[1] === 0 && sc0[2] === 0, `al cambiar de fuente o categoría se vuelve arriba (${sc0.join(' → ')})`);
   const tot = await p.evaluate(() => ({ chip: (document.querySelector('#srcs [data-sf="Todas"] em') || {}).textContent, n: S.V.length, cnt: document.querySelector('#cnt').textContent }));
   ok(+tot.chip === tot.n && !/\d+ noticias$/.test(tot.cnt), `el total va en el chip «Todas» y debajo solo lo nuevo (${JSON.stringify(tot)})`);
