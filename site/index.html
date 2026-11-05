@@ -814,7 +814,7 @@ async function pool(items,n,fn){let i=0;await Promise.all(Array.from({length:Mat
 function timed(fn,ms=10000){const c=new AbortController();const id=setTimeout(()=>c.abort(),ms);return fn(c.signal).finally(()=>clearTimeout(id))}
 
 // Proxy propio: /p/<host>/… lo atiende _worker.js (Cloudflare Pages). Ningún servicio de terceros ve qué lees.
-const VER='2026-11-05-0';
+const VER='2026-11-05-1';
 if(!ls.get('nz_fu',0))ls.set('nz_fu',Date.now());
 const px=u=>{const x=new URL(u);return '/p/'+x.host+x.pathname+x.search};
 // Si la respuesta de error no lleva la marca X-Nz, no la dio nuestro proxy sino Cloudflare (límite diario gratuito o caída): se anota como 'cf'
@@ -1706,7 +1706,8 @@ $('#pD').addEventListener('click',e=>{
  const df=e.target.closest('[data-dsdef]');if(df){const d=DEFAULTS.find(y=>y.id===df.dataset.dsdef);if(!d)return;if(!S.cats.includes(d.cat)){S.cats.push(d.cat);ls.set('nz_cats',S.cats)}resetForm();$('#an').value=d.name;$('#au').value=d.url;fillCats(d.cat);$('#fr').hidden=false;$('#aa').click()}});
 // ---- Novedades: resumen de lo que ha cambiado en cada versión (la primera es siempre la actual) ----
 const CHANGES=[
- [VER,['Las noticias de «Lo importante de hoy» siguen también en el feed, con su «También en…»']],
+ [VER,['«Lo importante de hoy» se puede guardar y descartar como las demás noticias (deslizando en el móvil)']],
+ ['2026-11-05-0',['Las noticias de «Lo importante de hoy» siguen también en el feed, con su «También en…»']],
  ['2026-11-04-2',['«Lo importante de hoy» arriba en Todas: lo que cubren muchos medios o varias de tus fuentes locales; tocando «En N medios» ves todos los que la publican (se puede apagar en Contenido)']],
  ['2026-11-03-1',['Al cambiar de fuente o de categoría, al actualizar y al mezclar, la lista empieza desde arriba']],
  ['2026-10-25-4',['Al instalar la app, el icono toma el color que tengas en ese momento y ya no cambia (para cambiarlo, reinstálala)','Los vídeos de YouTube y Vimeo se abren directamente (marcados «▶ YouTube»); desde el menú de pulsación larga puedes verlos en el lector','En el lector del móvil se ve la miniatura del vídeo (antes salía solo el botón ▶ descolocado)']],
