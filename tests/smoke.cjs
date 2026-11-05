@@ -190,6 +190,17 @@ async function run(browser, label, viewport, mobile) {
     document.querySelector('.impi .impt').click(); await new Promise(r => setTimeout(r, 300)); closeAll(); await new Promise(r => setTimeout(r, 600)); r.gone = !document.querySelector('.impi') || ![...document.querySelectorAll('.impi b')].some(b => b.textContent === t);
     S.rd.delete('imp0'); S.pf.imp = false; render(); r.off = !document.querySelector('.imp'); S.pf.imp = true; S.news = S.news.filter(a => !/^imp\d/.test(a.id)); render(); return r });
   ok(im.block && im.first && im.sheet === im.k - 1 && new RegExp('En ' + im.k + ' medios').test(im.cov) && im.inFeed && im.gone && im.off, `«Lo importante de hoy»: arriba (y también en el feed con su «También en…»), desaparece al leerla y se puede apagar (${JSON.stringify(im)})`);
+  // 6k) Lo importante de hoy: guardar y descartar como en el feed (botones en PC, deslizar en el móvil)
+  const ig = await p.evaluate(async () => { S.pf.imp = true; S.cat = 'Todas'; S.sf = 'Todas'; S.dis.clear(); const now = Date.now(), srcs = [...new Set(S.src.filter(x => x.on).map(x => x.name))].slice(0, 6), t = 'Temporal de lluvia deja carreteras cortadas en toda la isla esta tarde';
+    srcs.forEach((n, i) => S.news.unshift({ id: 'ig' + i, link: 'https://x.test/ig' + i, title: t, snip: 'Resumen suficientemente largo de la noticia del temporal para que no cuente como sin resumen. '.repeat(2), date: now - i * 6e4, src: n, cat: S.src.find(x => x.name === n).cat }));
+    S.impAll = 1; render(); const k = S.IMP.findIndex(a => a.title === t), r = { k, n: S.IMP.length, so: S.so };
+    if (k < 0) return r;
+    document.querySelector(`.impi [data-ib="${k}"]`).click(); const a = S.IMP[k]; r.saved = !!S.fav[a.id]; r.on = document.querySelector(`.impi [data-ib="${k}"]`).classList.contains('on'); fav(a); render();
+    const row = document.querySelector(`.impi[data-ii="${k}"] .impt`), R = row.getBoundingClientRect(), ev = (ty, x) => row.dispatchEvent(new PointerEvent(ty, { bubbles: true, pointerId: 7, pointerType: 'touch', clientX: x, clientY: R.top + 5, isPrimary: true }));
+    ev('pointerdown', R.left + 200); for (let x = 200; x >= 0; x -= 20) ev('pointermove', R.left + x - 150); ev('pointerup', R.left - 150); await new Promise(r => setTimeout(r, 500));
+    r.dis = S.dis.has(a.id); r.goneImp = !S.IMP.some(x => x.title === t); r.goneFeed = !S.V.some(x => x.title === t); r.undo = !document.querySelector('#undo').hidden;
+    S.news = S.news.filter(x => !/^ig\d/.test(x.id)); S.dis.clear(); saveDis(); S.impAll = 0; render(); return r });
+  ok(ig.k >= 0 && ig.saved && ig.on && ig.dis && ig.goneImp && ig.goneFeed && ig.undo, `«Lo importante de hoy» se guarda y se descarta (deslizando) como las demás, con Deshacer (${JSON.stringify(ig)})`);
   // 6j) Avisos AEMET: naranja/rojo fijos arriba del todo (también con «Lo importante de hoy»); amarillos solo si se activan
   AEM = true;
   const al = await p.evaluate(async () => { const imp0 = S.pf.imp; S.pf.imp = true; S.pf.az = '64'; S.pf.ay = false; S.cat = 'Todas'; S.sf = 'Todas'; await loadAlerts(true); const r = { first: S.V[0] && S.V[0].alert, card: !!document.querySelector('#grid .card.al-naranja'), yellow: S.V.some(a => a.alert === 'amarillo') };
