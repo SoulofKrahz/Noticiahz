@@ -25,6 +25,10 @@ async function workerTest() {
 // Google News simulado para «Descubrir»: medios nuevos y uno que ya está en las fuentes (El País)
 const gn = u => { const q = decodeURIComponent((u.match(/q=([^&+]*)/) || [])[1] || 'x'); const M = [['https://www.mallorcadiario.com', 'mallorcadiario.com'], ['https://www.cronicabalear.es', 'Crónica Balear'], ['https://elpais.com', 'El País'], ['https://hiphopgoldenage.es', 'Hip Hop Golden Age']];
   return `<?xml version="1.0"?><rss version="2.0"><channel>${M.map((m, i) => `<item><title>${q} titular ${i} - ${m[1]}</title><link>https://news.google.com/rss/articles/${i}</link><source url="${m[0]}">${m[1]}</source></item>`).join('')}</channel></rss>` };
+// AEMET simulado (formato real del RSS de avisos): naranja y amarillo en Mallorca, en vigor ahora
+let AEM = false; // solo la prueba de avisos recibe avisos; el resto ve AEMET sin avisos
+const aemet = () => { const f = t => { const d = new Date(t + 36e5), z = n => String(n).padStart(2, '0'); return `${z(d.getUTCHours())}:${z(d.getUTCMinutes())} ${z(d.getUTCDate())}-${z(d.getUTCMonth() + 1)}-${d.getUTCFullYear()} CET (UTC+1)` }, a = Date.now() - 2 * 36e5, b = Date.now() + 3 * 36e5;
+  return `<?xml version="1.0"?><rss version="2.0"><channel>${[['naranja', 'Lluvias', 'Mallorca'], ['amarillo', 'Tormentas', 'Mallorca']].map(([l, f2, z]) => `<item><title>Aviso. Nivel ${l}. ${f2}. ${z}</title><link>https://www.aemet.es/x</link><pubDate>${new Date(a).toUTCString()}</pubDate><description>Aviso de ${f2.toLowerCase()} de nivel ${l}. de ${f(a)} a ${f(b)} 40 mm en 1 hora</description></item>`).join('')}</channel></rss>` };
 async function run(browser, label, viewport, mobile) {
   console.log(`\n== ${label}`);
   const ctx = await browser.newContext({ viewport, isMobile: mobile, hasTouch: mobile, serviceWorkers: 'block' });
@@ -41,6 +45,7 @@ async function run(browser, label, viewport, mobile) {
       if (/bing\.com/.test(host) && /q=site/i.test(u)) { const h = (decodeURIComponent(u).match(/site:([a-z0-9.-]+)/i) || [])[1] || ''; return r.fulfill({ status: 200, headers: { 'X-Nz': '1' }, contentType: 'application/rss+xml', body: `<?xml version="1.0"?><rss version="2.0"><channel>${/bingok/.test(h) ? [0, 1, 2].map(i => `<item><title>Noticia ${i} de ${h}</title><link>http://www.bing.com/news/apiclick.aspx?ref=FexRss&amp;url=https%3a%2f%2f${h}%2fn%2f${i}&amp;c=1</link><pubDate>${new Date(Date.now() - i * 36e5).toUTCString()}</pubDate><description>Resumen ${i}</description></item>`).join('') + '<item><title>Otra web</title><link>http://www.bing.com/news/apiclick.aspx?url=https%3a%2f%2fajena.es%2fx</link></item>' : ''}</channel></rss>` }) }
       if (/bing\.com/.test(host)) return r.fulfill({ status: 200, headers: { 'X-Nz': '1' }, contentType: 'application/rss+xml', body: `<?xml version="1.0"?><rss version="2.0" xmlns:News="https://www.bing.com/news/search?q=x&amp;format=rss"><channel><item><title>Nuevo disco de rap</title><link>http://www.bing.com/news/apiclick.aspx?ref=FexRss&amp;url=https%3a%2f%2fwww.rapbing.es%2fdisco&amp;c=1</link><News:Source>Rap Bing</News:Source></item></channel></rss>` });
       if (/news\.google/.test(host) && !/site(%3A|:)/i.test(u)) return r.fulfill({ status: 200, headers: { 'X-Nz': '1' }, contentType: 'application/rss+xml', body: gn(u) });
+      if (/aemet/.test(host) && AEM) return r.fulfill({ status: 200, headers: { 'X-Nz': '1' }, contentType: 'application/rss+xml', body: aemet() });
       if (/aemet|news\.google/.test(host)) return r.fulfill({ status: 404, headers: { 'X-Nz': '1' }, body: 'no' });
       HITS[host] = (HITS[host] || 0) + 1;
       if (/mondosonoro|roto\.test|bingok/.test(host)) return r.fulfill({ status: 403, headers: { 'X-Nz': '1' }, body: 'no' });
@@ -185,6 +190,12 @@ async function run(browser, label, viewport, mobile) {
     document.querySelector('.impi .impt').click(); await new Promise(r => setTimeout(r, 300)); closeAll(); await new Promise(r => setTimeout(r, 600)); r.gone = !document.querySelector('.impi') || ![...document.querySelectorAll('.impi b')].some(b => b.textContent === t);
     S.rd.delete('imp0'); S.pf.imp = false; render(); r.off = !document.querySelector('.imp'); S.pf.imp = true; S.news = S.news.filter(a => !/^imp\d/.test(a.id)); render(); return r });
   ok(im.block && im.first && im.sheet === im.k - 1 && new RegExp('En ' + im.k + ' medios').test(im.cov) && im.inFeed && im.gone && im.off, `«Lo importante de hoy»: arriba (y también en el feed con su «También en…»), desaparece al leerla y se puede apagar (${JSON.stringify(im)})`);
+  // 6j) Avisos AEMET: naranja/rojo fijos arriba del todo (también con «Lo importante de hoy»); amarillos solo si se activan
+  AEM = true;
+  const al = await p.evaluate(async () => { const imp0 = S.pf.imp; S.pf.imp = true; S.pf.az = '64'; S.pf.ay = false; S.cat = 'Todas'; S.sf = 'Todas'; await loadAlerts(true); const r = { first: S.V[0] && S.V[0].alert, card: !!document.querySelector('#grid .card.al-naranja'), yellow: S.V.some(a => a.alert === 'amarillo') };
+    S.pf.ay = true; render(); r.yellowOn = S.V.some(a => a.alert === 'amarillo'); S.pf.ay = false; S.pf.az = ''; S.alerts = []; S.pf.imp = imp0; savePf(); render(); return r });
+  AEM = false;
+  ok(al.first === 'naranja' && al.card && !al.yellow && al.yellowOn, `avisos AEMET: el naranja sale fijo arriba y el amarillo solo si se activa (${JSON.stringify(al)})`);
   // 6b) Icono: sigue el color mientras la app no está instalada; al instalar se congela; si Chrome vuelve a ofrecer instalar, se descongela
   const ico = await p.evaluate(() => { const ck = () => (document.cookie.match(/(?:^|;\s*)nz_ic=([a-z]*)/) || [])[1] || ''; const sw = i => document.querySelector(`#sws .swc[data-i="${i}"]`).click(); const r = {};
     sw(2); r.libre = ck(); dispatchEvent(new Event('appinstalled')); sw(1); r.congelado = ck(); r.lock = nzLocked(); dispatchEvent(new Event('beforeinstallprompt')); r.desc = ck(); r.unlock = !nzLocked(); sw(0); r.verde = ck(); r.link = document.querySelector('link[rel=manifest]').getAttribute('href'); return r });
