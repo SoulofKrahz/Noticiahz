@@ -1414,7 +1414,8 @@ const saveDis=()=>{if(!S.ready)return;const cut=Date.now()-130*864e5;S.dis.forEa
 function disList(){return S.news.filter(a=>S.dis.get(a.id)>0).sort((a,b)=>S.dis.get(b.id)-S.dis.get(a.id))}
 function undismiss(a){const t=S.dis.get(a.id);if(t===undefined)return;S.dis.delete(a.id);if(t>0)S.dis.forEach((v,i)=>{if(v===-t)S.dis.delete(i)});saveDis()}
 function dismiss(a){if(!a)return;const t=a._t instanceof Set?a._t:(a._t=norm(a.title)),ids=[a.id],now=Date.now();
- S.news.forEach(o=>{if(o.id!==a.id&&o.src!==a.src&&!S.dis.has(o.id)&&Math.abs(o.date-a.date)<1728e5&&similar(t,o._t instanceof Set?o._t:(o._t=norm(o.title))))ids.push(o.id)});
+ (a.also||[]).forEach(o=>{if(o&&o.id&&!ids.includes(o.id)&&!S.dis.has(o.id))ids.push(o.id)}); // el grupo «También en…» entero, aunque el titular cambie
+ S.news.forEach(o=>{if(o.id!==a.id&&!ids.includes(o.id)&&o.src!==a.src&&!S.dis.has(o.id)&&Math.abs(o.date-a.date)<1728e5&&similar(t,o._t instanceof Set?o._t:(o._t=norm(o.title))))ids.push(o.id)});
  ids.forEach((i,j)=>S.dis.set(i,j?-now:now));saveDis();showUndo(ids);lrAdd(a.src,'n',1);$('#undo')._src=a.src}
 let ut;function showUndo(ids){const u=$('#undo');u.querySelector('span').textContent=ids.length>1?`Descartada (+${ids.length-1} igual${ids.length>2?'es':''} en otras fuentes)`:'Noticia descartada';u._ids=ids;u._fn=null;u.hidden=false;clearTimeout(ut);ut=setTimeout(()=>u.hidden=true,6000)}
 function undoFn(txt,fn){const u=$('#undo');u._src=null;u.querySelector('span').textContent=txt;u._ids=null;u._fn=fn;u.hidden=false;clearTimeout(ut);ut=setTimeout(()=>u.hidden=true,6000)}
