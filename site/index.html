@@ -1032,7 +1032,8 @@ function render(skel){
  if(skel){g.innerHTML='<div class="sk"></div>'.repeat(6);return}
  const q=S.q.toLowerCase(),on=new Set(S.src.filter(s=>s.on).map(s=>s.name));
  const dv=S.cat==='Descartadas',sv=S.cat==='Guardadas'||dv,tv=S.cat==='Siguiendo';if(tv&&S.tf&&!TR.list.some(t=>t.id===S.tf))S.tf=null;
- let list=dv?disList().map(a=>{a.also=[];return a}):sv?Object.values(S.fav).sort((a,b)=>b.date-a.date):tv?trList().filter(a=>!S.tf||trOf(a).id===S.tf):S.news.filter(a=>on.has(a.src)&&!S.dis.has(a.id)&&!isMuted(a)&&!smOn(a.src)&&(S.cat==='Todas'||catOf(a)===S.cat));
+ let sib=null;if(dv){sib=new Map();S.news.forEach(o=>{const v=S.dis.get(o.id);if(v<0)(sib.get(-v)||sib.set(-v,[]).get(-v)).push(o)})} // en Descartadas, cada una con las iguales que se ocultaron con ella
+ let list=dv?disList().map(a=>{a.also=(sib.get(S.dis.get(a.id))||[]).filter(o=>o.src!==a.src);return a}):sv?Object.values(S.fav).sort((a,b)=>b.date-a.date):tv?trList().filter(a=>!S.tf||trOf(a).id===S.tf):S.news.filter(a=>on.has(a.src)&&!S.dis.has(a.id)&&!isMuted(a)&&!smOn(a.src)&&(S.cat==='Todas'||catOf(a)===S.cat));
  if(S.sf!=='Todas')list=list.filter(a=>a.src===S.sf);
  if(S.pe)list=list.filter(a=>Date.now()-a.date<S.pe*864e5);
  if(S.so==='cov'&&!S.pe&&!sv)list=list.filter(a=>Date.now()-a.date<2*864e5);
