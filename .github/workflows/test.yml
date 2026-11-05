@@ -1,0 +1,29 @@
+# Prueba de humo: abre la app en un Chromium de pruebas (móvil y PC) y comprueba que todo funciona.
+# - Se ejecuta sola en cada subida a cualquier rama que no sea main (p. ej. pulido): prueba sin publicar.
+# - deploy.yml la reutiliza antes de publicar main: si falla, no se publica.
+# Coste: minutos de GitHub Actions (gratis e ilimitados en repositorios públicos). No toca Cloudflare.
+name: Prueba de humo
+on:
+  push:
+    branches-ignore: [main]
+    paths: ['site/**', 'tests/**', '.github/workflows/**']
+  workflow_call:
+  workflow_dispatch:
+jobs:
+  test:
+    name: Prueba de humo
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    env:
+      PW: '1.64.1'  # 1.61 es la primera con soporte para Ubuntu 26.04 (ubuntu-latest)
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Instalar Playwright y Chromium
+        run: npm i --no-save --no-audit --no-fund playwright@$PW && npx playwright install --with-deps chromium
+      - name: Probar la app (móvil y PC)
+        run: node tests/smoke.cjs

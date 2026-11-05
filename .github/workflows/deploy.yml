@@ -1,4 +1,5 @@
 # Prueba la app y, si todo va bien, publica la carpeta site/ en Cloudflare Pages (rama main).
+# La prueba vive en test.yml (la misma que se ejecuta sola en pulido).
 # Secretos en GitHub (Settings → Secrets and variables → Actions):
 #   CLOUDFLARE_API_TOKEN  (token con permiso Account → Cloudflare Pages → Edit)
 #   CLOUDFLARE_ACCOUNT_ID (ID de tu cuenta de Cloudflare)
@@ -7,28 +8,18 @@ name: Publicar en Cloudflare Pages
 on:
   push:
     branches: [main]
-    paths: ['site/**', 'tests/**', '.github/workflows/deploy.yml']
+    paths: ['site/**', 'tests/**', '.github/workflows/**']
   workflow_dispatch:
 jobs:
   test:
-    name: Prueba de humo
-    runs-on: ubuntu-24.04  # fijo: ubuntu-latest pasó a 26.04 y Playwright 1.55 no tiene Chromium para ella
-    timeout-minutes: 10
+    name: Prueba
+    uses: ./.github/workflows/test.yml
     permissions:
       contents: read
-    steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-      - name: Instalar Playwright y Chromium
-        run: npm i --no-save --no-audit --no-fund playwright@1.55.0 && npx playwright install --with-deps chromium
-      - name: Probar la app (móvil y PC)
-        run: node tests/smoke.cjs
   deploy:
     name: Publicar
     needs: test
-    runs-on: ubuntu-24.04  # fijo: ubuntu-latest pasó a 26.04 y Playwright 1.55 no tiene Chromium para ella
+    runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
       contents: read
