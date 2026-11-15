@@ -743,7 +743,7 @@ function lgDraw(){const el=$('#p2');if(!el)return;const nf=n=>n.toLocaleString('
  const sec=(t,items,c='')=>items.length?`<h5 class="${c}">${t} <em>${items.length}</em></h5><ul>${items.join('')}</ul>`:'';
  el.innerHTML=`<div class="lgh"><div class="seg" id="lgf"><button data-o="0" class="${LG.only?'':'on'}">Todo</button><button data-o="1" class="${LG.only?'on':''}">Problemas</button></div><button class="tb" id="lgc">Copiar</button><button class="tb" id="lgx">Borrar</button></div>`+
  (runs.length?runs.map((r,i)=>{const p=lgProb(r),bad=r.todo-r.ok;return`<details class="lgr"${i===0?' open':''}><summary><span><b>${lgWhen(r.t)}</b> · ${esc(r.scope)}</span><span class="lgb ${bad?'w':'k'}">${r.ok}/${r.todo} ${bad?'⚠':'✓'}</span></summary>
-  <p class="lgs">${nf(r.items)} noticias recibidas · ${nf(r.added)} nuevas · ${(r.dur/1000).toFixed(1).replace('.',',')} s${r.skip?` · ${r.skip} ${r.skip===1?'fuente omitida':'fuentes omitidas'} (estaban al día)`:''}${r.same?` · ${r.same} sin cambios (no se reprocesan)`:''}</p>`+
+  <p class="lgs">${nf(r.items)} noticias recibidas · ${nf(r.added)} nuevas · ${(r.dur/1000).toFixed(1).replace('.',',')} s${r.skip?` · ${r.skip} ${r.skip===1?'fuente omitida':'fuentes omitidas'} (estaban al día)`:''}${r.same?` · ${r.same} sin cambios (no se reprocesan)`:''}${r.pt?` · procesado ${Math.round(r.pt)} ms`:''}</p>`+
   sec('No cargan',r.fails.map(f=>`<li><b>${esc(f.n)}</b><span>${esc(f.r)}</span></li>`),'e')+
   sec('Corregidas automáticamente',r.fixed.map(f=>`<li><b>${esc(f.n)}</b><span>nueva dirección: ${esc(f.u)}</span></li>`),'k')+
   sec('En pausa 6 horas',r.paused.map(n=>`<li><b>${esc(n)}</b><span>pide pago o limita las peticiones; se reintentará sola</span></li>`),'e')+
@@ -757,7 +757,7 @@ function lgDraw(){const el=$('#p2');if(!el)return;const nf=n=>n.toLocaleString('
  $('#lgc').onclick=async()=>{const t=lgText();try{await navigator.clipboard.writeText(t);toast('Registro copiado')}catch(e){const a=document.createElement('textarea');a.value=t;document.body.append(a);a.select();try{document.execCommand('copy');toast('Registro copiado')}catch(x){}a.remove()}};
  $('#lgx').onclick=async()=>{if(!await ask('Se borra solo el historial del registro, no tus noticias ni ajustes.',{title:'¿Borrar el registro?',ok:'Borrar'}))return;LG.runs=[];LG.evs=[];lgSave();lgDraw()}}
 function lgText(){const L=[`Noticiahz ${VER} · registro copiado ${new Date().toLocaleString('es-ES')}`];
- LG.runs.slice(0,8).forEach(r=>{L.push('',`${lgWhen(r.t)} · ${r.scope}: ${r.ok}/${r.todo} fuentes · ${r.items} recibidas · ${r.added} nuevas · ${(r.dur/1000).toFixed(1)} s`);
+ LG.runs.slice(0,8).forEach(r=>{L.push('',`${lgWhen(r.t)} · ${r.scope}: ${r.ok}/${r.todo} fuentes · ${r.items} recibidas · ${r.added} nuevas · ${(r.dur/1000).toFixed(1)} s${r.same?` · ${r.same} sin cambios`:''}${r.pt?` · procesado ${Math.round(r.pt)} ms`:''}`);
   r.fails.forEach(f=>L.push(`  ✗ ${f.n} (${f.h}): ${f.r}`));r.fixed.forEach(f=>L.push(`  ↻ ${f.n}: ${f.u}`));r.paused.forEach(n=>L.push(`  ⏸ ${n}: en pausa 6 h`));r.enc.forEach(n=>L.push(`  ? ${n}: símbolos raros`));
   if(r.aemet)L.push(`  AEMET: ${r.aemet.t}`);r.notes.forEach(x=>L.push('  · '+x.m));if(r.tech)L.push('  '+r.tech)});
  if(LG.evs.length){L.push('','Otros eventos:');LG.evs.slice(0,10).forEach(e=>L.push(`  ${lgWhen(e.t)} ${e.m}`))}return L.join('\n')}
@@ -830,7 +830,7 @@ function feedFp(t){const i=t.search(/<(item|entry)[\s>]/i),hd=i<0?t:t.slice(0,i)
 async function viaProxy(url,src,ms=10000,note=true,skip=false){
  try{const t=await readXml(await pget(url,ms));let k,h;
   if(skip&&src){k=url+'\n'+src.name+'\n'+src.cat;h=feedFp(t);const c=S.fh[k];if(c&&c.h===h&&c.n>0&&S.news.some(a=>a.src===src.name)){const r=[];r.same=c.n;return r}}
-  const a=parse(t,src);if(k)S.fh[k]={h,n:a.length};return a}
+  const t0=performance.now(),a=parse(t,src);if(LG.run)LG.run.pt=(LG.run.pt||0)+performance.now()-t0;if(k)S.fh[k]={h,n:a.length};return a}
  catch(e){if(note)try{const h=new URL(url).host,o=((S.nf=S.nf||{})[h]=S.nf[h]||{n:0});o.n++;o.s=e.st||e.message}catch(x){}throw e}}
 // Comprueba una fuente; si la URL es una web (no un feed), intenta detectar el feed en rutas habituales
 async function check(src,step=()=>{}){
