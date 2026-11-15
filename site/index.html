@@ -718,7 +718,7 @@ set:(k,v)=>open().then(db=>new Promise((res,rej)=>{const t=db.transaction('kv','
 async function bigGet(k,d){try{const v=await DB.get(k);if(v!==undefined)return v;const o=ls.get(k,undefined);if(o!==undefined){await DB.set(k,o);try{localStorage.removeItem(k)}catch{}return o}}catch(e){return ls.get(k,d)}return d}
 const bigSet=(k,v)=>DB.set(k,v).catch(()=>ls.set(k,v));
 let FIRST=false;try{FIRST=localStorage.getItem('nz_src')===null&&localStorage.getItem('nz_pf')===null&&localStorage.getItem('nz_ob')===null}catch(e){}
-const S={src:ls.get('nz_src',DEFAULTS),news:[],fav:{},cat:'Todas',q:'',V:[],cur:null,loading:false,rd:new Set(),dis:new Map(),seed:Math.random(),seen:new Map(),snap:{rd:new Set(),seen:new Set(),sw:new Map(),st:{}},so:'mix',pe:0,hl:{},ft:{},dp:ls.get('nz_dp',{}),deep:0,sq:'',edit:null,pend:null,sf:'Todas',un:false};
+const S={src:ls.get('nz_src',DEFAULTS),news:[],fav:{},cat:'Todas',q:'',V:[],cur:null,loading:false,rd:new Set(),dis:new Map(),seed:Math.random(),seen:new Map(),snap:{rd:new Set(),seen:new Set(),sw:new Map(),st:{}},so:'mix',pe:0,hl:{},ft:{},fh:ls.get('nz_fh',{})||{},dp:ls.get('nz_dp',{}),deep:0,sq:'',edit:null,pend:null,sf:'Todas',un:false};
 
 // ---- Registro de actividad: una tarjeta por actualización (resumen + problemas agrupados) y eventos sueltos ----
 const LG={runs:ls.get('nz_lg',[]),evs:ls.get('nz_lge',[]),run:null,only:false};
@@ -743,7 +743,7 @@ function lgDraw(){const el=$('#p2');if(!el)return;const nf=n=>n.toLocaleString('
  const sec=(t,items,c='')=>items.length?`<h5 class="${c}">${t} <em>${items.length}</em></h5><ul>${items.join('')}</ul>`:'';
  el.innerHTML=`<div class="lgh"><div class="seg" id="lgf"><button data-o="0" class="${LG.only?'':'on'}">Todo</button><button data-o="1" class="${LG.only?'on':''}">Problemas</button></div><button class="tb" id="lgc">Copiar</button><button class="tb" id="lgx">Borrar</button></div>`+
  (runs.length?runs.map((r,i)=>{const p=lgProb(r),bad=r.todo-r.ok;return`<details class="lgr"${i===0?' open':''}><summary><span><b>${lgWhen(r.t)}</b> · ${esc(r.scope)}</span><span class="lgb ${bad?'w':'k'}">${r.ok}/${r.todo} ${bad?'⚠':'✓'}</span></summary>
-  <p class="lgs">${nf(r.items)} noticias recibidas · ${nf(r.added)} nuevas · ${(r.dur/1000).toFixed(1).replace('.',',')} s${r.skip?` · ${r.skip} ${r.skip===1?'fuente omitida':'fuentes omitidas'} (estaban al día)`:''}</p>`+
+  <p class="lgs">${nf(r.items)} noticias recibidas · ${nf(r.added)} nuevas · ${(r.dur/1000).toFixed(1).replace('.',',')} s${r.skip?` · ${r.skip} ${r.skip===1?'fuente omitida':'fuentes omitidas'} (estaban al día)`:''}${r.same?` · ${r.same} sin cambios (no se reprocesan)`:''}</p>`+
   sec('No cargan',r.fails.map(f=>`<li><b>${esc(f.n)}</b><span>${esc(f.r)}</span></li>`),'e')+
   sec('Corregidas automáticamente',r.fixed.map(f=>`<li><b>${esc(f.n)}</b><span>nueva dirección: ${esc(f.u)}</span></li>`),'k')+
   sec('En pausa 6 horas',r.paused.map(n=>`<li><b>${esc(n)}</b><span>pide pago o limita las peticiones; se reintentará sola</span></li>`),'e')+
@@ -824,8 +824,13 @@ const pe=m=>{const e=Error(m);e.name='ParseError';return e};
 // Rutas donde suelen estar los feeds (WordPress, Blogger, Ghost, Substack, periódicos…)
 const FEEDP=['/feed','/feed/','/rss','/rss/','/feed.xml','/rss.xml','/index.xml','/atom.xml','/feeds/posts/default','/?feed=rss2','/feed/rss','/feedburner.xml','/rss/portada.xml','/rss/home.xml'];
 // Descarga y lee un feed. Si falla, apunta el motivo por sitio (S.nf) para explicarlo en el registro y en Fuentes.
-async function viaProxy(url,src,ms=10000,note=true){
- try{return parse(await readXml(await pget(url,ms)),src)}
+// Huella de un feed sin lo que cambia en cada petición aunque no haya noticias nuevas (fecha de generación, comentarios de caché)
+function feedFp(t){const i=t.search(/<(item|entry)[\s>]/i),hd=i<0?t:t.slice(0,i);t=(i<0?'':t.slice(i));const x=hd.replace(/<(lastBuildDate|updated|pubDate)>[^<]*<\/\1>/gi,'')+t;let h=0x811c9dc5;const y=x.replace(/<!--[\s\S]*?-->/g,'');for(let k=0;k<y.length;k++){h^=y.charCodeAt(k);h=Math.imul(h,16777619)}return(h>>>0).toString(36)+'.'+y.length}
+// skip: si el feed llega igual que la última vez, no se vuelve a procesar (sus noticias ya están guardadas). Devuelve [] con .same = nº de noticias
+async function viaProxy(url,src,ms=10000,note=true,skip=false){
+ try{const t=await readXml(await pget(url,ms));let k,h;
+  if(skip&&src){k=url+'\n'+src.name+'\n'+src.cat;h=feedFp(t);const c=S.fh[k];if(c&&c.h===h&&c.n>0&&S.news.some(a=>a.src===src.name)){const r=[];r.same=c.n;return r}}
+  const a=parse(t,src);if(k)S.fh[k]={h,n:a.length};return a}
  catch(e){if(note)try{const h=new URL(url).host,o=((S.nf=S.nf||{})[h]=S.nf[h]||{n:0});o.n++;o.s=e.st||e.message}catch(x){}throw e}}
 // Comprueba una fuente; si la URL es una web (no un feed), intenta detectar el feed en rutas habituales
 async function check(src,step=()=>{}){
@@ -902,7 +907,7 @@ function searchSite(u){try{const x=new URL(u);if(!/(^|\.)(news\.google|bing)\.co
 async function viaBing(h,src){for(const q of['site:'+h,h]){try{const it=(await viaProxy(bingU(q),src,12000,false)).filter(a=>hostIs(a.link,h));if(it.length)return it}catch(e){}}throw Error('Bing no tiene noticias de '+h)}
 async function getFeed(src){
  const site=searchSite(src.url),gn=site&&/news\.google\.com/.test(src.url);
- try{let a=await viaProxy(src.url,src);if(site&&!gn)a=a.filter(x=>hostIs(x.link,site));return a}
+ try{let a=await viaProxy(src.url,src,10000,true,true);if(a.same)return a;if(site&&!gn)a=a.filter(x=>hostIs(x.link,site));return a}
  catch(e){if(gn&&(e.st===503||e.st===429||e.name==='ParseError'||/RSS/.test(e.message)))try{const a=await viaBing(site,src);(S.vb=S.vb||new Set()).add(src.name);return a}catch(x){}return null}}
 
 const spinAll=on=>{['#rf','#b-rf'].forEach(q=>$(q).classList.toggle('spin',on));document.body.classList.toggle('ld',on)};
@@ -922,7 +927,7 @@ async function loadRun(){
    const known=new Set(a.map(i=>i.id));
    for(let pg=(S.dp[x.id]||1)+1;pg<=S.pf.dp;pg++){const m=await viaProxy(addParam(x.url,'paged',pg),x).catch(()=>null),nw=(m||[]).filter(i=>i.link&&!known.has(i.id));if(!nw.length){S.dp[x.id]=99;break}nw.forEach(i=>known.add(i.id));a=a.concat(nw);S.dp[x.id]=pg}
   }
-  S.hl[x.id]=a?a.length:0;if(a)S.ft[x.id]=Date.now();{const f=S.nf&&S.nf[host(x.url)];if(f&&(f.s===402||f.s===429))(S.bo=S.bo||{})[x.id]=Date.now()+216e5}res.push(a||[]);rl.textContent=`${++done}/${todo.length}`});
+  S.hl[x.id]=a?(a.same||a.length):0;if(a)S.ft[x.id]=Date.now();if(a&&a.same&&LG.run)LG.run.same=(LG.run.same||0)+1;{const f=S.nf&&S.nf[host(x.url)];if(f&&(f.s===402||f.s===429))(S.bo=S.bo||{})[x.id]=Date.now()+216e5}res.push(a||[]);rl.textContent=`${++done}/${todo.length}`});
  rl.textContent='Actualizar';ls.set('nz_dp',S.dp);
  const slow=todo.filter(x=>S.hl[x.id]===0&&/abort|^50[24]$/i.test(String((S.nf[host(x.url)]||{}).s)));
  if(slow.length)await pool(slow,4,async x=>{try{const a=await viaProxy(x.url,x,16000);if(a&&a.length){S.hl[x.id]=a.length;S.ft[x.id]=Date.now();res.push(a)}}catch(e){}});
@@ -943,6 +948,7 @@ async function loadRun(){
   r.fails=todo.filter(x=>!(S.hl[x.id]>0)).map(x=>({n:x.name,h:host(x.url),r:why(host(x.url))}));
   r.paused=S.bo?S.src.filter(x=>S.bo[x.id]>Date.now()&&!r.fails.some(f=>f.n===x.name)).map(x=>x.name):[];r.fails.forEach(f=>{const x=S.src.find(z=>z.name===f.n);if(x&&S.bo&&S.bo[x.id]>Date.now())f.r+=' · en pausa 6 h'});
   LG.runs.unshift(r);LG.runs=LG.runs.slice(0,15);LG.run=null;lgSave();lgDraw()}
+ {const ks=new Set(S.src.map(x=>x.url+'\n'+x.name+'\n'+x.cat));for(const k in S.fh)if(!ks.has(k))delete S.fh[k];ls.set('nz_fh',S.fh)}
  saveNews();
  $('#upd').textContent='Actualizado a las '+new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
  S.loading=false;S.last=Date.now();try{trPrune()}catch(e){errLog('Seguir: '+e.message)}spinAll(false);loadAlerts();setTimeout(()=>{const r=LG.runs[0];if(r&&Date.now()-r.t<6e4){r.tech=`Técnico: v${VER} · ${S.news.length} noticias en memoria · pintado ${S.rt} ms · arranque ${S.t0} ms (código ${S.tsc} · datos ${S.tdb} · feed visible ${S.tp} · textos ${S.tb} ms)`;lgSave();lgDraw()}},700);
@@ -1203,7 +1209,7 @@ function segs(){[['dp',S.pf.dp],['fs',S.pf.fs],['rf',S.pf.rf],['th',S.pf.th||'au
 $('#th').onclick=()=>{themePref(document.documentElement.dataset.theme==='dark'?'light':'dark');segs()};
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if(S.pf.th==='auto')setTheme(sysDark()?'dark':'light')});
 $('.mc').addEventListener('click',e=>{const b=e.target.closest('.seg button');if(!b||!/^sg-/.test(b.parentNode.id))return;const k=b.parentNode.id.slice(3),v=b.dataset.v;
- if(k==='th')themePref(v);else{S.pf[k]=+v;ls.set('nz_pf',S.pf);if(k==='fs')applyFs();else if(k==='dp'){S.ft={};load()}else sched()}segs()});
+ if(k==='th')themePref(v);else{S.pf[k]=+v;ls.set('nz_pf',S.pf);if(k==='fs')applyFs();else if(k==='dp'){S.ft={};S.fh={};load()}else sched()}segs()});
 $('#cr').onclick=()=>{const old=[...S.rd];if(!old.length)return toast('No hay noticias leídas');S.rd.clear();bigSet('nz_rd',[]);render();undoFn('Historial de leídas borrado',()=>{old.forEach(x=>S.rd.add(x));bigSet('nz_rd',old);render()})};
 $('#cf').onclick=async()=>{if(!await ask(`Se quitarán ${Object.keys(S.fav).length} noticias guardadas.`,{title:'¿Vaciar guardadas?',ok:'Vaciar',danger:1}))return;S.fav={};bigSet('nz_fav',{});render();toast('Guardadas vaciadas')};
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.pf.rf&&Date.now()-(S.last||0)>S.pf.rf*60000)load()});
@@ -1572,7 +1578,7 @@ async function bkApply(r){
  await Promise.all([bigSet('nz_fav',S.fav),bigSet('nz_rd',[...S.rd]),bigSet('nz_dis',[...S.dis])]);
  saveSrc(1);applyFs();applyPf();applyAccent();setTheme(S.pf.th==='dark'||S.pf.th==='light'?S.pf.th:(sysDark()?'dark':'light'));sched();segs();syncPf();syncAz();mwUi();tpUi();bkTxt();
  {const L=r.lr||{};if(Object.keys(L).length){S.lr=S.lr||{};Object.entries(L).forEach(([k,v])=>{const o=S.lr[k]||{p:0,n:0};S.lr[k]={p:Math.max(o.p,v.p),n:Math.max(o.n,v.n)}});ls.set('nz_lr',S.lr)}snapUp()}
- saveUI();S.ft={};render();toast(`Restaurado: ${ns} fuentes añadidas, ${nu} actualizadas, ${nf} guardadas, ${nm} palabras o temas nuevos`);if(ns)load()}
+ saveUI();S.ft={};S.fh={};render();toast(`Restaurado: ${ns} fuentes añadidas, ${nu} actualizadas, ${nf} guardadas, ${nm} palabras o temas nuevos`);if(ns)load()}
 $('#bi').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;if(f.size>3e7)return toast('Archivo demasiado grande');
  let j;try{j=JSON.parse(await f.text())}catch(x){return toast('El archivo no es una copia válida')}
  const r=bkClean(j);if(!r)return toast('No es una copia de Noticiahz');
@@ -1770,7 +1776,7 @@ function obOpen(){S.ob=1;S.src.forEach(x=>OB.sel.add(x.id));const m=document.cre
  m.addEventListener('click',e=>{const a=e.target.closest('[data-oa]'),g=e.target.closest('[data-og]');
   if(a){a.dataset.oa==='1'?S.src.forEach(x=>OB.sel.add(x.id)):OB.sel.clear();obUi();return}
   if(g){const v=S.src.filter(x=>x.cat===g.dataset.og),all=v.every(x=>OB.sel.has(x.id));v.forEach(x=>all?OB.sel.delete(x.id):OB.sel.add(x.id));obUi();return}
-  if(e.target.closest('#obgo')){if(!OB.sel.size)return;S.src.forEach(x=>x.on=OB.sel.has(x.id));ls.set('nz_src',S.src);ls.set('nz_ob',1);m.remove();document.body.classList.remove('lock');S.ob=0;S.ft={};render();load()}})}
+  if(e.target.closest('#obgo')){if(!OB.sel.size)return;S.src.forEach(x=>x.on=OB.sel.has(x.id));ls.set('nz_src',S.src);ls.set('nz_ob',1);m.remove();document.body.classList.remove('lock');S.ob=0;S.ft={};S.fh={};render();load()}})}
 function obUi(){const L=$('#obl'),t=L.scrollTop,gr={};S.src.forEach(x=>(gr[x.cat]=gr[x.cat]||[]).push(x));
  L.innerHTML='<p class="hint" style="margin:0 4px 12px">Activa las que quieras leer. Podrás cambiarlo cuando quieras en Ajustes → Fuentes.</p><div style="display:flex;gap:8px;margin-bottom:6px"><button class="btn o" data-oa="1" style="flex:1;justify-content:center">Todas</button><button class="btn o" data-oa="0" style="flex:1;justify-content:center">Ninguna</button></div>'
  +S.cats.filter(c=>gr[c]).map(c=>{const a=gr[c],all=a.every(x=>OB.sel.has(x.id));return`<div class="gh"><span>${esc(c)} · ${a.length}</span><button class="tg" data-og="${esc(c)}">${all?'Quitar todas':'Elegir todas'}</button></div><div class="gc">`+a.map(x=>`<div class="row"><label class="sw"><input type="checkbox" data-ox="${esc(x.id)}" ${OB.sel.has(x.id)?'checked':''} aria-label="${esc(x.name)}"><span></span></label><div><b>${esc(x.name)}</b><small>${esc(host(x.url))}</small></div></div>`).join('')+'</div>'}).join('');

@@ -2,13 +2,14 @@
 // y comprueba que lo principal funciona. Si algo falla, el flujo de GitHub no publica.
 // Uso: node tests/smoke.cjs   (PW_EXE=/ruta/chromium opcional)
 const { chromium } = require('playwright');
+const T0 = Date.now(); // hora fija de los feeds simulados: un feed solo cambia si cambia su contenido
 const fs = require('fs'), path = require('path');
 const SITE = path.join(__dirname, '..', 'site'), BASE = 'http://app.test/';
 const MIME = { html: 'text/html; charset=utf-8', js: 'text/javascript', json: 'application/json', webmanifest: 'application/manifest+json', svg: 'image/svg+xml', png: 'image/png', txt: 'text/plain' };
 const W = ['lluvia','puerto','mercado','festival','robot','ministro','teatro','vacuna','satélite','consola','museo','huelga','playa','tormenta','cohete','escuela','tranvía','biblioteca','volcán','estadio','fábrica','orquesta','glaciar','servidor','parlamento','hospital','olivo','faro','camión','abeja'];
 const pick = (s, k) => { let h = 7; for (const c of s) h = (h * 31 + c.charCodeAt(0)) >>> 0; return W[(h + k * 7) % W.length] + ' ' + W[(h * 3 + k * 11) % W.length] + ' ' + W[(h * 5 + k * 13) % W.length] };
 const rss = host => `<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"><channel><title>${host}</title>${[0, 1, 2].map(i =>
-  `<item><title>${i === 0 ? 'La IA ' : ''}${pick(host, i)} ${host.split('.').slice(-2, -1)[0]} ${i}</title><link>https://${host}/n/${i}</link><pubDate>${new Date(Date.now() - i * 36e5).toUTCString()}</pubDate><description>${i === 2 ? '' : `Resumen ${i} de ${host}. ` + 'Texto de la noticia con detalles suficientes para leerla en la app. '.repeat(3)}</description></item>`).join('')}</channel></rss>`;
+  `<item><title>${i === 0 ? 'La IA ' : ''}${pick(host, i)} ${host.split('.').slice(-2, -1)[0]} ${i}</title><link>https://${host}/n/${i}</link><pubDate>${new Date(T0 - i * 36e5).toUTCString()}</pubDate><description>${i === 2 ? '' : `Resumen ${i} de ${host}. ` + 'Texto de la noticia con detalles suficientes para leerla en la app. '.repeat(3)}</description></item>`).join('')}</channel></rss>`;
 const fails = [];
 const ok = (cond, msg) => { if (!cond) fails.push(msg); console.log((cond ? '  ✓ ' : '  ✗ ') + msg); };
 
@@ -190,6 +191,17 @@ async function run(browser, label, viewport, mobile) {
     document.querySelector('.impi .impt').click(); await new Promise(r => setTimeout(r, 300)); closeAll(); await new Promise(r => setTimeout(r, 600)); r.gone = !document.querySelector('.impi') || ![...document.querySelectorAll('.impi b')].some(b => b.textContent === t);
     S.rd.delete('imp0'); S.pf.imp = false; render(); r.off = !document.querySelector('.imp'); S.pf.imp = true; S.news = S.news.filter(a => !/^imp\d/.test(a.id)); render(); return r });
   ok(im.block && im.first && im.sheet === im.k - 1 && new RegExp('En ' + im.k + ' medios').test(im.cov) && im.inFeed && im.gone && im.off, `«Lo importante de hoy»: arriba (y también en el feed con su «También en…»), desaparece al leerla y se puede apagar (${JSON.stringify(im)})`);
+  // 6l) Feeds sin cambios: no se reprocesan (sus noticias siguen), y uno que cambia sí; la fecha de generación no cuenta como cambio
+  const fsk = await p.evaluate(async () => {
+    const run = async () => { S.ft = {}; refresh(); await new Promise(r => setTimeout(r, 200)); while (S.loading) await new Promise(r => setTimeout(r, 100)); return LG.runs[0] };
+    const pr = window.parse; let parsed = 0; window.parse = function () { parsed++; return pr.apply(this, arguments) };
+    await run(); S.fh = {}; const t0 = performance.now(); await run(); const full = Math.round(performance.now() - t0); parsed = 0; const n0 = S.news.length, t1 = performance.now(), r1 = await run(), quick = Math.round(performance.now() - t1), p1 = parsed; parsed = 0;
+    const k = Object.keys(S.fh)[0]; S.fh[k] = { h: 'otro', n: 5 }; const r2 = await run(), p2 = parsed; window.parse = pr;
+    const a = '<rss><channel><lastBuildDate>Sun, 15 Nov 2026 20:00:00 GMT</lastBuildDate><!-- generado en 0.2 s --><item><title>X</title><pubDate>Sun, 15 Nov 2026 19:00:00 GMT</pubDate></item></channel></rss>';
+    const b = a.replace('20:00:00 GMT</lastBuildDate>', '20:05:00 GMT</lastBuildDate>').replace('0.2 s', '0.4 s'), c = a.replace('19:00:00', '19:30:00');
+    return { ms: full + '→' + quick, todo: r1.todo, ok: r1.ok, same: r1.same || 0, p1, n0, n1: S.news.length, fails: r1.fails.length, same2: r2.same || 0, p2, fpSame: feedFp(a) === feedFp(b), fpDiff: feedFp(a) !== feedFp(c), saved: Object.keys(JSON.parse(localStorage.getItem('nz_fh') || '{}')).length };
+  });
+  ok(fsk.same > 0 && fsk.p1 <= fsk.todo - fsk.same + 2 && fsk.n1 >= fsk.n0 - 5 && fsk.ok >= fsk.same && fsk.same2 === fsk.same - 1 && fsk.p2 >= 1 && fsk.p2 <= fsk.p1 + 2 && fsk.fpSame && fsk.fpDiff && fsk.saved > 0, `feeds sin cambios no se reprocesan y no cuentan como fallo (${JSON.stringify(fsk)})`);
   // 6k) Lo importante de hoy: guardar y descartar como en el feed (botones en PC, deslizar en el móvil)
   const ig = await p.evaluate(async () => { S.pf.imp = true; S.cat = 'Todas'; S.sf = 'Todas'; S.dis.clear(); const now = Date.now(), srcs = [...new Set(S.src.filter(x => x.on).map(x => x.name))].slice(0, 6), t = 'Temporal de lluvia deja carreteras cortadas en toda la isla esta tarde';
     srcs.forEach((n, i) => S.news.unshift({ id: 'ig' + i, link: 'https://x.test/ig' + i, title: t, snip: 'Resumen suficientemente largo de la noticia del temporal para que no cuente como sin resumen. '.repeat(2), date: now - i * 6e4, src: n, cat: S.src.find(x => x.name === n).cat }));
