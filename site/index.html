@@ -634,7 +634,7 @@ const DEFAULTS=[
  {id:"cadenaser",name:"Cadena SER",cat:"Actualidad",on:true,url:"https://news.google.com/rss/search?q=site:cadenaser.com+when:7d&hl=es&gl=ES&ceid=ES:es"},
  {id:"geeknews",name:"GeekNews",cat:"Ciberseguridad",on:true,url:"https://es.news.hada.io/rss/news"},
  {id:"elhackernet",name:"Elhacker.net",cat:"Ciberseguridad",on:true,url:"https://blog.elhacker.net/feeds/posts/default"},
- {id:"sinc",name:"Sinc",cat:"Curiosidades y Ciencia",on:true,url:"https://www.agenciasinc.es/sitemap.xml"},
+ {id:"sinc",name:"Sinc",cat:"Curiosidades y Ciencia",on:true,url:"https://www.bing.com/news/search?q=site%3Aagenciasinc.es&format=rss&setmkt=es-ES&setlang=es&cc=ES"},
  {id:"elchapuzasinformatico",name:"El Chapuzas Informático",cat:"Tecnología",on:true,url:"https://elchapuzasinformatico.com/feed"},
  {id:"hardzone",name:"HardZone",cat:"Tecnología",on:true,url:"https://hardzone.es/feed"},
  {id:"latribuhiphop",name:"La Tribu Hip Hop",cat:"Música",on:true,url:"https://latribuhiphop.com/feed"},
@@ -816,7 +816,7 @@ async function pool(items,n,fn){let i=0;await Promise.all(Array.from({length:Mat
 function timed(fn,ms=10000){const c=new AbortController();const id=setTimeout(()=>c.abort(),ms);return fn(c.signal).finally(()=>clearTimeout(id))}
 
 // Proxy propio: /p/<host>/… lo atiende _worker.js (Cloudflare Pages). Ningún servicio de terceros ve qué lees.
-const VER='2026-11-15-0';
+const VER='2026-11-15-0.1';
 if(!ls.get('nz_fu',0))ls.set('nz_fu',Date.now());
 const px=u=>{const x=new URL(u);return '/p/'+x.host+x.pathname+x.search};
 // Si la respuesta de error no lleva la marca X-Nz, no la dio nuestro proxy sino Cloudflare (límite diario gratuito o caída): se anota como 'cf'
@@ -1718,7 +1718,7 @@ $('#pD').addEventListener('click',e=>{
  const df=e.target.closest('[data-dsdef]');if(df){const d=DEFAULTS.find(y=>y.id===df.dataset.dsdef);if(!d)return;if(!S.cats.includes(d.cat)){S.cats.push(d.cat);ls.set('nz_cats',S.cats)}resetForm();$('#an').value=d.name;$('#au').value=d.url;fillCats(d.cat);$('#fr').hidden=false;$('#aa').click()}});
 // ---- Novedades: resumen de lo que ha cambiado en cada versión (la primera es siempre la actual) ----
 const CHANGES=[
- [VER,['Actualizar es más ligero: las fuentes que no han publicado nada no se vuelven a procesar (el Registro dice cuántas)']],
+ [VER,['Actualizar es más ligero: las fuentes que no han publicado nada no se vuelven a procesar (el Registro dice cuántas)','Si un sitio cae entero (por ejemplo YouTube), el Registro lo resume en una línea y no intenta «arreglar» tus fuentes']],
  ['2026-11-05-1.1',['«Lo importante de hoy» se puede guardar y descartar como las demás noticias (deslizando en el móvil)','Al descartar se ocultan todas sus copias de otros medios, y en Descartadas se ven con «También en…»']],
  ['2026-11-05-0',['Las noticias de «Lo importante de hoy» siguen también en el feed, con su «También en…»']],
  ['2026-11-04-2',['«Lo importante de hoy» arriba en Todas: lo que cubren muchos medios o varias de tus fuentes locales; tocando «En N medios» ves todos los que la publican (se puede apagar en Contenido)']],
