@@ -733,7 +733,7 @@ async function stUi(){const el=$('#stg');if(!el)return;try{const st=navigator.st
  catch(x){el.textContent='Este navegador no informa del almacenamiento.'}}
 function log(m,c=''){if(LG.run)LG.run.notes.push({m,c});else{LG.evs.unshift({t:Date.now(),m,c});LG.evs=LG.evs.slice(0,30);lgSave();lgDraw()}}
 const cfReset=()=>{const d=new Date();d.setUTCHours(24,0,0,0);return d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})};
-function why(h){const f=S.nf&&S.nf[h],s=f&&f.s;if(s===undefined)return'no respondió';if(s===503&&h==='news.google.com')return'Google News bloquea al proxy (503)';if(s==='cf')return`el proxy no está disponible (posible límite diario gratuito de Cloudflare; se restablece a las ${cfReset()})`;
+function why(h){const f=S.nf&&S.nf[h],s=f&&f.s;if(s===undefined)return'no respondió';if(/(^|\.)youtube\.com$/.test(h)&&(s===404||s===500||s===503))return`YouTube no lo devolvió (${s}); suele ser temporal. Si dura días, revisa el canal`;if(s===503&&h==='news.google.com')return'Google News bloquea al proxy (503)';if(s==='cf')return`el proxy no está disponible (posible límite diario gratuito de Cloudflare; se restablece a las ${cfReset()})`;
  const T={402:'pide pago o ha superado su límite (402)',403:'el sitio bloquea al proxy (403)',404:'esa dirección ya no existe (404)',410:'esa dirección ya no existe (410)',429:'demasiadas peticiones, lo limita el sitio (429)',500:'error del propio sitio (500)',502:'el sitio no respondió bien (502)',503:'sitio caído o en mantenimiento (503)',504:'el sitio tardó demasiado (504)',520:'la web respondió algo inesperado (520)',521:'la web está caída (521)',522:'no se pudo conectar con la web: no existe o no responde (522)',523:'no se encuentra la web (523)',524:'la web tardó demasiado (524)',525:'fallo de conexión segura con la web (525)',526:'certificado de la web no válido (526)',530:'no se encuentra la web: el dominio no existe o está mal escrito (530)'};
  if(T[s])return T[s];if(typeof s==='number')return`error HTTP ${s}`;
  if(/abort/i.test(s))return'tardó demasiado en responder';if(s==='Failed to fetch')return'no se pudo conectar';if(/XML no válido/.test(s))return'la dirección no devuelve un feed válido';if(/Sin artículos|sin titulares/i.test(s))return'no devuelve noticias (puede que la dirección sea una web y no un feed)';return s}
@@ -756,6 +756,8 @@ function lgDraw(){const el=$('#p2');if(!el)return;const nf=n=>n.toLocaleString('
  $('#lgf').onclick=e=>{const b=e.target.closest('[data-o]');if(b){LG.only=b.dataset.o==='1';lgDraw()}};
  $('#lgc').onclick=async()=>{const t=lgText();try{await navigator.clipboard.writeText(t);toast('Registro copiado')}catch(e){const a=document.createElement('textarea');a.value=t;document.body.append(a);a.select();try{document.execCommand('copy');toast('Registro copiado')}catch(x){}a.remove()}};
  $('#lgx').onclick=async()=>{if(!await ask('Se borra solo el historial del registro, no tus noticias ni ajustes.',{title:'¿Borrar el registro?',ok:'Borrar'}))return;LG.runs=[];LG.evs=[];lgSave();lgDraw()}}
+// 3+ fuentes del mismo sitio que fallan a la vez = una sola línea (p. ej. una caída de YouTube no son 40 errores)
+function lgGroup(F){const g={};F.forEach(f=>(g[f.h]=g[f.h]||[]).push(f));return Object.values(g).flatMap(L=>L.length<3?L:[{n:`${L.length} fuentes de ${/youtube\.com$/.test(L[0].h)?'YouTube':L[0].h}`,h:L[0].h,r:`fallo general de ese sitio, suele ser temporal (${L.slice(0,3).map(f=>f.n).join(', ')}${L.length>3?` y ${L.length-3} más`:''})`}])}
 function lgText(){const L=[`Noticiahz ${VER} · registro copiado ${new Date().toLocaleString('es-ES')}`];
  LG.runs.slice(0,8).forEach(r=>{L.push('',`${lgWhen(r.t)} · ${r.scope}: ${r.ok}/${r.todo} fuentes · ${r.items} recibidas · ${r.added} nuevas · ${(r.dur/1000).toFixed(1)} s${r.same?` · ${r.same} sin cambios`:''}${r.pt?` · procesado ${Math.round(r.pt)} ms`:''}`);
   r.fails.forEach(f=>L.push(`  ✗ ${f.n} (${f.h}): ${f.r}`));r.fixed.forEach(f=>L.push(`  ↻ ${f.n}: ${f.u}`));r.paused.forEach(n=>L.push(`  ⏸ ${n}: en pausa 6 h`));r.enc.forEach(n=>L.push(`  ? ${n}: símbolos raros`));
@@ -890,7 +892,8 @@ async function discover(u,deep){const pages=[u.origin+'/'];if(deep&&u.pathname.l
    a.sort((x,y)=>(P.test(y.t+y.h)?1:0)-(P.test(x.t+x.h)?1:0)||x.h.length-y.h.length);out.push(...a.slice(0,10).map(o=>o.h))}
  }catch(e){}}
  return[...new Set(out)].filter(h=>/^https:/.test(h)&&!/comment|comentario/i.test(h))}
-async function heal(x){if(searchSite(x.url))return null;const hh=ls.get('nz_hh3',{});if(Date.now()-(hh[x.id]||0)<864e5)return null;hh[x.id]=Date.now();ls.set('nz_hh3',hh);
+async function heal(x){if(searchSite(x.url)||/youtube\.com\/feeds\//i.test(x.url))return null; // los feeds de YouTube tienen una sola dirección posible: buscar otra no sirve
+const hh=ls.get('nz_hh3',{});if(Date.now()-(hh[x.id]||0)<864e5)return null;hh[x.id]=Date.now();ls.set('nz_hh3',hh);
  let u;try{u=new URL(x.url)}catch{return null}
  const disc=await discover(u);
  const alt=u.pathname.length>1?(u.pathname.endsWith('/')?u.pathname.slice(0,-1):u.pathname+'/')+u.search:'',
@@ -931,7 +934,8 @@ async function loadRun(){
  rl.textContent='Actualizar';ls.set('nz_dp',S.dp);
  const slow=todo.filter(x=>S.hl[x.id]===0&&/abort|^50[24]$/i.test(String((S.nf[host(x.url)]||{}).s)));
  if(slow.length)await pool(slow,4,async x=>{try{const a=await viaProxy(x.url,x,16000);if(a&&a.length){S.hl[x.id]=a.length;S.ft[x.id]=Date.now();res.push(a)}}catch(e){}});
- const sick=todo.filter(x=>S.hl[x.id]===0);
+ const sick0=todo.filter(x=>S.hl[x.id]===0),byH={};sick0.forEach(x=>{const h=host(x.url);byH[h]=(byH[h]||0)+1});
+ const sick=sick0.filter(x=>byH[host(x.url)]<3); // si fallan 3+ fuentes del mismo sitio a la vez, es un fallo de ese sitio: no se buscan direcciones nuevas
  if(sick.length){await pool(sick,3,async x=>{const h=await heal(x);if(h&&!S.src.some(o=>o!==x&&o.url===h.url)){if(LG.run)LG.run.fixed.push({n:x.name,u:h.url});x.url=h.url;S.hl[x.id]=h.items.length;S.ft[x.id]=Date.now();res.push(h.items)}});
   ls.set('nz_src',S.src)}
  const old=new Map(S.news.map(a=>[a.id,a]));
@@ -945,7 +949,7 @@ async function loadRun(){
  const bad=on.filter(x=>S.hl[x.id]===0).length;
  if(S.vb&&S.vb.size){log(`Google News bloquea al proxy; cargadas vía Bing Noticias: ${[...S.vb].join(', ')}`,'ok');S.vb.clear()}
  if(LG.run){const r=LG.run;r.ok=todo.filter(x=>S.hl[x.id]>0).length;r.items=fresh.length;r.added=added;r.dur=Date.now()-r.t;
-  r.fails=todo.filter(x=>!(S.hl[x.id]>0)).map(x=>({n:x.name,h:host(x.url),r:why(host(x.url))}));
+  r.fails=lgGroup(todo.filter(x=>!(S.hl[x.id]>0)).map(x=>({n:x.name,h:host(x.url),r:why(host(x.url))})));
   r.paused=S.bo?S.src.filter(x=>S.bo[x.id]>Date.now()&&!r.fails.some(f=>f.n===x.name)).map(x=>x.name):[];r.fails.forEach(f=>{const x=S.src.find(z=>z.name===f.n);if(x&&S.bo&&S.bo[x.id]>Date.now())f.r+=' · en pausa 6 h'});
   LG.runs.unshift(r);LG.runs=LG.runs.slice(0,15);LG.run=null;lgSave();lgDraw()}
  {const ks=new Set(S.src.map(x=>x.url+'\n'+x.name+'\n'+x.cat));for(const k in S.fh)if(!ks.has(k))delete S.fh[k];ls.set('nz_fh',S.fh)}

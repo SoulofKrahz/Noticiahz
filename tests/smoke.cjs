@@ -202,6 +202,12 @@ async function run(browser, label, viewport, mobile) {
     return { ms: full + '→' + quick, todo: r1.todo, ok: r1.ok, same: r1.same || 0, p1, n0, n1: S.news.length, fails: r1.fails.length, same2: r2.same || 0, p2, fpSame: feedFp(a) === feedFp(b), fpDiff: feedFp(a) !== feedFp(c), saved: Object.keys(JSON.parse(localStorage.getItem('nz_fh') || '{}')).length };
   });
   ok(fsk.same > 0 && fsk.p1 <= fsk.todo - fsk.same + 2 && fsk.n1 >= fsk.n0 - 5 && fsk.ok >= fsk.same && fsk.same2 === fsk.same - 1 && fsk.p2 >= 1 && fsk.p2 <= fsk.p1 + 2 && fsk.fpSame && fsk.fpDiff && fsk.saved > 0, `feeds sin cambios no se reprocesan y no cuentan como fallo (${JSON.stringify(fsk)})`);
+  // 6m) Caída general de un sitio (p. ej. YouTube): una sola línea en el registro, mensaje claro y sin buscar direcciones nuevas
+  const yt2 = await p.evaluate(async () => { const F = Array.from({ length: 5 }, (_, i) => ({ n: 'Canal ' + i, h: 'www.youtube.com', r: 'x' })).concat([{ n: 'Otra', h: 'otra.es', r: 'y' }]);
+    const g = lgGroup(F); const nf0 = S.nf['www.youtube.com']; S.nf['www.youtube.com'] = { s: 404 }; const w = why('www.youtube.com'); if (nf0) S.nf['www.youtube.com'] = nf0; else delete S.nf['www.youtube.com'];
+    const h = await heal({ id: 'ytx', name: 'yt', url: 'https://www.youtube.com/feeds/videos.xml?channel_id=UCx' });
+    return { n: g.length, first: g[0].n, r: g[0].r, other: g[1] && g[1].n, w, h } });
+  ok(yt2.n === 2 && yt2.first === '5 fuentes de YouTube' && /Canal 0, Canal 1, Canal 2 y 2 más/.test(yt2.r) && yt2.other === 'Otra' && /YouTube no lo devolvió \(404\)/.test(yt2.w) && yt2.h === null, `caída de YouTube: una línea, mensaje claro y sin «corregir» canales (${JSON.stringify(yt2)})`);
   // 6k) Lo importante de hoy: guardar y descartar como en el feed (botones en PC, deslizar en el móvil)
   const ig = await p.evaluate(async () => { S.pf.imp = true; S.cat = 'Todas'; S.sf = 'Todas'; S.dis.clear(); const now = Date.now(), srcs = [...new Set(S.src.filter(x => x.on).map(x => x.name))].slice(0, 6), t = 'Temporal de lluvia deja carreteras cortadas en toda la isla esta tarde';
     srcs.forEach((n, i) => S.news.unshift({ id: 'ig' + i, link: 'https://x.test/ig' + i, title: t, snip: 'Resumen suficientemente largo de la noticia del temporal para que no cuente como sin resumen. '.repeat(2), date: now - i * 6e4, src: n, cat: S.src.find(x => x.name === n).cat }));
